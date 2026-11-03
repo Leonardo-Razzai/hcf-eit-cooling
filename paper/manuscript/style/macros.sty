@@ -1,0 +1,19 @@
+%% macros.sty -- notation used in the manuscript
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{style/macros}[2026/11/03 notation for the radial EIT paper]
+
+% units (lightweight replacement for siunitx)
+\newcommand{\micro}{\upmu}
+\newcommand{\SI}[2]{\ensuremath{#1\,\mathrm{#2}}}
+\newcommand{\si}[1]{\ensuremath{\mathrm{#1}}}
+\newcommand{\um}{\,\upmu\mathrm{m}}
+
+% quantum notation
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\gp}{\ket{g_p}}          % probe ground state
+\newcommand{\gc}{\ket{g_c}}          % coupling ground state
+\newcommand{\Om}{\Omega}
+\newcommand{\etap}{\eta_{\perp}}     % gradient Lamb-Dicke parameter G_11 x0/a
+
+\endinput

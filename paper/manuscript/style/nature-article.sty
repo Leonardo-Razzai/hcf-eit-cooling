@@ -1,0 +1,54 @@
+%% nature-article.sty -- layout imitating a Nature-family research article
+%% (Nature Communications / Nature Physics): two columns, Times body with
+%% Helvetica headings and captions, unnumbered sans-serif section headings,
+%% superscript numbered citations, "Fig. 1 |" / "Table 1 |" captions.
+%% Use with \documentclass[10pt,twocolumn,a4paper]{article} and
+%% \bibliographystyle{naturemag}. For submission the text can be moved into the
+%% official Springer Nature template (sn-jnl.cls, option sn-nature).
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{style/nature-article}[2026/11/03 Nature-like article layout]
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+% Times / Helvetica: URW clones (utm/uhv) if available, else psnfss (ptm/phv)
+\IfFileExists{t1utm.fd}{\renewcommand{\rmdefault}{utm}}%
+  {\IfFileExists{t1ptm.fd}{\renewcommand{\rmdefault}{ptm}}{}}
+\IfFileExists{t1uhv.fd}{\renewcommand{\sfdefault}{uhv}}%
+  {\IfFileExists{t1phv.fd}{\renewcommand{\sfdefault}{phv}}{}}
+
+\RequirePackage[a4paper,top=20mm,bottom=22mm,left=16mm,right=16mm,columnsep=6mm]{geometry}
+\RequirePackage{amsmath,amssymb,bm}
+\RequirePackage{booktabs}
+\RequirePackage{upgreek}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\usetikzlibrary{decorations.pathmorphing}
+\RequirePackage[super,sort&compress,numbers]{natbib}
+\RequirePackage{xcolor}
+\RequirePackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!50!black]{hyperref}
+\RequirePackage{caption}
+
+% ---------------------------------------------------------------- captions
+\DeclareCaptionLabelSeparator{bar}{\ $|$\ }
+\captionsetup{font={footnotesize,sf},labelfont={bf,sf},labelsep=bar,
+  justification=justified,singlelinecheck=false,skip=4pt}
+\captionsetup[figure]{name=Fig.}
+\captionsetup[table]{name=Table,position=top}
+
+% ---------------------------------------------------------------- headings
+\renewcommand\section{\@startsection{section}{1}{0pt}%
+  {2.4ex plus .6ex minus .2ex}{0.9ex}{\sffamily\bfseries\large}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}%
+  {1.8ex plus .5ex minus .2ex}{0.5ex}{\sffamily\bfseries\normalsize}}
+\renewcommand\paragraph{\@startsection{paragraph}{4}{0pt}%
+  {1.2ex plus .3ex}{-0.6em}{\sffamily\bfseries\small}}
+\setcounter{secnumdepth}{0}
+\renewcommand\@biblabel[1]{#1.}
+\setlength{\parindent}{1em}
+\renewcommand{\refname}{References}
+
+% ---------------------------------------------------------------- helpers
+\newcommand{\note}[1]{\textcolor{red!70!black}{[#1]}}   % placeholders to fill
+\newcommand{\panel}[1]{\textbf{\sffamily #1}}             % panel letter in captions
+
+\endinput
