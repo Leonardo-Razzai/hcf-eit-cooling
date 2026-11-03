@@ -1,0 +1,167 @@
+"""Paper figures: simulation/results/*.dat -> paper/manuscript/figures/*.pdf.
+
+Usage: python make_figures.py [mechanism] [saturation] [robust] [dynamics]
+(default: all). Only reads result files, so it runs in seconds.
+"""
+import sys
+from pathlib import Path
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.transforms import blended_transform_factory
+from scipy.special import jv
+
+import style
+from style import MM, WDOUBLE, CA, CB, CG, CL, CO, letter
+
+SIM = Path(__file__).resolve().parents[1]
+RESULTS = SIM / 'results'
+FIG = SIM.parent / 'paper' / 'manuscript' / 'figures'
+sys.path.insert(0, str(SIM))
+import eitsim as E  # noqa: E402
+
+style.apply()
+
+
+def load(name):
+    return np.genfromtxt(RESULTS / name, names=True)
+
+
+def save(fig, name):
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / name)
+    plt.close(fig)
+
+
+def fig_mechanism():
+    """Fig. 1: mode profiles and Fano absorption spectrum (computed directly)."""
+    fig, ax = plt.subplots(1, 2, figsize=(WDOUBLE, 58 * MM), constrained_layout=True)
+    x = np.linspace(-1, 1, 400)
+    ax[0].axvspan(-0.05, 0.05, color=CO, alpha=0.35, lw=0)
+    l1, = ax[0].plot(x, jv(0, E.U01 * x), 'k')
+    l2, = ax[0].plot(x, E.amp_ratio(1) * jv(1, E.U1[0] * x), color=CA)
+    l3, = ax[0].plot(x, E.gfac(1) * x, '--', color=CA, lw=0.7)
+    ax[0].annotate('atoms', xy=(-0.04, 1.55), xytext=(-0.62, 1.7), color='#B07800',
+                   va='center', arrowprops=dict(arrowstyle='->', color='#B07800', lw=0.6))
+    ax[0].set_xlabel('$x/a$')
+    ax[0].set_ylabel('Field (LP$_{01}$ peak = 1)')
+    ax[0].set_ylim(-2.2, 2.2)
+    ax[0].legend([l1, l2, l3], ['LP$_{01}$', 'LP$_{11}$', '$G_{11}x/a$'],
+                 loc='lower right', bbox_to_anchor=(1.0, 1.0), ncol=3)
+    letter(ax[0], 'a')
+    p = E.params(E.paper_cases()['A'])
+    d = np.linspace(-2.2, 2.2, 2000)
+    R = E.fano(p, d)
+    ax[1].plot(d, R / R.max(), 'k')
+    tr = blended_transform_factory(ax[1].transData, ax[1].transAxes)
+    for dd, c, lab in ((-1, CB, 'Blue sb. $A_+$'), (0, CG, 'Carrier'), (1, CA, 'Red sb. $A_-$')):
+        ax[1].axvline(dd, color=c, ls='--' if dd else ':', lw=0.7)
+        ax[1].text(dd, 1.02, lab, color=c, transform=tr, ha='center', va='bottom')
+    ax[1].set_xlabel(r'Two-photon detuning $\delta/\nu_r$')
+    ax[1].set_ylabel(r'Absorption $R(\delta)/R_{\max}$')
+    ax[1].set_ylim(0, 1.05)
+    letter(ax[1], 'b')
+    save(fig, 'mechanism.pdf')
+
+
+def fig_saturation():
+    """Fig. 3: rate and steady state versus probe strength."""
+    fig, ax = plt.subplots(1, 2, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
+    for key, c in (('A', CA), ('B', CB)):
+        d = load(f'sat_{key}.dat')
+        ax[0].loglog(d['s'], d['WME'], 'o-', color=c)
+        ax[0].loglog(d['s'], d['WSM2'], '--', color=c)
+        ax[0].loglog(d['s'], d['WSM1'], ':', color=c)
+        ax[1].loglog(d['s'], d['nME'], 'o-', color=c)
+        ax[1].loglog(d['s'], d['nSM2'], '--', color=c)
+    ax[0].set_xlabel('Saturation parameter $s$')
+    ax[0].set_ylabel('Cooling rate $W$ (s$^{-1}$)')
+    ax[1].set_xlabel('Saturation parameter $s$')
+    ax[1].set_ylabel(r'Steady-state $\langle n_x\rangle$')
+    letter(ax[0], 'a')
+    letter(ax[1], 'b')
+    h = [Line2D([], [], color=CA, lw=1.5), Line2D([], [], color=CB, lw=1.5),
+         Line2D([], [], color='k', marker='o'),
+         Line2D([], [], color='k', ls='--'), Line2D([], [], color='k', ls=':')]
+    t = [r'Case A ($a=15\ \mu$m)', r'Case B ($a=3.5\ \mu$m)', 'Master equation',
+         r'Simple model, $\kappa=2$', r'Simple model, $\kappa=1$']
+    fig.legend(h, t, loc='outside upper center', ncol=5)
+    save(fig, 'saturation.pdf')
+
+
+def fig_robust():
+    """Fig. 4: mode impurity, two-photon detuning, trap-frequency mismatch."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
+    kw = dict(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2,
+              columnspacing=0.8, handlelength=1.8)
+    d = load('carrier_A.dat')
+    e, x = d['kind'] == 0, d['kind'] == 1
+    w0 = d['WmaxME'][e][d['epseff'][e] == 0][0]
+    ax[0].plot(d['epseff'][e][1:], d['WmaxME'][e][1:] / 1e3, 'o-', color=CA, label=r'Admixture $\epsilon$')
+    ax[0].plot(d['epseff'][x], d['WmaxME'][x] / 1e3, 's', color=CB, ms=4, mfc='none', mew=0.9,
+               label=r'Offset $x_s$')
+    ax[0].plot(d['epseff'][e][1:], d['Wunified'][e][1:] / 1e3, '--', color=CG, label='Simple model')
+    ax[0].axhline(w0 / 1e3, color=CA, lw=0.6, ls=':', label=r'$\epsilon=0$')
+    ax[0].set_xscale('log')
+    ax[0].set_ylim(0, 3.2)
+    ax[0].set_xlabel(r'$\epsilon_{\rm eff}$')
+    ax[0].set_ylabel(r'Max. rate (10$^3$ s$^{-1}$)')
+    ax[0].legend(**kw)
+    t = load('twophoton_A.dat')
+    ax[1].semilogy(t['d2'], t['n0'], 'o-', color=CA, label=r'ME, $\epsilon=0$')
+    ax[1].semilogy(t['d2'], t['n5'], 's-', color=CB, label=r'ME, $\epsilon=0.05$')
+    ok = np.isfinite(t['nSM']) & (t['nSM'] > 0)
+    ax[1].semilogy(t['d2'][ok], t['nSM'][ok], '--', color=CG, label=r'Simple, $\epsilon=0$')
+    ax[1].set_xlabel(r'Two-photon error $\delta_{\rm e}/\nu_r$')
+    ax[1].set_ylabel(r'$\langle n_x\rangle$')
+    ax[1].legend(**kw)
+    for key, c in (('A', CA), ('B', CB)):
+        m = load(f'mismatch_{key}.dat')
+        ax[2].plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=c, ms=2.5, label=f'{key}, ME')
+        ax[2].plot(m['nurel'], m['WSM'] / m['WME'].max(), '--', color=c, lw=0.8, label=f'{key}, simple')
+    ax[2].set_xlabel(r'$\nu_r/\nu_r^{\rm design}$')
+    ax[2].set_ylabel(r'$W/W_{\max}^{\rm ME}$')
+    ax[2].legend(**kw)
+    for a, s in zip(ax, 'abc'):
+        letter(a, s, x=-0.3, y=1.0)
+    save(fig, 'robust.pdf')
+
+
+def fig_dynamics():
+    """Fig. 5: relaxation (ME vs rate models) and capture from 10 uK."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 58 * MM), constrained_layout=True)
+    d = load('dyn_A.dat')
+    ax[0].plot(d['tms'], d['nME'], 'o', color=CA, ms=2.5, label='Master eq.')
+    ax[0].plot(d['tms'], d['nGRM'], '-', color=CB, label='GRM, calibrated')
+    ax[0].plot(d['tms'], d['nGRM1'], ':', color=CB, label=r'GRM, $c_{\rm sat}=1$')
+    ax[0].plot(d['tms'], d['nSM'], '--', color=CG, label='Simple model')
+    ax[0].set_yscale('log')
+    ax[0].set_ylim(0.015, 8)
+    ax[0].set_xlabel('Time (ms)')
+    ax[0].set_ylabel(r'$\langle n_x\rangle$')
+    ax[0].legend(loc='upper right')
+    letter(ax[0], 'a')
+    ax[0].text(0.0, 1.02, r'   Case A, $\langle n\rangle_0=2$', transform=ax[0].transAxes, va='bottom')
+    labs = (('s1', CA, '-', r'$\Delta=3\Gamma$, $s=1$'), ('s03', CL, '-', r'$\Delta=3\Gamma$, $s=0.3$'),
+            ('staged', CB, '-', r'$\Delta=\Gamma\to3\Gamma$'), ('LP12', 'k', ':', r'LP$_{12}$, $s=1$'))
+    ylims = {'A': (0.1, 300), 'B': (0.01, 60)}
+    for i, key in ((1, 'A'), (2, 'B')):
+        c = load(f'capture_{key}.dat')
+        for lab, col, ls, txt in labs:
+            ax[i].semilogy(c['tms'], c['n_' + lab], ls, color=col, label=txt)
+        ax[i].set_ylim(*ylims[key])
+        ax[i].set_xlabel('Time (ms)')
+        ax[i].set_ylabel(r'$\langle n_x\rangle$')
+        ax[i].legend(loc='upper right')
+        letter(ax[i], 'bc'[i - 1])
+        ax[i].text(0.0, 1.02, r'   Case %s, from 10 $\mu$K' % key, transform=ax[i].transAxes, va='bottom')
+    save(fig, 'dynamics.pdf')
+
+
+FIGURES = {'mechanism': fig_mechanism, 'saturation': fig_saturation,
+           'robust': fig_robust, 'dynamics': fig_dynamics}
+
+if __name__ == '__main__':
+    for name in sys.argv[1:] or FIGURES:
+        FIGURES[name]()
