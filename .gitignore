@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# LaTeX build products (figures/*.pdf ARE tracked: they are inputs)
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+paper/manuscript/main.pdf
+paper/background_report/report.pdf
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
