@@ -8,7 +8,7 @@ else
 TEX = sh -c 'pdflatex -interaction=nonstopmode "$$1" && bibtex "$${1%.tex}" && pdflatex -interaction=nonstopmode "$$1" && pdflatex -interaction=nonstopmode "$$1"' _
 endif
 
-.PHONY: help venv test results figures paper report all clean check-tex
+.PHONY: help venv test results figures paper report slides all clean check-tex
 
 help:
 	@echo "venv     create .venv and install simulation/requirements.txt"
@@ -17,6 +17,7 @@ help:
 	@echo "figures  regenerate paper figures from results (seconds)"
 	@echo "paper    build paper/manuscript/main.pdf"
 	@echo "report   build paper/background_report/report.pdf"
+	@echo "slides   build presentation/radial_eit_cooling_talk.pptx"
 	@echo "clean    remove LaTeX build products"
 
 venv:
@@ -41,6 +42,9 @@ paper: check-tex
 
 report: check-tex
 	cd paper/background_report && $(TEX) report.tex
+
+slides:
+	cd presentation && ../$(PY) make_assets.py && node build_deck.js
 
 all: figures paper report
 

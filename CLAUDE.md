@@ -66,7 +66,14 @@ simulation/
   plotting/              style.py (Nature figure style) + make_figures.py
   tests/                 fast regression tests against results/
   requirements.txt
-Makefile                 make test | results | figures | paper | report | clean
+presentation/            16-slide talk for an atomic-physics audience
+  make_assets.py         slide images: setup schematic, level scheme, equations
+                         (matplotlib mathtext), result plots, memory dephasing plot
+  build_deck.js          pptxgenjs deck (theme, layouts, speaker notes); apply_theme.js
+                         writes the theme colours into the .pptx
+  assets/                generated PNGs (300 dpi)
+  radial_eit_cooling_talk.pptx
+Makefile                 make test | results | figures | paper | report | slides | clean
 ```
 
 ## Setup (WSL / Linux)
@@ -97,6 +104,12 @@ If a build stalls, check fonts first.
 | Regenerate figures | `make figures` | seconds |
 | Build paper | `make paper`, or in `paper/manuscript`: `pdflatex main; bibtex main; pdflatex main` ×2 | — |
 | Build background report | `make report` | — |
+| Build the talk | `make slides` (needs Node.js; `cd presentation && npm install` once) | ~30 s |
+
+The talk reuses `simulation/results`. Slide text uses `x_sub` notation, which `build_deck.js`
+turns into real subscripts (`rich()`). ν is set in Cambria, because Calibri's ν looks like a v.
+After layout changes, export the slides as images and check them: no text may overlap the
+figures, and margins must be at least 0.5 in.
 
 Study scripts (run from `simulation/studies/`):
 - `saturation.py` → `sat_A.dat`, `sat_B.dat` (Fig. 3).
