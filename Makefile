@@ -8,15 +8,16 @@ else
 TEX = sh -c 'pdflatex -interaction=nonstopmode "$$1" && bibtex "$${1%.tex}" && pdflatex -interaction=nonstopmode "$$1" && pdflatex -interaction=nonstopmode "$$1"' _
 endif
 
-.PHONY: help venv test results figures paper report slides all clean check-tex
+.PHONY: help venv test results figures paper report docs slides all clean check-tex
 
 help:
 	@echo "venv     create .venv and install simulation/requirements.txt"
 	@echo "test     fast regression tests (~10 s)"
-	@echo "results  rerun all studies -> simulation/results (~15 min)"
+	@echo "results  rerun all studies -> simulation/results (~45 min)"
 	@echo "figures  regenerate paper figures from results (seconds)"
 	@echo "paper    build paper/manuscript/main.pdf"
 	@echo "report   build paper/background_report/report.pdf"
+	@echo "docs     build simulation/docs/code_guide.pdf (code documentation)"
 	@echo "slides   build presentation/radial_eit_cooling_talk.pptx"
 	@echo "clean    remove LaTeX build products"
 
@@ -43,11 +44,15 @@ paper: check-tex
 report: check-tex
 	cd paper/background_report && $(TEX) report.tex
 
+docs: check-tex
+	cd simulation/docs && $(TEX) code_guide.tex
+
 slides:
 	cd presentation && ../$(PY) make_assets.py && node build_deck.js
 
-all: figures paper report
+all: figures paper report docs
 
 clean:
 	cd paper/manuscript && rm -f *.aux *.bbl *.blg *.log *.out *.fls *.fdb_latexmk main.pdf
 	cd paper/background_report && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fls *.fdb_latexmk report.pdf
+	cd simulation/docs && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fls *.fdb_latexmk code_guide.pdf

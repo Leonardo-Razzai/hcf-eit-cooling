@@ -17,6 +17,7 @@ venv/
 *.synctex.gz
 paper/manuscript/main.pdf
 paper/background_report/report.pdf
+simulation/docs/code_guide.pdf
 
 # editors / OS
 .vscode/

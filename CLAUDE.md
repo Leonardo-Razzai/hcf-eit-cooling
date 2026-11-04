@@ -31,7 +31,9 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 | Weak-probe floor n_ss | 0.017 | 0.009 |
 | Maximum W at s ≈ 5 (s⁻¹) | 3.3×10³ | 1.8×10⁴ |
 | Probe power at s = 1 | 8 nW | 0.4 nW |
-| Cooling from 10 µK | ⟨n⟩ = 0.24 after 150 ms (staged Δ = Γ → 3Γ) | ⟨n⟩ = 0.04 in 2.4 ms |
+| Cooling from 10 µK | P₀ = 97.5% after 150 ms (staged Δ = Γ → 3Γ); ⟨n⟩ = 1.45, carried by a 0.4% hot tail | ⟨n⟩ = 0.04 in 2.4 ms |
+| Time to P₀ ≥ 0.9 vs k_BT_r/U₀ = 10⁻³–10⁻¹ (s = 1) | 2.6–255 ms, ≈ 2.5 s × k_BT_r/U₀ | 0–7.7 ms, ≈ 80 ms × k_BT_r/U₀ |
+| Saturated phonon removal (GRM, s = 1) | 1.9 ms⁻¹ | 12 ms⁻¹ |
 
 - **Simple model:**
   - It is valid at weak probe only if it counts κ = 1/b_p ≈ 2 photons per cycle.
@@ -42,6 +44,11 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
 - **LP₁₂ vs LP₁₁:** identical rate at equal s; a higher mode only lowers the probe power.
+- **Initial temperature:** above n̄₀ ≈ 3 the sideband saturates and the cooling time grows linearly
+  with k_BT_r/U₀ (U₀/k_B = 530 µK). Recoil makes hot atoms diffuse in energy (≈ η_sp√n per photon),
+  so ⟨n⟩ lags behind P₀. Beyond its calibration range (n ≤ 15) the GRM underestimates the
+  master-equation drift (GRM/ME = 0.75, 0.42 at n₀ = 20, 30 for A; 0.83, 0.56 for B), so its
+  thermal cooling times are conservative.
 
 ## Repository layout
 
@@ -65,8 +72,10 @@ simulation/
     report/              data for the background report
   plotting/              style.py (Nature figure style) + make_figures.py
   tests/                 fast regression tests against results/
+  docs/                  code_guide.tex: implementation and motivation of every module
+                         (make docs); update it when the code changes
   requirements.txt
-presentation/            16-slide talk for an atomic-physics audience
+presentation/            17-slide talk for an atomic-physics audience
   make_assets.py         slide images: setup schematic, level scheme, equations
                          (matplotlib mathtext), result plots, memory dephasing plot
   build_deck.js          pptxgenjs deck (theme, layouts, speaker notes); apply_theme.js
@@ -99,11 +108,12 @@ If a build stalls, check fonts first.
 | Task | Command | Time |
 |---|---|---|
 | Regression tests | `make test` | ~10 s |
-| Rerun all studies | `make results` | ~15 min |
+| Rerun all studies | `make results` | ~45 min |
 | One study | `cd simulation/studies && python robustness.py twophoton` | — |
 | Regenerate figures | `make figures` | seconds |
 | Build paper | `make paper`, or in `paper/manuscript`: `pdflatex main; bibtex main; pdflatex main` ×2 | — |
 | Build background report | `make report` | — |
+| Build code guide | `make docs` | — |
 | Build the talk | `make slides` (needs Node.js; `cd presentation && npm install` once) | ~30 s |
 
 The talk reuses `simulation/results`. Slide text uses `x_sub` notation, which `build_deck.js`
@@ -118,11 +128,13 @@ Study scripts (run from `simulation/studies/`):
 - `dynamics.py [relaxation|capture]` → `dyn_A.dat` (master equation, ~6 min), `capture_{A,B}.dat` (Fig. 5).
 - `calibration.py [steady|drift]` → `grmcheck.dat`, `drift_calib.dat`. These fix `rate_models.CSAT`
   and Methods Table 3.
+- `temperature.py [scan|drift]` → `temperature_{A,B}.dat`, `temptrace_{A,B}.dat` (Fig. 6, ~2 min);
+  `drift_hi.dat` (master-equation check of the GRM at n₀ = 20, 30, ~25 min).
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
-`plotting/make_figures.py [mechanism|saturation|robust|dynamics]` writes
-`paper/manuscript/figures/{mechanism,saturation,robust,dynamics}.pdf` (paper Figs 1, 3, 4, 5).
+`plotting/make_figures.py [mechanism|saturation|robust|dynamics|temperature]` writes
+`paper/manuscript/figures/{mechanism,saturation,robust,dynamics,temperature}.pdf` (paper Figs 1, 3, 4, 5, 6).
 Fig. 2, the level scheme, is TikZ inside `main.tex`.
 
 ## Simulation package `eitsim`
@@ -145,7 +157,9 @@ Conventions and gotchas:
   Do **not** use the slowest Liouvillian eigenvalue. It picks up slow modes at the truncation edge
   and drifts with N, because saturated high-n states cool linearly in time.
 - **Truncation.** N = 20 Fock states is enough for steady states with ⟨n⟩ ≲ 0.5. Use N ≥ 30 for
-  dynamics; the GRM uses N = 300 (case A) / 120 (case B) from 10 µK.
+  dynamics. Thermal GRM dynamics need N up to the trap depth, U₀/ħν_r = 1552 (A) / 362 (B):
+  the code uses N = 1600 / 400. Recoil diffusion carries a few atoms to high n, and a smaller N
+  acts as an artificial sink (N = 300 gave ⟨n⟩ = 0.24 instead of 1.45 for case A from 10 µK).
 - **Recoil.** The master equation scatters κ = 1/b_p photons per cycle automatically, since decays
   into g_c are re-pumped. Any rate model must include this.
 - **Detuning convention.** `params` keeps lasers at the design values when `nu_rel ≠ 1`
