@@ -20,7 +20,7 @@
 \vspace{12pt}
 \begin{minipage}{0.86\textwidth}
 \bfseries\normalsize
-Guided light in a hollow-core fibre propagates along the axis and cannot address the soft radial motion of lattice-trapped atoms. Here we propose radial electromagnetically-induced-transparency (EIT) cooling with the coupling beam in the LP$_{01}$ mode and the probe in the LP$_{11}$ mode, whose node lies on the trap axis. As for an ion at a standing-wave node, the carrier vanishes and the probe couples to the motion only through its gradient. Master-equation simulations for $^{87}$Rb in a \SI{1064}{nm} lattice give, with nanowatts of probe power, cooling rates of $1.3\times10^3$\,s$^{-1}$ ($15\um$ core radius) and $1.2\times10^4$\,s$^{-1}$ ($3.5\um$), with steady-state occupations of 0.13 and 0.04. Cooling from \SI{10}{\micro K} takes about \SI{150}{ms} and \SI{3}{ms}, respectively. A simple rate model reproduces the weak-probe limit but overestimates rates and purity tolerance at the optimal working point. The key experimental requirement is an LP$_{11}$ probe with less than $10^{-3}$ LP$_{01}$ power content.
+Guided light in a hollow-core fibre propagates along the axis and cannot address the soft radial motion of lattice-trapped atoms. Here we propose radial electromagnetically-induced-transparency (EIT) cooling with the coupling beam in the LP$_{01}$ mode and the probe in the LP$_{11}$ mode, whose node lies on the trap axis. As for an ion at a standing-wave node, the carrier vanishes and the probe couples to the motion only through its gradient. Master-equation simulations for $^{87}$Rb in a \SI{1064}{nm} lattice give, with nanowatts of probe power, cooling rates of $1.3\times10^3$\,s$^{-1}$ ($15\um$ core radius) and $1.2\times10^4$\,s$^{-1}$ ($3.5\um$), with steady-state occupations of 0.13 and 0.04. Cooling from \SI{10}{\micro K} takes about \SI{150}{ms} and \SI{3}{ms}, respectively, and the cooling time grows linearly with the initial temperature up to a tenth of the lattice depth. A simple rate model reproduces the weak-probe limit but overestimates rates and purity tolerance at the optimal working point. The key experimental requirement is an LP$_{11}$ probe with less than $10^{-3}$ LP$_{01}$ power content.
 \end{minipage}
 \end{flushleft}
 \vspace{14pt}
@@ -156,13 +156,23 @@ Above $s\approx0.1$ the simple model overestimates $W$ by up to 65\% and underes
 \end{figure*}
 
 \subsection{Cooling dynamics}
-The phonon-removal rate per atom saturates at 1.3--1.9 phonons per ms (A) and 10--12 phonons per ms (B). That is only 30--45\% of the naive bound $(1-h)\Gamma_n/2$, because each decay into $\gc$ prolongs the cycle. A GRM calibrated to this saturation reproduces the master-equation dynamics within 8\% (Fig.~\ref{fig:dynamics}a). From \SI{10}{\micro K}, the hot thermal tail dominates in case A: a staged protocol ($\Delta=\Gamma$ for \SI{40}{ms}, then $\Delta=3\Gamma$) reaches $\langle n_x\rangle=0.24$, with 98\% of the atoms in $n=0$, after \SI{150}{ms}. Case B reaches $\langle n_x\rangle=0.04$ in \SI{2.4}{ms} (Fig.~\ref{fig:dynamics}b,c). An LP$_{12}$ probe gives identical curves: in the carrier-free regime the rate depends on $s$, not on the mode order.
+The phonon-removal rate per atom saturates at 1.3--1.9 phonons per ms (A) and 10--12 phonons per ms (B). That is only 30--45\% of the naive bound $(1-h)\Gamma_n/2$, because each decay into $\gc$ prolongs the cycle. A GRM calibrated to this saturation reproduces the master-equation dynamics within 8\% (Fig.~\ref{fig:dynamics}a). From \SI{10}{\micro K}, the hot thermal tail dominates in case A: a staged protocol ($\Delta=\Gamma$ for \SI{40}{ms}, then $\Delta=3\Gamma$) brings 97.5\% of the atoms to $n=0$ after \SI{150}{ms}. The mean, $\langle n_x\rangle=1.4$, is still carried by a hot tail of 0.4\% of the atoms with $n\geq20$ (see below). Case B reaches $\langle n_x\rangle=0.04$ in \SI{2.4}{ms} (Fig.~\ref{fig:dynamics}b,c). An LP$_{12}$ probe gives identical curves: in the carrier-free regime the rate depends on $s$, not on the mode order.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{dynamics.pdf}
 \caption{\textbf{Cooling dynamics.} \panel{a}, $\langle n_x\rangle(t)$ for case A at $s=0.2$ from a thermal state with $\langle n\rangle=2$: master equation, generalised rate model (GRM) with and without calibrated saturation, and single-exponential simple model. \panel{b},\panel{c}, Cooling from \SI{10}{\micro K} with the calibrated GRM. The staged protocol switches from $\Delta=\Gamma$, $s=1$ to $\Delta=3\Gamma$, $s=0.3$ at \SI{40}{ms} (case A) and \SI{1.5}{ms} (case B).}
 \label{fig:dynamics}
+\end{figure*}
+
+\subsection{Dependence on the initial temperature}
+To separate the role of temperature from that of the trap, we start from thermal states with $k_BT_r/U_0=10^{-3}$--$10^{-1}$ in 20 logarithmic steps ($T_r=0.5$--\SI{53}{\micro K} for $U_0/k_B=\SI{530}{\micro K}$). Over this range the radial potential is harmonic to within 4\% (anharmonic shift $\approx\tfrac38k_BT_r/U_0$), the atoms stay well inside the core ($x_{\rm th}\lesssim0.11a$) and less than $10^{-4}$ of them lie above the trap depth. At equal $k_BT_r/U_0$ the oscillator of case B is 4.3 times colder, $\bar n_0\simeq(k_BT_r/U_0)\,U_0/\hbar\nu_r$ with $U_0/\hbar\nu_r=1552$ (A) and 362 (B). Figure~\ref{fig:temperature} shows two regimes. For $\bar n_0\lesssim3$ the cooling is close to exponential at the rate $W$. Above, the red sideband saturates, the initial phonon-removal rate approaches a constant, 1.9 (A) and 12 (B) phonons per ms, and the cooling time grows linearly with temperature. The time to bring 90\% of the atoms to $n=0$ is $t_{90}\approx\SI{2.5}{s}\times k_BT_r/U_0$ (A) and $\approx\SI{80}{ms}\times k_BT_r/U_0$ (B), i.e.\ \SI{255}{ms} and \SI{7.7}{ms} at $k_BT_r/U_0=0.1$. The ground state is reached over the whole range. The mean occupation converges more slowly than $P_0$ (Fig.~\ref{fig:temperature}a,b): recoil makes the energy of hot atoms diffuse, so a small fraction is pushed to high $n$ and is cooled only at the saturated rate. A small core thus gains twice at higher temperature: its oscillator is colder for the same $k_BT_r/U_0$, and it removes six times more phonons per unit time.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{temperature.pdf}
+\caption{\textbf{Cooling versus initial radial temperature.} Calibrated GRM, $\Delta=3\Gamma$, $s=1$, LP$_{11}$ probe, from thermal states with $k_BT_r/U_0=10^{-3}$--$10^{-1}$. \panel{a},\panel{b}, $\langle n_x\rangle(t)$ (solid) and the population outside the ground state $1-P_0$ (dotted) for five initial temperatures; dashed grey, steady state. \panel{c}, Time to reach $P_0\geq0.9$ (circles) and $1/e$ time of the excess $\langle n_x\rangle-n_{\rm ss}$ (dashed). The dotted line marks \SI{10}{\micro K} (Fig.~\ref{fig:dynamics}b,c). Top axis: $T_r$ for $U_0/k_B=\SI{530}{\micro K}$.}
+\label{fig:temperature}
 \end{figure*}
 
 \subsection{Validity of the simple model}
@@ -198,7 +208,7 @@ Cooling from \SI{10}{\micro K} & single exponential & too fast; saturated remova
 (vi) \emph{Axial cooling}: one Fano peak cannot serve both $\nu_r$ and $\nu_z\approx40\nu_r$. Radial EIT and axial sideband cooling\cite{leong2020} must be alternated, or a double-EIT scheme used\cite{scharnhorst2018}.
 The radial temperature can be read out by Raman sideband spectroscopy\cite{kerman2000} with one LP$_{11}$ and one LP$_{01}$ beam.
 
-\paragraph{Implementation I: large-core antiresonant fibre.} A nested antiresonant fibre with $2a\approx\SI{30}{\micro m}$, low loss at both 795 and \SI{1064}{nm}\cite{sakr2020}, is mounted vertically and loaded from a magneto-optical trap above its tip\cite{bajcsy2011}. The LP$_{11}$ probe is generated with a spatial light modulator\cite{flamm2013}, combined with the LP$_{01}$ coupling beam and launched from the same end. Expected performance (case A): 2--\SI{8}{nW} of probe power, $W\approx10^3$\,s$^{-1}$ and $\langle n_x\rangle\approx0.2$ after \SI{150}{ms}. This is the more mature option; its weakness is the slow capture of the thermal tail.
+\paragraph{Implementation I: large-core antiresonant fibre.} A nested antiresonant fibre with $2a\approx\SI{30}{\micro m}$, low loss at both 795 and \SI{1064}{nm}\cite{sakr2020}, is mounted vertically and loaded from a magneto-optical trap above its tip\cite{bajcsy2011}. The LP$_{11}$ probe is generated with a spatial light modulator\cite{flamm2013}, combined with the LP$_{01}$ coupling beam and launched from the same end. Expected performance (case A): 2--\SI{8}{nW} of probe power, $W\approx10^3$\,s$^{-1}$ and 97\% of the atoms in $n=0$ after \SI{150}{ms}. This is the more mature option; its weakness is the slow capture of the thermal tail.
 
 \paragraph{Implementation II: small-core fibre section.} A 1--\SI{5}{cm} piece of photonic-bandgap fibre with $2a\approx\SI{7}{\micro m}$ is loaded by a moving lattice\cite{okaba2014}. The probe is injected from the nearer end so that the lossy LP$_{11}$ mode, which can be excited selectively in HCF\cite{trabold2014}, travels only a few cm. Cooling is ten times faster (ground state in \SI{3}{ms}) and the recoil per cycle is four times smaller. The costs are a smaller loading volume, stronger modal loss and the proximity of the core wall.
 
@@ -256,19 +266,19 @@ The GRM evolves the populations $p_n$ of $\ket{g_p,n}$ with the rate matrix $Q=T
 \begin{equation}
   K_{mn}=\frac{\bar\Om_p^2\,|\bra m f_p(\hat x)\ket n|^2\,R\big((n-m)\nu_r\big)/\Om_p^2}{1+c_{\rm sat}s_n}
 \end{equation}
-include the full Bessel profile; $s_n=s\,|\bra{n-1}\hat x\ket n|^2/x_0^2$ is the saturation of the $n\to n-1$ sideband. The redistribution after absorption is $T=b_pP(1-b_cP)^{-1}$, where $P_{n'm}=\sum_kw_k|\bra{n'}e^{i\eta_{\rm sp}u_k(b+b^\dagger)}\ket m|^2$ is the recoil kernel of one photon. With $c_{\rm sat}=1$ the GRM overestimates the saturated phonon-removal rate by a factor of 2--2.5 (Table~\ref{tab:calib}). Fitting $c_{\rm sat}$ to the master-equation drift $d\langle n\rangle/dt$ from Fock states $n_0=1$--15 at $s=0.2$ and 1, in both cases, gives $c_{\rm sat}=2.25$ with 17\% rms deviation. Cooling from \SI{10}{\micro K} uses 300 (A) and 120 (B) Fock states.
+include the full Bessel profile; $s_n=s\,|\bra{n-1}\hat x\ket n|^2/x_0^2$ is the saturation of the $n\to n-1$ sideband. The redistribution after absorption is $T=b_pP(1-b_cP)^{-1}$, where $P_{n'm}=\sum_kw_k|\bra{n'}e^{i\eta_{\rm sp}u_k(b+b^\dagger)}\ket m|^2$ is the recoil kernel of one photon. With $c_{\rm sat}=1$ the GRM overestimates the saturated phonon-removal rate by a factor of 2--2.5 (Table~\ref{tab:calib}). Fitting $c_{\rm sat}$ to the master-equation drift $d\langle n\rangle/dt$ from Fock states $n_0=1$--15 at $s=0.2$ and 1, in both cases, gives $c_{\rm sat}=2.25$ with 17\% rms deviation. Thermal dynamics use Fock spaces that extend to the trap depth, $N=1600$ (A) and 400 (B) ($U_0/\hbar\nu_r=1552$ and 362). A smaller truncation is not sufficient in case A: recoil spreads the energy of a hot atom by $\approx\eta_{\rm sp}\sqrt n$ quanta per photon, and a small fraction of atoms diffuses to $n\gtrsim300$, where a truncated Fock space acts as an artificial sink. With $N=300$, $\langle n_x\rangle$ after \SI{150}{ms} (staged, from \SI{10}{\micro K}) would be 0.24 instead of 1.45, while $P_0$ changes by only 0.3\%. Case B is converged at $N=120$. Beyond the calibration range the GRM underestimates the master-equation drift (Table~\ref{tab:calib}): at $s=1$ it gives 0.75 and 0.42 of the master-equation drift for $n_0=20$ and 30 in case A, and 0.83 and 0.56 in case B (master equation with $N=45$ and 60; $N=60$ changes the $n_0=20$ value by 0.3\%). The GRM cooling times of hot thermal states are therefore conservative.
 
 \begin{table}[t]
-\caption{\textbf{Calibration of the generalised rate model.} Phonon-removal rate $-d\langle n\rangle/dt$ (ms$^{-1}$) from Fock state $n_0$, case A, $s=1$.}
+\caption{\textbf{Calibration of the generalised rate model.} Phonon-removal rate $-d\langle n\rangle/dt$ (ms$^{-1}$) from Fock state $n_0$, case A, $s=1$. The fit uses $n_0\leq15$; $n_0=20$ and 30 test the extrapolation.}
 \label{tab:calib}
 \centering\footnotesize\sffamily
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}lccccccc@{}}
 \toprule
-$n_0$ & 1 & 3 & 6 & 10 & 15\\
+$n_0$ & 1 & 3 & 6 & 10 & 15 & 20 & 30\\
 \midrule
-Master equation & 1.20 & 1.49 & 1.35 & 1.41 & 1.86\\
-GRM, $c_{\rm sat}=1$ & 2.16 & 3.28 & 3.75 & 3.99 & 4.11\\
-GRM, $c_{\rm sat}=2.25$ & 1.33 & 1.69 & 1.81 & 1.87 & 1.89\\
+Master equation & 1.20 & 1.49 & 1.35 & 1.41 & 1.86 & 2.55 & 4.57\\
+GRM, $c_{\rm sat}=1$ & 2.16 & 3.28 & 3.75 & 3.99 & 4.11 & -- & --\\
+GRM, $c_{\rm sat}=2.25$ & 1.33 & 1.69 & 1.81 & 1.87 & 1.89 & 1.91 & 1.92\\
 \bottomrule
 \end{tabular}
 \end{table}
