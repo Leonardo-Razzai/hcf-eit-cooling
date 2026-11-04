@@ -375,6 +375,35 @@ def dynamics():
     save(fig, 'dynamics.png')
 
 
+def temperature():
+    """Cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
+    fig, ax = plt.subplots(1, 2, figsize=(9.6, 4.6))
+    tr = load('temptrace_A.dat')
+    TU = load('temperature_A.dat')['TU0']
+    pick = (0, 5, 10, 15, 19)
+    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(pick)))[::-1]
+    for j, c in zip(pick, cols):
+        ax[0].semilogy(tr['tms'], tr['n%02d' % j], color=c, lw=2, label='%.3g' % TU[j])
+    ax[0].set_xlim(0, 400)
+    ax[0].set_ylim(0.1, 1e4)             # top kept empty for the legend
+    ax[0].set_xlabel('time (ms)')
+    ax[0].set_ylabel(r'$\langle n_x\rangle$')
+    ax[0].set_title('case A', fontsize=14, loc='left')
+    ax[0].legend(title=r'$k_BT_r/U_0$', loc='upper right', fontsize=10, title_fontsize=10, ncol=3)
+    for key, c in (('A', PROBE), ('B', COUPL)):
+        m = load(f'temperature_{key}.dat')
+        ax[1].loglog(m['TU0'], m['t90_ms'], 'o-', color=c, ms=5, label=f'case {key}')
+    ax[1].set_xlim(1e-3, 1e-1)
+    ax[1].set_ylim(0.05, 3000)
+    ax[1].set_xlabel(r'initial $k_BT_r/U_0$')
+    ax[1].set_ylabel(r'time to 90 % in $n=0$ (ms)')
+    ax[1].legend(loc='upper left', fontsize=11)
+    top = ax[1].secondary_xaxis('top', functions=(lambda x: x * 533.0, lambda t: t / 533.0))
+    top.set_xlabel(r'$T_r$ ($\mu$K)')
+    fig.tight_layout(w_pad=3)
+    save(fig, 'temperature.png')
+
+
 def memory():
     """Thermal spread of the differential light shift vs radial occupation."""
     h = 6.62607015e-34
@@ -383,7 +412,10 @@ def memory():
     delta0 = 800.0                                               # Hz
     n = np.logspace(-2.3, 2, 200)
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
-    pts = {'A': (28.6, 0.24), 'B': (6.3, 0.04)}
+    pts = {}                                   # (10 uK, end of staged capture)
+    for key in 'AB':
+        cp = load(f'capture_{key}.dat')
+        pts[key] = (cp['n_staged'][0], cp['n_staged'][-1])
     for key, c in (('A', PROBE), ('B', COUPL)):
         fc = E.paper_cases()[key]
         sig = delta0 * h * fc['nur'] * n / U0
@@ -406,6 +438,6 @@ def memory():
 
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup,
-              saturation, robust, dynamics, memory):
+              saturation, robust, dynamics, temperature, memory):
         f()
         print('ok', f.__name__)

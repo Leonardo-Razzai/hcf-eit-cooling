@@ -284,12 +284,28 @@ async function main() {
   text(s, bullets([
     [{ text: "Saturated removal: ", options: { bold: true } }, { text: "1.3–1.9 phonons/ms (A), 10–12 (B) — only 30–45 % of (1−h)Γ_n/2" }],
     [{ text: "Calibrated rate model ", options: { bold: true } }, { text: "(c_sat = 2.25) tracks the master equation within 8 %" }],
-    [{ text: "Staged Δ = Γ → 3Γ: ", options: { bold: true } }, { text: "A reaches ⟨n⟩ = 0.24 (98 % in n = 0) after 150 ms; B reaches 0.04 in 2.4 ms" }],
+    [{ text: "Staged Δ = Γ → 3Γ: ", options: { bold: true } }, { text: "A: 97.5 % in n = 0 after 150 ms (⟨n⟩ = 1.4, carried by a 0.4 % hot tail); B: ⟨n⟩ = 0.04 in 2.4 ms" }],
     [{ text: "LP₁₂ = LP₁₁: ", options: { bold: true } }, { text: "the rate depends on s, not on the mode order" }],
   ], { space: 12 }), 9.2, 1.5, 3.53, 5.0, { fontSize: 14 });
   s.addNotes("Left: from n = 2 the master equation relaxes far more slowly than the single-exponential simple model. Each decay into g_c lengthens the cooling cycle, so the phonon-removal rate per atom saturates well below the naive two-level bound. A rate model with the full Franck-Condon factors and a calibrated saturation reproduces the dynamics. Right: from 10 microkelvin the hot thermal tail dominates in case A; a broad first stage helps.");
 
-  // ============================================================ 11 model
+  // ============================================================ 11 initial temperature
+  s = content("Results");
+  s.addText("Cooling time grows linearly with the initial temperature", { placeholder: "title" });
+  await img(s, "temperature.png", MX, 1.45, 8.3, 4.0, { name: "cooling versus initial temperature" });
+  card(s, MX, 5.6, 8.3, 0.95, "temperature takeaway");
+  text(s, "Above ⟨n⟩ ≈ 3 the sideband saturates: the phonon-removal rate is constant, so the cooling time scales as k_{B}T_r/U_0 — and a small core gains twice.",
+    MX + 0.25, 5.68, 7.8, 0.8, { fontSize: 15, italic: true, color: C.text2, valign: "middle" });
+  text(s, bullets([
+    [{ text: "Scan: ", options: { bold: true } }, { text: "k_{B}T_r/U_0 = 10⁻³–10⁻¹ (0.5–53 µK), 20 log steps; harmonic trap within 4 %" }],
+    [{ text: "90 % in n = 0: ", options: { bold: true } }, { text: "≈ 2.5 s × k_{B}T_r/U_0 (A), ≈ 80 ms × k_{B}T_r/U_0 (B)" }],
+    [{ text: "Saturated removal: ", options: { bold: true } }, { text: "1.9 phonons/ms (A), 12 (B)" }],
+    [{ text: "Hot tail: ", options: { bold: true } }, { text: "recoil spreads energy by η_sp√n per photon; ⟨n⟩ lags behind P(n = 0)" }],
+    [{ text: "Rate model ", options: { bold: true } }, { text: "underestimates the master-equation drift above n ≈ 15: times are conservative" }],
+  ], { space: 10 }), 9.2, 1.5, 3.53, 5.0, { fontSize: 14 });
+  s.addNotes("We scan the initial radial temperature in units of the lattice depth, from one thousandth to one tenth of U0, which is the range where the radial trap stays harmonic and the calibrated rate model applies. At the same k_B T over U0 the small core is four times colder in units of its trap quantum, and it removes six times more phonons per millisecond. Above a few quanta the red sideband saturates, the phonon-removal rate is constant and the cooling time grows linearly with temperature. The ground-state fraction converges faster than the mean, because photon recoil lets a small fraction of atoms diffuse to high energy. Beyond the calibration range the rate model is conservative: at 20 to 30 quanta the master equation removes phonons 1.2 to 2.4 times faster.");
+
+  // ============================================================ 12 model
   pres.addSection({ title: "Model" });
   s = content("Model");
   s.addText("Simple model versus master equation", { placeholder: "title" });
@@ -323,7 +339,7 @@ async function main() {
     6.4, 5.62, 6.1, 0.75, { fontSize: 15, italic: true, color: C.text2, valign: "middle" });
   s.addNotes("The simple model is a good design tool at weak probe: Fano placement, scaling with core size and detuning. At the working points that maximise the rate it is not reliable, because the coherent sideband Raman coupling becomes comparable to the narrow linewidth. Use the master equation, or the calibrated rate model for large phonon numbers.");
 
-  // ============================================================ 12 missing physics
+  // ============================================================ 13 missing physics
   s = content("Model");
   s.addText("Beyond both models: what is still missing", { placeholder: "title" });
   const grid = [
@@ -345,7 +361,7 @@ async function main() {
   }
   s.addNotes("These are not captured by either the simple model or our master equation, and set the agenda for the next round of simulations: the full D1 Zeeman structure first, then both radial axes.");
 
-  // ============================================================ 13 implementations
+  // ============================================================ 14 implementations
   pres.addSection({ title: "Experiment" });
   s = content("Experiment");
   s.addText("Two implementations", { placeholder: "title" });
@@ -355,7 +371,7 @@ async function main() {
       "2a ≈ 30 µm NANF, low loss at 795 and 1064 nm",
       "MOT loading above a vertical fibre",
       "LP₁₁ probe from an SLM, purity checked by S² imaging",
-      "2–8 nW probe, W ≈ 10³ s⁻¹, ⟨n_x⟩ ≈ 0.2 after 150 ms",
+      "2–8 nW probe, W ≈ 10³ s⁻¹, 97 % in n = 0 after 150 ms",
       "Most mature; weakness: slow capture of the thermal tail",
     ]],
     ["II", "Small-core bandgap section", C.accent2, [
@@ -381,7 +397,7 @@ async function main() {
     MX, 6.2, W - 2 * MX, 0.6, { fontSize: 15, italic: true, color: C.text2 });
   s.addNotes("Implementation I follows existing Rb and Sr fibre-lattice experiments (Bajcsy, Blatt, Okaba, Leong). Implementation II trades loading volume and wall distance for a ten-fold faster cooling. Thermometry: Raman sideband spectroscopy with one LP11 and one LP01 Raman beam gives the same carrier-free gradient coupling.");
 
-  // ============================================================ 14 memory mechanism
+  // ============================================================ 15 memory mechanism
   pres.addSection({ title: "Quantum memory" });
   s = content("Quantum memory");
   s.addText("Spin-wave memory: radial temperature sets the dephasing", { placeholder: "title" });
@@ -398,7 +414,7 @@ async function main() {
   cite(s, "Kuhr et al., PRA 72, 023406 (2005); Zhao et al., Nat. Phys. 5, 100 (2009); Dudin et al., PRA 87, 031801 (2013)");
   s.addNotes("Order-of-magnitude estimate. The hyperfine coherence sees the differential light shift of the 1064 nm lattice, delta_0 about 0.8 kHz at U0/h = 11 MHz. An atom with radial potential energy V sees a shift reduced by V/U0, so the inhomogeneous width is delta_0 times the thermal radial energy over U0. At 10 microkelvin this is about 15 Hz; after radial ground-state cooling the thermal part drops by two to three orders of magnitude, and the zero-point part is common to all atoms. T2* = 1/(pi sigma) follows the Kuhr et al. analysis. Other limits then take over.");
 
-  // ============================================================ 15 memory benefits
+  // ============================================================ 16 memory benefits
   s = content("Quantum memory");
   s.addText("What a cold atom strip brings to a fibre memory", { placeholder: "title" });
   const mem = [
@@ -419,7 +435,7 @@ async function main() {
   cite(s, "Blatt et al., Opt. Lett. 39, 446 (2014); Gorshkov et al., PRL 98, 123601 (2007); Peters et al., Opt. Express 28, 5340 (2020)");
   s.addNotes("Hollow-core memories so far used freely expanding cold atoms or warm vapour. A three-dimensionally ground-state-cooled lattice strip combines the optical depth of the fibre with the coherence of free-space lattice memories. Open questions: the magic or compensated configuration in the fibre, and heating from lattice intensity noise over second-long storage.");
 
-  // ============================================================ 16 summary
+  // ============================================================ 17 summary
   pres.addSection({ title: "Summary" });
   s = pres.addSlide({ masterName: "DARK", sectionTitle: "Summary" });
   s.addText("Summary and next steps", { placeholder: "title" });
