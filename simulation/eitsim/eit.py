@@ -6,7 +6,7 @@ input of the master-equation and rate models.
 """
 import numpy as np
 
-from .fibre import GAMMA, gfac
+from .fibre import gfac
 
 GP, GC, EX = 0, 1, 2             # atomic level indices: |g_p>, |g_c>, |e>
 
@@ -48,7 +48,7 @@ def params(fc, s=0.5, Delta_G=3.0, m=1, eps=0.0, xs=0.0, d2=0.0,
     N       Fock-space truncation
     """
     # design values (units of the design trap frequency)
-    G = GAMMA / fc['om']
+    G = fc['Gamma'] / fc['om']
     D = Delta_G * G
     Wc = np.sqrt(4 * (D + 1))                       # narrow peak at delta = nu
     Gn = G * 0.5 * (1 - D / np.sqrt(D**2 + Wc**2))  # width of the narrow state

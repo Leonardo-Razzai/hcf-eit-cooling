@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 SIM = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SIM))
@@ -107,6 +108,70 @@ def test_grm_drift_beyond_calibration():
         g = (np.arange(NG) @ E.grm_matrix(E.params(fc, s=1.0, N=NG), N=NG, csat=E.CSAT))[n0]
         assert np.isclose(g * fc['om'], row['GRM'], rtol=1e-8)
         assert row['GRM'] / row['ME'] < 1           # GRM is conservative at high n
+
+
+# ---------------------------------------------------------------- atomic data
+STECK_S = {('D1', 2, 2): 1 / 2, ('D1', 2, 1): 1 / 2, ('D1', 1, 2): 5 / 6, ('D1', 1, 1): 1 / 6,
+           ('D2', 2, 3): 7 / 10, ('D2', 2, 2): 1 / 4, ('D2', 2, 1): 1 / 20,
+           ('D2', 1, 2): 5 / 12, ('D2', 1, 1): 5 / 12, ('D2', 1, 0): 1 / 6}
+
+
+def test_hyperfine_strengths_match_steck_table8():
+    for (line, F, Fe), v in STECK_S.items():
+        assert np.isclose(E.strength(line, F, Fe), v, atol=1e-12)
+    for line in E.LINES:
+        for F in E.GROUND_F:
+            assert np.isclose(sum(E.strength(line, F, f) for f in E.excited_levels(line)), 1)
+        for Fe in E.excited_levels(line):
+            assert np.isclose(sum(E.branching(line, Fe, F) for F in E.GROUND_F), 1)
+    assert np.isclose(E.branching('D1', 1, 1), 1 / 6) and np.isclose(E.branching('D1', 1, 2), 5 / 6)
+
+
+def test_zeeman_couplings_sum_rules():
+    for line in E.LINES:
+        Je = float(E.LINES[line]['Je'])
+        for Fe in E.excited_levels(line):          # Steck Eq. (40): same total decay for every m_F'
+            for me in range(-Fe, Fe + 1):
+                tot = sum(E.zeeman_coupling(line, F, me + q, Fe, me, q)**2
+                          for F in E.GROUND_F for q in (-1, 0, 1) if abs(me + q) <= F)
+                assert np.isclose(tot, 2 / (2 * Je + 1))
+        for F in E.GROUND_F:                        # Steck Eq. (41): sum over m_F', q gives S_FF'
+            for Fe in E.excited_levels(line):
+                tot = sum(E.zeeman_coupling(line, F, 0, Fe, -q, q)**2 for q in (-1, 0, 1) if abs(q) <= Fe)
+                assert np.isclose(tot, E.strength(line, F, Fe))
+    # D2 cycling transition |2,2> -> |3,3>: d / <J||er||J'> = 2.98931 / 4.22752 (Steck Table 7)
+    assert np.isclose(abs(E.zeeman_coupling('D2', 2, 2, 3, 3, -1)), 2.98931 / 4.22752, rtol=1e-5)
+
+
+def test_lambda_configurations():
+    for line, Fe in (('D2', 0), ('D2', 3)):
+        for gp in (1, 2):
+            with pytest.raises(ValueError):
+                E.lambda_config(line, Fe, gp)
+    c = E.lambda_config('D1', 1, 2)
+    assert np.isclose(c['bp'], 5 / 6) and c['gc'] == 1 and np.isclose(c['Sp'], 1 / 2)
+
+
+def test_line_dependent_fibre_case():
+    a, d1, d2 = 15e-6, E.fibre_case(15e-6), E.fibre_case(15e-6, line='D2')
+    assert d1 == E.fibre_case(a, line='D1')                    # D1 default unchanged
+    assert np.isclose(d2['eta_sp'] / d1['eta_sp'], E.LINES['D1']['lam'] / E.LINES['D2']['lam'])
+    p = E.params(d1, s=1.0)                                    # paper: 8 nW probe in case A
+    assert np.isclose(E.lp01_power(d1, p['Wp'] * d1['om']) * 1e9, 8.03, atol=0.01)
+
+
+def test_lines_study():
+    sat = load('sat_B.dat')
+    d = load('lines_B.dat')
+    base = d[(d['line'] == 1) & (d['Fe'] == 2)]                 # paper configuration
+    i = int(np.argmin(abs(sat['s'] - 1)))
+    assert np.allclose(base['W1'], sat['WME'][i], rtol=1e-8)
+    assert np.allclose(base['n1'], sat['nME'][i], rtol=1e-8)
+    row = d[(d['line'] == 2) & (d['Fe'] == 1) & (d['gp'] == 1)][0]
+    fc = E.paper_cases('D2')['B']
+    r = E.solve_me(E.params(fc, s=1.0, N=20, bp=row['bp']))
+    assert np.isclose(r['W'] * fc['om'], row['W1'], rtol=1e-6)
+    assert np.isclose(r['n'], row['n1'], rtol=1e-6)
 
 if __name__ == '__main__':
     for name, f in list(globals().items()):
