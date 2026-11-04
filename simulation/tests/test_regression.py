@@ -69,6 +69,11 @@ def test_temperature_scan_initial_states():
         n0 = 1 / np.expm1(E.HBAR * c[key]['om'] / (d['TU0'] * c[key]['U0']))
         assert np.allclose(d['n0'], n0, rtol=1e-9)
         assert np.all(d['p0end'] > 0.9)
+        tr = load(f'temptrace_{key}.dat')
+        assert [c for c in tr.dtype.names if c.startswith('n_')] == \
+            ['n_0p001', 'n_0p004', 'n_0p01', 'n_0p04', 'n_0p1']
+        # t = 0 mean of the truncated thermal state vs the analytic Bose value
+        assert np.allclose([tr['n_0p001'][0], tr['n_0p1'][0]], d['n0'][[0, -1]], rtol=1e-3)
 
 
 def _temperature_module():

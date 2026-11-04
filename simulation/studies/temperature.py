@@ -8,7 +8,8 @@
          362 for B): recoil makes the energy diffuse by ~ eta_sp sqrt(n) per
          photon, so a smaller truncation removes the hot tail artificially.
                                     -> results/temperature_{A,B}.dat (metrics)
-                                       results/temptrace_{A,B}.dat   (<n>(t))
+                                       results/temptrace_{A,B}.dat   (<n>(t), P0(t) at
+                                       k_B T_r / U0 = TRACE_TU; column n_0p004 = 0.004)
   drift  master-equation phonon drift from Fock states n0 = 20, 30 at s = 1
          against the GRM, i.e. beyond the calibration range n0 <= 15
          (~25 min)                  -> results/drift_hi.dat
@@ -22,7 +23,8 @@ from scipy.linalg import expm
 
 from _common import E, CASES, save, log
 
-TU = np.logspace(-3, -1, 20)                    # k_B T_r / U0
+TU = np.logspace(-3, -1, 20)                    # k_B T_r / U0 (metrics)
+TRACE_TU = (1e-3, 4e-3, 1e-2, 4e-2, 1e-1)       # k_B T_r / U0 of the stored <n>(t), P0(t)
 P0_TARGET = 0.9                                 # ground-state criterion
 NFOCK = {'A': 1600, 'B': 400}
 TGRID = {'A': (400e-3, 2000), 'B': (25e-3, 2000)}   # (t_max, steps)
@@ -52,14 +54,15 @@ def scan():
         ss = E.grm_steady_state(Q)
         nss, p0ss = np.arange(N) @ ss, ss[0]
         nb = bose(fc, TU)
-        V = np.column_stack([E.thermal(x, N) for x in nb])
+        allTU = np.concatenate([TU, TRACE_TU])      # grid for metrics + trace temperatures
+        V = np.column_stack([E.thermal(x, N) for x in bose(fc, allTU)])
         log('scan', key, 'n0 %.2f..%.1f' % (nb[0], nb[-1]),
             'truncation tail %.1e' % V[-20:].sum(axis=0).max())
-        R0 = -(np.arange(N) @ Q @ V) * fc['om']            # phonons / s
+        R0 = -(np.arange(N) @ Q @ V[:, :TU.size]) * fc['om']   # phonons / s
         t = np.linspace(0, tmax, steps + 1)
         U = expm(Q * (t[1] * fc['om']))
-        nt = np.empty((t.size, TU.size))
-        pt = np.empty((t.size, TU.size))
+        nt = np.empty((t.size, allTU.size))
+        pt = np.empty((t.size, allTU.size))
         for k in range(t.size):
             nt[k] = np.arange(N) @ V
             pt[k] = V[0]
@@ -68,11 +71,12 @@ def scan():
         t90 = [first_crossing(t, 1 - pt[:, j], 1 - P0_TARGET) for j in range(TU.size)]
         rows = np.column_stack([TU, TU * fc['U0'] / E.KB * 1e6, nb, np.full(TU.size, nss),
                                 np.full(TU.size, p0ss), np.array(te) * 1e3,
-                                np.array(t90) * 1e3, R0, nt[-1], pt[-1]])
+                                np.array(t90) * 1e3, R0, nt[-1, :TU.size], pt[-1, :TU.size]])
         save(f'temperature_{key}.dat',
              ['TU0', 'TuK', 'n0', 'nss', 'p0ss', 'te_ms', 't90_ms', 'R0', 'nend', 'p0end'], rows)
-        save(f'temptrace_{key}.dat', ['tms'] + ['n%02d' % j for j in range(TU.size)]
-             + ['p%02d' % j for j in range(TU.size)], np.column_stack([t * 1e3, nt, pt]))
+        tags = [('%g' % x).replace('.', 'p') for x in TRACE_TU]        # 0.004 -> 0p004
+        save(f'temptrace_{key}.dat', ['tms'] + ['n_' + g for g in tags] + ['p_' + g for g in tags],
+             np.column_stack([t * 1e3, nt[:, TU.size:], pt[:, TU.size:]]))
         for r in rows:
             log('  T/U0 %.2e  n0 %7.2f  t_e %8.3f ms  t_90 %8.3f ms  R0 %.3g /s  n_end %.3f  P0_end %.3f'
                 % (r[0], r[2], r[5], r[6], r[7], r[8], r[9]))

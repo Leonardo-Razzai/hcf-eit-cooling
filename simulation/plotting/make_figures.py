@@ -159,19 +159,34 @@ def fig_dynamics():
     save(fig, 'dynamics.pdf')
 
 
+def trace_tags(tr):
+    """Temperature tags of a temptrace file: column n_0p004 -> '0p004'."""
+    return [c[2:] for c in tr.dtype.names if c.startswith('n_')]
+
+
+def tag_value(tag):
+    return float(tag.replace('p', '.'))
+
+
+def sci(x):
+    """x in scientific notation for math text: 4e-3 -> $4\\times10^{-3}$."""
+    e = int(np.floor(np.log10(x) + 1e-12))
+    return r'$%g\times10^{%d}$' % (round(x / 10**e, 6), e)
+
+
 def fig_temperature():
     """Fig. 6: cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
     fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
-    pick = (0, 5, 10, 15, 19)
-    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(pick)))[::-1]
     ylims = {'A': (0.02, 300), 'B': (0.01, 60)}
     for i, key in enumerate('AB'):
         tr = load(f'temptrace_{key}.dat')
         m = load(f'temperature_{key}.dat')
+        tags = trace_tags(tr)
+        cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(tags)))[::-1]
         hs = []
-        for j, c in zip(pick, cols):
-            h, = ax[i].semilogy(tr['tms'], tr['n%02d' % j], color=c)
-            ax[i].semilogy(tr['tms'], 1 - tr['p%02d' % j], ':', color=c, lw=0.8)
+        for g, c in zip(tags, cols):
+            h, = ax[i].semilogy(tr['tms'], tr['n_' + g], color=c)
+            ax[i].semilogy(tr['tms'], 1 - tr['p_' + g], ':', color=c, lw=0.8)
             hs.append(h)
         ax[i].axhline(m['nss'][0], color=CG, lw=0.6, ls='--')
         ax[i].set_xlim(0, tr['tms'][-1])
@@ -180,8 +195,8 @@ def fig_temperature():
         ax[i].set_ylabel(r'$\langle n_x\rangle$ (solid), $1-P_0$ (dotted)')
         letter(ax[i], 'ab'[i])
         ax[i].text(0.0, 1.02, '   Case %s' % key, transform=ax[i].transAxes, va='bottom')
-    fig.legend(hs, ['%.3g' % x for x in load('temperature_A.dat')['TU0'][list(pick)]],
-               title=r'$k_BT_r/U_0$', loc='outside upper center', ncol=len(pick))
+    fig.legend(hs, [sci(tag_value(g)) for g in tags],
+               title=r'$k_BT_r/U_0$', loc='outside upper center', ncol=len(tags))
     for key, col in (('A', CA), ('B', CB)):
         m = load(f'temperature_{key}.dat')
         ax[2].loglog(m['TU0'], m['t90_ms'], 'o-', color=col, label=r'Case %s, $P_0\geq0.9$' % key)
