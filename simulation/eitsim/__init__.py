@@ -16,7 +16,7 @@ from .atoms import (LINES, GROUND_F, excited_levels, strength, branching, zeeman
                     lambda_config, neighbour_shift, reduced_hyperfine,
                     excited_manifold)
 from .fibre import (HBAR, KB, M_RB, LAM_D1, GAMMA, U01, U1, amp_ratio, gfac,
-                    fibre_case, lp01_power, paper_cases)
+                    fibre_case, reduced_case, lp01_power, paper_cases)
 from .eit import (GP, GC, EX, NODES, WEIGHTS, ALPHA, params, fano, absorption,
                   excited_weights)
 from .master_equation import (liouvillian, number_op, expect, factorize,

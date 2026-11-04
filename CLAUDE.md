@@ -246,6 +246,11 @@ Conventions and gotchas:
   messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
   that should not change are reproduced exactly, new results are committed, and the code guide and
   this file are updated. `main` must always have code, results, paper and tests in agreement.
+- **Paper and talk need explicit approval.** After producing new results, always ask the author
+  whether they should go into the paper and/or the presentation; never add them unasked.
+- **Long-lived branch `universal`** (from `main`): reduced, fibre-specific results (universal design
+  map, generalised robustness, Rb case-A imperfections) and the eventual paper/talk rework. Commit
+  there in focused steps; merge into `main` only when the author decides.
 - Do not commit LaTeX build products (see `.gitignore`).
 - `figures/*.pdf` and `results/*.dat` *are* tracked: they are inputs or outputs the paper depends on.
 - Run `make test` before committing changes to `simulation/`.

@@ -223,6 +223,28 @@ def test_lines_multilevel_study():
     assert set(np.unique(dl['DeltaG'])) == {1, 2, 3, 5, 8, 12}
     assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
 
+
+# ---------------------------------------------------------------- reduced description
+def test_reduced_case_reproduces_case_A():
+    A = E.paper_cases()['A']
+    R = E.reduced_case(A['nu_wrec'], Gamma_nu=A['Gamma'] / A['om'], x0a=A['x0a'])
+    for kw in (dict(s=1.0), dict(s=0.2, eps=0.02, d2=0.1)):
+        a, r = E.solve_me(E.params(A, N=12, **kw)), E.solve_me(E.params(R, N=12, **kw))
+        assert np.isclose(a['W'], r['W'], rtol=1e-12) and np.isclose(a['n'], r['n'], rtol=1e-12)
+
+
+def test_reduced_parameters_drop_out():
+    """Only nu_r/omega_rec matters: Gamma/nu_r (x4) and x0/a (x2), also for eps/eta_perp."""
+    ref = E.solve_me(E.params(E.reduced_case(2.0), s=1.0, N=12))
+    for c in (E.reduced_case(2.0, Gamma_nu=3200.0), E.reduced_case(2.0, x0a=0.012)):
+        r = E.solve_me(E.params(c, s=1.0, N=12))
+        assert np.isclose(r['W'], ref['W'], rtol=5e-3) and np.isclose(r['n'], ref['n'], rtol=5e-3)
+    w = []
+    for x0a in (0.006, 0.012):
+        c = E.reduced_case(2.0, x0a=x0a)
+        w.append(E.solve_me(E.params(c, s=1.0, N=12, eps=1.5 * E.gfac(1) * x0a))['W'])
+    assert np.isclose(w[0], w[1], rtol=5e-3)
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):

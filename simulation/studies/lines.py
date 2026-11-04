@@ -26,7 +26,14 @@
              where nopt < N_RATE (column 'ok')
                                         -> results/lines_delta_{A,B}.dat (~40 min, 4 workers)
 
-Usage: python lines.py [effective] [multilevel] [delta]   (default: all)
+  imperfections  case A, D1 F'=2, D1 F'=1, D2 F'=2, D2 F'=1 (both signs), all
+             excited levels, two-photon detuning at its stage-2 optimum
+             (lines_ml_A): LP01 admixture eps (units of eta_perp, best of
+             s = 0.3, 1, 3), two-photon error around the optimum and
+             trap-frequency mismatch with fixed lasers (s = 1)
+                                        -> results/lines_imperf_A.dat (~20 min, 4 workers)
+
+Usage: python lines.py [effective] [multilevel] [delta] [imperfections]   (default: all)
 """
 import sys
 from concurrent.futures import ProcessPoolExecutor
@@ -34,7 +41,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from _common import E, NME, save, log
+from _common import E, NME, save, log, load
 
 S_GRID = np.concatenate([[0.01], np.logspace(-1, 1, 9)])   # contains s = 1
 N_COLD = 0.5
@@ -183,7 +190,54 @@ def delta():
              [r for k, r in res if k == key])
 
 
-STUDIES = {'effective': effective, 'multilevel': multilevel, 'delta': delta}
+IMP_CFGS = (('D1', 2, 1), ('D1', 1, 2), ('D2', 2, 1), ('D2', 1, 1))
+IMP_EPS = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0)                 # eps / eta_perp
+IMP_S = (0.3, 1.0, 3.0)
+IMP_D2 = np.linspace(-0.6, 0.6, 9)                       # error around the optimum
+IMP_NUREL = np.linspace(0.7, 1.3, 7)
+
+
+def _imperf_task(args):
+    line, Fe, gp, sign, d2opt, kind, x = args
+    fc = E.paper_cases(line)['A']
+    lv = E.excited_manifold(line, Fe, gp)
+
+    def me(s, **kw):
+        kw.setdefault('d2', d2opt)
+        return E.solve_me(E.params(fc, s=s, N=NME, Delta_G=DELTA_G, levels=lv, sign=sign, **kw))
+    if kind == 0:
+        etap = E.gfac(1) * fc['x0a']
+        W, s, n = max((r['W'], s, r['n']) for s, r in ((s, me(s, eps=x * etap)) for s in IMP_S))
+    elif kind == 1:
+        s = 1.0
+        r = me(s, d2=d2opt + x)
+        W, n = r['W'], r['n']
+    else:                                   # lasers fixed: d2 in actual units is d2opt / nu_rel
+        s = 1.0
+        r = me(s, d2=d2opt / x, nu_rel=x)
+        W, n = r['W'] * x, r['n']
+    row = [int(line[1]), Fe, gp, sign, kind, x, W * fc['om'], n, s]
+    log('imperfections', line, "F'=%d gp=%d sign %+d kind %d x %.2f" % (Fe, gp, sign, kind, x),
+        'W %.0f n %.3f' % (row[6], n))
+    return row
+
+
+def imperfections():
+    ml = load('lines_ml_A.dat')
+    tasks = []
+    for line, Fe, gp in IMP_CFGS:
+        for sign in (1.0, -1.0):
+            r = ml[(ml['line'] == int(line[1])) & (ml['Fe'] == Fe) & (ml['gp'] == gp)
+                   & (ml['sign'] == sign)][0]
+            for kind, xs in ((0, IMP_EPS), (1, IMP_D2), (2, IMP_NUREL)):
+                tasks += [(line, Fe, gp, sign, float(r['d2opt']), kind, float(x)) for x in xs]
+    with ProcessPoolExecutor(WORKERS) as ex:
+        rows = list(ex.map(_imperf_task, tasks))
+    save('lines_imperf_A.dat', ['line', 'Fe', 'gp', 'sign', 'kind', 'x', 'W', 'n', 's'], rows)
+
+
+STUDIES = {'effective': effective, 'multilevel': multilevel, 'delta': delta,
+           'imperfections': imperfections}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
