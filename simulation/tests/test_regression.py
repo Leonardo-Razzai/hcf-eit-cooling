@@ -205,6 +205,19 @@ def test_multilevel_me_far_neighbours_reproduce_three_level():
     assert np.isclose(multi['n'], three['n'], rtol=1e-5)
     assert np.isclose(multi['W'], three['W'], rtol=1e-5)
 
+
+def test_lines_multilevel_study():
+    d = load('lines_ml_B.dat')
+    row = d[(d['line'] == 1) & (d['Fe'] == 2) & (d['gp'] == 1) & (d['sign'] == 1)][0]
+    fc = E.paper_cases('D1')['B']
+    p = E.params(fc, s=1.0, N=20, d2=row['d2opt'], levels=E.excited_manifold('D1', 2, 1))
+    r = E.solve_me(p)
+    assert np.isclose(r['W'] * fc['om'], row['Wopt'], rtol=1e-6)
+    assert np.isclose(r['n'], row['nopt'], rtol=1e-6)
+    dl = load('lines_delta_A.dat')
+    assert set(np.unique(dl['DeltaG'])) == {1, 2, 3, 5, 8, 12}
+    assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):

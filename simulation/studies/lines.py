@@ -15,16 +15,32 @@
                                            results/lines_scan_{A,B}.dat (W, n vs s)
                                            (~7 min)
 
-Usage: python lines.py [effective]   (default: all)
+  multilevel every Lambda with all excited hyperfine levels in the master
+             equation (stage 2), at Delta = 3 Gamma, s = 1, for both signs of
+             the Raman interference through the other levels: lasers as in
+             the three-level design, and with the two-photon detuning d2
+             re-optimised (simple-model optimum refined with the ME).
+                                        -> results/lines_ml_{A,B}.dat (~30 min, 4 workers)
+  delta      the four cooling configurations (bp >= 1/2) versus Delta/Gamma,
+             multi-level ME with re-optimised d2, sign +1; W is reliable only
+             where nopt < N_RATE (column 'ok')
+                                        -> results/lines_delta_{A,B}.dat (~40 min, 4 workers)
+
+Usage: python lines.py [effective] [multilevel] [delta]   (default: all)
 """
 import sys
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 from _common import E, NME, save, log
 
 S_GRID = np.concatenate([[0.01], np.logspace(-1, 1, 9)])   # contains s = 1
 N_COLD = 0.5
+# W (relax_rate, from |g_p, 1>) is well defined only if n_ss << 1; the stage-2
+# optimisation of the two-photon detuning selects among n_ss < N_RATE.
+N_RATE = 0.2
 DELTA_G = 3.0
 
 
@@ -74,7 +90,100 @@ def effective():
               'Pp_nW', 'Pc_nW', 'nbshift', 'dmin_G'], rows)
 
 
-STUDIES = {'effective': effective}
+def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=0.15):
+    """Two-photon detuning (units of nu_r) that maximises the multi-level ME
+    rate among states with n_ss < N_RATE: the multi-level simple model locates
+    the red sideband on the narrow resonance (strongest local maximum of the
+    absorption within +-10 nu_r), a
+    parabola through three ME points refines it. Returns (d2, ME result at d2,
+    simple-model d2)."""
+    lv = E.excited_manifold(cfg['line'], cfg['Fe'], cfg['gp'])
+
+    def par(d2):
+        return E.params(fc, s=s, N=NME, Delta_G=Delta_G, d2=d2, levels=lv, sign=sign)
+    grid = np.linspace(-10, 10, 801)
+    A = E.absorption(par(0.0), 1.0 + grid)
+    # the narrow resonance is the strongest interior local maximum; when the
+    # neighbours wash it out, a broad background rises towards the window edge
+    peaks = [i for i in range(1, grid.size - 1) if A[i - 1] < A[i] > A[i + 1]]
+    g0 = grid[max(peaks, key=lambda i: A[i])] if peaks else 0.0
+    d2sm = minimize_scalar(lambda g: -E.absorption(par(0.0), 1.0 + g),
+                           bounds=(g0 - 0.05, g0 + 0.05), method='bounded').x
+    pts = {g: E.solve_me(par(g)) for g in (d2sm - step, d2sm, d2sm + step)}
+    xs = np.array(sorted(pts))
+    ys = np.array([pts[g]['W'] for g in xs])
+    c2, c1, _ = np.polyfit(xs, ys, 2)
+    if c2 < 0 and xs[0] <= -c1 / (2 * c2) <= xs[-1]:
+        g = -c1 / (2 * c2)
+        pts[g] = E.solve_me(par(g))
+    cold = [(r['W'], g) for g, r in pts.items() if r['n'] < N_RATE]
+    g = max(cold)[1] if cold else d2sm
+    return g, pts[g], d2sm
+
+
+WORKERS = 4        # parallel ME solves (SuperLU is single-threaded; ~1 GB each)
+
+
+def _multilevel_task(args):
+    key, cfg, sign = args
+    fc = E.paper_cases(cfg['line'])[key]
+    om = fc['om']
+    lv = E.excited_manifold(cfg['line'], cfg['Fe'], cfg['gp'])
+    three = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, bp=cfg['bp']))
+    raw = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, levels=lv, sign=sign))
+    d2, opt, d2sm = optimise_d2(fc, cfg, sign=sign)
+    popt = E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, d2=d2, levels=lv, sign=sign)
+    beff = float(np.dot(E.excited_weights(popt, 1.0 + d2), [l[3] for l in popt['levels']]))
+    sm = E.simple(popt, 1 / beff)
+    row = [int(cfg['line'][1]), cfg['Fe'], cfg['gp'], sign, len(lv),
+           three['W'] * om, three['n'], raw['W'] * om, raw['n'],
+           d2sm, d2, opt['W'] * om, opt['n'], sm['W'] * om, sm['n'], beff]
+    log('multilevel', key, cfg['line'], "F'=%d gp=%d sign %+d" % (cfg['Fe'], cfg['gp'], sign),
+        '3-level W %.0f n %.3f | raw W %.0f n %.3f | d2 %.2f: W %.0f n %.3f'
+        % tuple(row[5:9] + row[10:13]))
+    return key, row
+
+
+def multilevel():
+    tasks = [(key, cfg, sign) for key in 'AB' for cfg in configs() for sign in (1.0, -1.0)]
+    with ProcessPoolExecutor(WORKERS) as ex:
+        res = list(ex.map(_multilevel_task, tasks))
+    for key in 'AB':
+        save(f'lines_ml_{key}.dat',
+             ['line', 'Fe', 'gp', 'sign', 'K', 'W3', 'n3', 'Wraw', 'nraw', 'd2sm', 'd2opt',
+              'Wopt', 'nopt', 'WSMopt', 'nSMopt', 'beff'], [r for k, r in res if k == key])
+
+
+DELTAS = (1.0, 2.0, 3.0, 5.0, 8.0, 12.0)
+
+
+def _delta_task(args):
+    key, ic, cfg, DG = args
+    fc = E.paper_cases(cfg['line'])[key]
+    om = fc['om']
+    three = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DG, bp=cfg['bp']))
+    d2, opt, _ = optimise_d2(fc, cfg, Delta_G=DG)
+    row = [ic, int(cfg['line'][1]), cfg['Fe'], cfg['gp'], DG,
+           three['W'] * om, three['n'], d2, opt['W'] * om, opt['n'],
+           int(three['n'] < N_RATE), int(opt['n'] < N_RATE)]
+    log('delta', key, cfg['line'], "F'=%d gp=%d Delta %.0f G" % (cfg['Fe'], cfg['gp'], DG),
+        '3-level W %.0f n %.3f | ML d2 %.2f W %.0f n %.3f' % tuple(row[5:10]))
+    return key, row
+
+
+def delta():
+    cool = [c for c in configs() if c['bp'] >= 0.5]
+    tasks = [(key, ic, cfg, DG) for key in 'AB' for ic, cfg in enumerate(cool) for DG in DELTAS]
+    with ProcessPoolExecutor(WORKERS) as ex:
+        res = list(ex.map(_delta_task, tasks))
+    for key in 'AB':
+        save(f'lines_delta_{key}.dat',
+             ['config', 'line', 'Fe', 'gp', 'DeltaG', 'W3', 'n3', 'd2opt', 'Wopt', 'nopt',
+              'ok3', 'okopt'],
+             [r for k, r in res if k == key])
+
+
+STUDIES = {'effective': effective, 'multilevel': multilevel, 'delta': delta}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
