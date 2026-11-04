@@ -379,11 +379,13 @@ def temperature():
     """Cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
     fig, ax = plt.subplots(1, 2, figsize=(9.6, 4.6))
     tr = load('temptrace_A.dat')
-    TU = load('temperature_A.dat')['TU0']
-    pick = (0, 5, 10, 15, 19)
-    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(pick)))[::-1]
-    for j, c in zip(pick, cols):
-        ax[0].semilogy(tr['tms'], tr['n%02d' % j], color=c, lw=2, label='%.3g' % TU[j])
+    tags = [c[2:] for c in tr.dtype.names if c.startswith('n_')]      # n_0p004 -> 0p004
+    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(tags)))[::-1]
+    for g, c in zip(tags, cols):
+        x = float(g.replace('p', '.'))
+        e = int(np.floor(np.log10(x) + 1e-12))
+        lab = r'$%g\times10^{%d}$' % (round(x / 10**e, 6), e)
+        ax[0].semilogy(tr['tms'], tr['n_' + g], color=c, lw=2, label=lab)
     ax[0].set_xlim(0, 400)
     ax[0].set_ylim(0.1, 1e4)             # top kept empty for the legend
     ax[0].set_xlabel('time (ms)')

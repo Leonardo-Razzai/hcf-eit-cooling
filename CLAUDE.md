@@ -146,7 +146,9 @@ Study scripts (run from `simulation/studies/`):
 - `dynamics.py [relaxation|capture]` → `dyn_A.dat` (master equation, ~6 min), `capture_{A,B}.dat` (Fig. 5).
 - `calibration.py [steady|drift]` → `grmcheck.dat`, `drift_calib.dat`. These fix `rate_models.CSAT`
   and Methods Table 3.
-- `temperature.py [scan|drift]` → `temperature_{A,B}.dat`, `temptrace_{A,B}.dat` (Fig. 6, ~2 min);
+- `temperature.py [scan|drift]` → `temperature_{A,B}.dat` (metrics, 20 log steps) and
+  `temptrace_{A,B}.dat` (⟨n⟩(t), P₀(t) at k_BT_r/U₀ = 1e-3, 4e-3, 1e-2, 4e-2, 1e-1; column
+  `n_0p004` = 0.004) (Fig. 6, ~2 min);
   `drift_hi.dat` (master-equation check of the GRM at n₀ = 20, 30, ~25 min).
 - `lines.py [effective|multilevel|delta]` → `lines_{A,B}.dat`, `lines_scan_{A,B}.dat` (stage 1,
   three-level, ~7 min); `lines_ml_{A,B}.dat` (stage 2 at Δ = 3Γ, ~35 min) and
