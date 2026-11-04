@@ -174,9 +174,24 @@ def sci(x):
     return r'$%g\times10^{%d}$' % (round(x / 10**e, 6), e)
 
 
+def nbar_axes(ax, cases, **label_kw):
+    """Top axes of a k_B T_r / U0 axis giving the initial mean occupation
+    nbar_0 = 1/(exp(hbar w_r / k_B T) - 1) of each case, stacked at the given
+    axes-fraction heights and coloured like the case."""
+    for key, col, y in cases:
+        fc = E.paper_cases()[key]
+        c = E.HBAR * fc['om'] / fc['U0']                # hbar w_r / U0
+        fwd = lambda x, c=c: 1 / np.expm1(c / np.clip(x, 1e-12, None))
+        inv = lambda n, c=c: c / np.log1p(1 / np.clip(n, 1e-12, None))
+        top = ax.secondary_xaxis(y, functions=(fwd, inv))
+        top.set_xlabel(r'$\bar n_0$, case %s' % key, color=col, **label_kw)
+        top.tick_params(axis='x', colors=col)
+        top.spines['top'].set_color(col)
+
+
 def fig_temperature():
     """Fig. 6: cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
-    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 72 * MM), constrained_layout=True)
     ylims = {'A': (0.02, 300), 'B': (0.01, 60)}
     for i, key in enumerate('AB'):
         tr = load(f'temptrace_{key}.dat')
@@ -196,7 +211,7 @@ def fig_temperature():
         letter(ax[i], 'ab'[i])
         ax[i].text(0.0, 1.02, '   Case %s' % key, transform=ax[i].transAxes, va='bottom')
     fig.legend(hs, [sci(tag_value(g)) for g in tags],
-               title=r'$k_BT_r/U_0$', loc='outside upper center', ncol=len(tags))
+               title=r'$k_BT_r/U_0$', loc='outside upper left', ncol=len(tags))
     for key, col in (('A', CA), ('B', CB)):
         m = load(f'temperature_{key}.dat')
         ax[2].loglog(m['TU0'], m['t90_ms'], 'o-', color=col, label=r'Case %s, $P_0\geq0.9$' % key)
@@ -207,9 +222,8 @@ def fig_temperature():
     ax[2].set_xlabel(r'Initial $k_BT_r/U_0$')
     ax[2].set_ylabel('Cooling time (ms)')
     ax[2].legend(loc='upper left', ncol=2, columnspacing=0.8, handlelength=1.6)
-    top = ax[2].secondary_xaxis('top', functions=(lambda x: x * 533.0, lambda t: t / 533.0))
-    top.set_xlabel(r'$T_r$ ($\mu$K)')
-    letter(ax[2], 'c', y=1.1)
+    nbar_axes(ax[2], (('A', CA, 1.0), ('B', CB, 1.28)))
+    letter(ax[2], 'c', y=1.55)
     save(fig, 'temperature.pdf')
 
 
