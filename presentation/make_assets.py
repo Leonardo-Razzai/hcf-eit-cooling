@@ -400,8 +400,15 @@ def temperature():
     ax[1].set_xlabel(r'initial $k_BT_r/U_0$')
     ax[1].set_ylabel(r'time to 90 % in $n=0$ (ms)')
     ax[1].legend(loc='upper left', fontsize=11)
-    top = ax[1].secondary_xaxis('top', functions=(lambda x: x * 533.0, lambda t: t / 533.0))
-    top.set_xlabel(r'$T_r$ ($\mu$K)')
+    for key, c, y in (('A', PROBE, 1.0), ('B', COUPL, 1.3)):      # initial mean occupation
+        fc = E.paper_cases()[key]
+        k = E.HBAR * fc['om'] / fc['U0']
+        top = ax[1].secondary_xaxis(y, functions=(
+            lambda x, k=k: 1 / np.expm1(k / np.clip(x, 1e-12, None)),
+            lambda n, k=k: k / np.log1p(1 / np.clip(n, 1e-12, None))))
+        top.set_xlabel(r'$\bar n_0$, case %s' % key, color=c)
+        top.tick_params(axis='x', colors=c)
+        top.spines['top'].set_color(c)
     fig.tight_layout(w_pad=3)
     save(fig, 'temperature.png')
 
