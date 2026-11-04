@@ -404,6 +404,49 @@ def temperature():
     save(fig, 'temperature.png')
 
 
+def lines():
+    """D1 versus D2: rate versus detuning and rate relative to the paper scheme."""
+    cfgs = (((1, 2, 1), PROBE, "D1  F'=2 (paper)"), ((1, 1, 2), SKY, "D1  F'=1, probe F=2"),
+            ((2, 2, 1), COUPL, "D2  F'=2"), ((2, 1, 1), ATOM, "D2  F'=1, probe F=1"))
+
+    def sel(d, line, Fe, gp):
+        return d[(d['line'] == line) & (d['Fe'] == Fe) & (d['gp'] == gp)]
+    fig, ax = plt.subplots(1, 2, figsize=(10.4, 4.6), gridspec_kw=dict(width_ratios=[1, 1.15]))
+    dl = load('lines_delta_A.dat')
+    for cfg, c, lab in cfgs:
+        r = sel(dl, *cfg)
+        ok, ok3 = r['okopt'] == 1, r['ok3'] == 1
+        ax[0].plot(r['DeltaG'], np.where(ok3, r['W3'], np.nan), '--', color=c, lw=1.2)
+        ax[0].plot(r['DeltaG'], np.where(ok, r['Wopt'], np.nan), 'o-', color=c, lw=2, ms=6, label=lab)
+    ax[0].set_xscale('log')
+    ax[0].set_yscale('log')
+    ax[0].set_xticks([2, 3, 5, 8, 12], ['2', '3', '5', '8', '12'])
+    ax[0].minorticks_off()
+    ax[0].set_xlim(1.7, 14)
+    ax[0].set_ylim(100, 3e4)
+    ax[0].set_xlabel(r'single-photon detuning $\Delta/\Gamma$')
+    ax[0].set_ylabel(r'cooling rate $W$ (s$^{-1}$)')
+    ax[0].set_title('case A; dashed: three-level model', fontsize=13, loc='left')
+    ax[0].legend(loc='upper right', fontsize=10.5)
+    for key, mk, dy in (('A', 'o', 0.16), ('B', 's', -0.16)):
+        m = load(f'lines_ml_{key}.dat')
+        ref = sel(m, 1, 2, 1)['W3'][0]
+        for k, (cfg, c, _) in enumerate(cfgs):
+            r = sel(m, *cfg)
+            y = len(cfgs) - 1 - k + dy
+            ax[1].plot(sorted(r['Wopt'] / ref), [y, y], '-', color=c, lw=6, solid_capstyle='butt')
+            ax[1].plot(r['W3'][0] / ref, y, mk, mfc='white', color=c, ms=8, mew=1.6)
+    ax[1].axvline(1, color=GREY, lw=1, ls=':')
+    ax[1].set_xlim(0, 2.6)
+    ax[1].set_ylim(-0.6, len(cfgs) - 0.4)
+    ax[1].set_yticks(range(len(cfgs)), [lab for _, _, lab in cfgs][::-1])
+    ax[1].set_xlabel(r'$W\,/\,W_{\rm paper}$ at $\Delta=3\Gamma$, $s=1$')
+    ax[1].set_title('bars: all hyperfine levels; o / \u25a1: three-level, case A / B',
+                    fontsize=12, loc='left')
+    fig.tight_layout(w_pad=2.5)
+    save(fig, 'lines.png')
+
+
 def memory():
     """Thermal spread of the differential light shift vs radial occupation."""
     h = 6.62607015e-34
@@ -438,6 +481,6 @@ def memory():
 
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup,
-              saturation, robust, dynamics, temperature, memory):
+              saturation, robust, dynamics, temperature, lines, memory):
         f()
         print('ok', f.__name__)

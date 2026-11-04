@@ -305,7 +305,23 @@ async function main() {
   ], { space: 10 }), 9.2, 1.5, 3.53, 5.0, { fontSize: 14 });
   s.addNotes("We scan the initial radial temperature in units of the lattice depth, from one thousandth to one tenth of U0, which is the range where the radial trap stays harmonic and the calibrated rate model applies. At the same k_B T over U0 the small core is four times colder in units of its trap quantum, and it removes six times more phonons per millisecond. Above a few quanta the red sideband saturates, the phonon-removal rate is constant and the cooling time grows linearly with temperature. The ground-state fraction converges faster than the mean, because photon recoil lets a small fraction of atoms diffuse to high energy. Beyond the calibration range the rate model is conservative: at 20 to 30 quanta the master equation removes phonons 1.2 to 2.4 times faster.");
 
-  // ============================================================ 12 model
+  // ============================================================ 12 D1 versus D2
+  s = content("Results");
+  s.addText("D1 or D2? The excited hyperfine structure decides", { placeholder: "title" });
+  await img(s, "lines.png", MX, 1.45, 8.3, 4.0, { name: "D1 versus D2 cooling" });
+  card(s, MX, 5.6, 8.3, 0.95, "lines takeaway");
+  text(s, "D2's excited levels lie 12–44 Γ from the Λ, D1's 140 Γ: their light shifts barely touch D1 but can wash out D2's narrow resonance.",
+    MX + 0.25, 5.68, 7.8, 0.8, { fontSize: 15, italic: true, color: C.text2, valign: "middle" });
+  text(s, bullets([
+    [{ text: "Model: ", options: { bold: true } }, { text: "all excited hyperfine levels in the master equation; two-photon detuning re-optimised; bars span both signs of the Raman interference" }],
+    [{ text: "D1 is robust: ", options: { bold: true } }, { text: "< 5 % change after a 0.1 ν_r retune" }],
+    [{ text: "Best Λ: D1 F′=1, probe on F=2 ", options: { bold: true } }, { text: "(b_p = 5/6): 2.1–2.3× the paper rate, n_ss ≈ 0.04 (A)" }],
+    [{ text: "D2 F′=1 is fragile: ", options: { bold: true } }, { text: "×2 sign dependence, no cooling for Δ ≥ 8Γ" }],
+    [{ text: "Next: ", options: { bold: true } }, { text: "Zeeman model — dark states of F=2→F′=1" }],
+  ], { space: 9 }), 9.2, 1.5, 3.53, 5.0, { fontSize: 14 });
+  s.addNotes("We compared all closed Lambda systems on both lines. In the three-level picture the only difference is the branching ratio: when most decays return to the probe ground state, fewer photons are scattered per removed phonon and the cycle is shorter, so the rate doubles. Including all excited hyperfine levels in the master equation, the extra light shift moves the narrow resonance; we re-optimise the two-photon detuning as an experiment would. On D1 the other level is 814 MHz away and changes the results by a few percent. On D2 the levels are 72 to 267 MHz apart: the F'=2 Lambda still works, but the F'=1 Lambda, the D2 option with the favourable branching ratio, depends strongly on the sign of the interference through the other levels, which only a Zeeman-resolved model can fix, and stops cooling at larger detuning. Our recommendation is D1 via F'=1 with the probe on F=2, pending a check of Zeeman dark states.");
+
+  // ============================================================ 13 model
   pres.addSection({ title: "Model" });
   s = content("Model");
   s.addText("Simple model versus master equation", { placeholder: "title" });
@@ -339,7 +355,7 @@ async function main() {
     6.4, 5.62, 6.1, 0.75, { fontSize: 15, italic: true, color: C.text2, valign: "middle" });
   s.addNotes("The simple model is a good design tool at weak probe: Fano placement, scaling with core size and detuning. At the working points that maximise the rate it is not reliable, because the coherent sideband Raman coupling becomes comparable to the narrow linewidth. Use the master equation, or the calibrated rate model for large phonon numbers.");
 
-  // ============================================================ 13 missing physics
+  // ============================================================ 14 missing physics
   s = content("Model");
   s.addText("Beyond both models: what is still missing", { placeholder: "title" });
   const grid = [
@@ -361,7 +377,7 @@ async function main() {
   }
   s.addNotes("These are not captured by either the simple model or our master equation, and set the agenda for the next round of simulations: the full D1 Zeeman structure first, then both radial axes.");
 
-  // ============================================================ 14 implementations
+  // ============================================================ 15 implementations
   pres.addSection({ title: "Experiment" });
   s = content("Experiment");
   s.addText("Two implementations", { placeholder: "title" });
@@ -397,7 +413,7 @@ async function main() {
     MX, 6.2, W - 2 * MX, 0.6, { fontSize: 15, italic: true, color: C.text2 });
   s.addNotes("Implementation I follows existing Rb and Sr fibre-lattice experiments (Bajcsy, Blatt, Okaba, Leong). Implementation II trades loading volume and wall distance for a ten-fold faster cooling. Thermometry: Raman sideband spectroscopy with one LP11 and one LP01 Raman beam gives the same carrier-free gradient coupling.");
 
-  // ============================================================ 15 memory mechanism
+  // ============================================================ 16 memory mechanism
   pres.addSection({ title: "Quantum memory" });
   s = content("Quantum memory");
   s.addText("Spin-wave memory: radial temperature sets the dephasing", { placeholder: "title" });
@@ -414,7 +430,7 @@ async function main() {
   cite(s, "Kuhr et al., PRA 72, 023406 (2005); Zhao et al., Nat. Phys. 5, 100 (2009); Dudin et al., PRA 87, 031801 (2013)");
   s.addNotes("Order-of-magnitude estimate. The hyperfine coherence sees the differential light shift of the 1064 nm lattice, delta_0 about 0.8 kHz at U0/h = 11 MHz. An atom with radial potential energy V sees a shift reduced by V/U0, so the inhomogeneous width is delta_0 times the thermal radial energy over U0. At 10 microkelvin this is about 15 Hz; after radial ground-state cooling the thermal part drops by two to three orders of magnitude, and the zero-point part is common to all atoms. T2* = 1/(pi sigma) follows the Kuhr et al. analysis. Other limits then take over.");
 
-  // ============================================================ 16 memory benefits
+  // ============================================================ 17 memory benefits
   s = content("Quantum memory");
   s.addText("What a cold atom strip brings to a fibre memory", { placeholder: "title" });
   const mem = [
@@ -435,7 +451,7 @@ async function main() {
   cite(s, "Blatt et al., Opt. Lett. 39, 446 (2014); Gorshkov et al., PRL 98, 123601 (2007); Peters et al., Opt. Express 28, 5340 (2020)");
   s.addNotes("Hollow-core memories so far used freely expanding cold atoms or warm vapour. A three-dimensionally ground-state-cooled lattice strip combines the optical depth of the fibre with the coherence of free-space lattice memories. Open questions: the magic or compensated configuration in the fibre, and heating from lattice intensity noise over second-long storage.");
 
-  // ============================================================ 17 summary
+  // ============================================================ 18 summary
   pres.addSection({ title: "Summary" });
   s = pres.addSlide({ masterName: "DARK", sectionTitle: "Summary" });
   s.addText("Summary and next steps", { placeholder: "title" });
