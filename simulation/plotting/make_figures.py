@@ -1,6 +1,6 @@
 """Paper figures: simulation/results/*.dat -> paper/manuscript/figures/*.pdf.
 
-Usage: python make_figures.py [mechanism] [saturation] [robust] [dynamics]
+Usage: python make_figures.py [mechanism] [saturation] [robust] [dynamics] [temperature]
 (default: all). Only reads result files, so it runs in seconds.
 """
 import sys
@@ -159,8 +159,48 @@ def fig_dynamics():
     save(fig, 'dynamics.pdf')
 
 
+def fig_temperature():
+    """Fig. 6: cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
+    pick = (0, 5, 10, 15, 19)
+    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(pick)))[::-1]
+    ylims = {'A': (0.02, 300), 'B': (0.01, 60)}
+    for i, key in enumerate('AB'):
+        tr = load(f'temptrace_{key}.dat')
+        m = load(f'temperature_{key}.dat')
+        hs = []
+        for j, c in zip(pick, cols):
+            h, = ax[i].semilogy(tr['tms'], tr['n%02d' % j], color=c)
+            ax[i].semilogy(tr['tms'], 1 - tr['p%02d' % j], ':', color=c, lw=0.8)
+            hs.append(h)
+        ax[i].axhline(m['nss'][0], color=CG, lw=0.6, ls='--')
+        ax[i].set_xlim(0, tr['tms'][-1])
+        ax[i].set_ylim(*ylims[key])
+        ax[i].set_xlabel('Time (ms)')
+        ax[i].set_ylabel(r'$\langle n_x\rangle$ (solid), $1-P_0$ (dotted)')
+        letter(ax[i], 'ab'[i])
+        ax[i].text(0.0, 1.02, '   Case %s' % key, transform=ax[i].transAxes, va='bottom')
+    fig.legend(hs, ['%.3g' % x for x in load('temperature_A.dat')['TU0'][list(pick)]],
+               title=r'$k_BT_r/U_0$', loc='outside upper center', ncol=len(pick))
+    for key, col in (('A', CA), ('B', CB)):
+        m = load(f'temperature_{key}.dat')
+        ax[2].loglog(m['TU0'], m['t90_ms'], 'o-', color=col, label=r'Case %s, $P_0\geq0.9$' % key)
+        ax[2].loglog(m['TU0'], m['te_ms'], '--', color=col, label=r'Case %s, $1/e$' % key)
+    ax[2].axvline(10e-6 * E.KB / E.paper_cases()['A']['U0'], color=CG, lw=0.6, ls=':')
+    ax[2].set_xlim(1e-3, 1e-1)
+    ax[2].set_ylim(0.02, 3e4)             # upper left kept empty for the legend
+    ax[2].set_xlabel(r'Initial $k_BT_r/U_0$')
+    ax[2].set_ylabel('Cooling time (ms)')
+    ax[2].legend(loc='upper left', ncol=2, columnspacing=0.8, handlelength=1.6)
+    top = ax[2].secondary_xaxis('top', functions=(lambda x: x * 533.0, lambda t: t / 533.0))
+    top.set_xlabel(r'$T_r$ ($\mu$K)')
+    letter(ax[2], 'c', y=1.1)
+    save(fig, 'temperature.pdf')
+
+
 FIGURES = {'mechanism': fig_mechanism, 'saturation': fig_saturation,
-           'robust': fig_robust, 'dynamics': fig_dynamics}
+           'robust': fig_robust, 'dynamics': fig_dynamics,
+           'temperature': fig_temperature}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or FIGURES:

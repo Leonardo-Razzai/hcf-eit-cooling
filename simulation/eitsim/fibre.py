@@ -36,15 +36,17 @@ def fibre_case(a, nuz=300e3, lam_lat=1064e-9):
 
     nuz is the axial trap frequency (Hz). Returns a dict with the radial
     frequency nur (Hz), om = 2 pi nur, ground-state size x0, x0/a and the
-    spontaneous-emission Lamb-Dicke parameter eta_sp = k_795 x0.
+    spontaneous-emission Lamb-Dicke parameter eta_sp = k_795 x0 and the
+    lattice depth U0 (J) that gives nuz.
     """
     w = 0.67 * a
     kl = 2 * np.pi / lam_lat
     nur = nuz * np.sqrt(2) / (kl * w)
     om = 2 * np.pi * nur
     x0 = np.sqrt(HBAR / (2 * M_RB * om))
+    U0 = M_RB * (2 * np.pi * nuz)**2 / (2 * kl**2)
     return dict(a=a, nur=nur, om=om, x0=x0, eta_sp=2 * np.pi / LAM_D1 * x0,
-                x0a=x0 / a)
+                x0a=x0 / a, U0=U0)
 
 
 # the two cases of the paper

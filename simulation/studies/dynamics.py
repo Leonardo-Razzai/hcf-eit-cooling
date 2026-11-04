@@ -3,7 +3,7 @@
   relaxation  case A, s = 0.2, from <n> = 2: master equation (BDF2, ~6 min),
               GRM (calibrated and c_sat = 1) and simple model -> results/dyn_A.dat
   capture     cooling from 10 uK with the calibrated GRM, four protocols
-              (<1 min)                                       -> results/capture_{A,B}.dat
+              (~2 min)                                       -> results/capture_{A,B}.dat
 
 Usage: python dynamics.py [relaxation] [capture]   (default: both)
 """
@@ -44,7 +44,7 @@ PROTOCOLS = {'s1': [(3.0, 1.0, 1)], 's03': [(3.0, 0.3, 1)],
 def capture(T=10e-6):
     for key, fc in CASES.items():
         nbar = E.KB * T / (E.HBAR * fc['om']) - 0.5
-        N = 300 if key == 'A' else 120
+        N = 1600 if key == 'A' else 400        # up to the trap depth (temperature.py)
         tmax, tsw = (150e-3, 40e-3) if key == 'A' else (6e-3, 1.5e-3)
         tw = np.linspace(0, tmax, 301)
         cols, data = ['tms'], [tw * 1e3]
