@@ -44,6 +44,13 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
 - **LP₁₂ vs LP₁₁:** identical rate at equal s; a higher mode only lowers the probe power.
+- **D1 vs D2, stage 1 (effective Λ, three-level ME):** only Γ, η_sp, b_p and the leg strengths
+  differ. b_p = 5/6 (D1 F′=1 with probe on F=2; D2 F′=1 with probe on F=1) gives W(s=1) = 2.9×10³ s⁻¹
+  and n_ss = 0.038 in case A (2.2× faster, 3.5× colder than b_p = ½), 1.7×10⁴ s⁻¹ / 0.020 in case B.
+  b_p = 1/6 does not cool in case A (h > 1). D2 F′=1 (probe F=1) has a weak coupling leg (S = 1/20)
+  and a neighbour light shift of −1.3× δ₊, so stage 2 must decide it; D1 F′=1 has −0.11×.
+  D2 is otherwise ~5% slower (larger Γ, η_sp). Paper probe powers use S = 1; with S_FF′ they
+  are 1.2–2× higher.
 - **Initial temperature:** above n̄₀ ≈ 3 the sideband saturates and the cooling time grows linearly
   with k_BT_r/U₀ (U₀/k_B = 530 µK). Recoil makes hot atoms diffuse in energy (≈ η_sp√n per photon),
   so ⟨n⟩ lags behind P₀. Beyond its calibration range (n ≤ 15) the GRM underestimates the
@@ -130,6 +137,8 @@ Study scripts (run from `simulation/studies/`):
   and Methods Table 3.
 - `temperature.py [scan|drift]` → `temperature_{A,B}.dat`, `temptrace_{A,B}.dat` (Fig. 6, ~2 min);
   `drift_hi.dat` (master-equation check of the GRM at n₀ = 20, 30, ~25 min).
+- `lines.py [effective]` → `lines_{A,B}.dat`, `lines_scan_{A,B}.dat`: D1 vs D2 stage 1, every
+  closed Λ as a three-level system (~7 min).
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
@@ -143,7 +152,8 @@ Internal units: **angular radial trap frequency ν_r = 1**. Physical rates = val
 
 | Module | Topic |
 |---|---|
-| `fibre.py` | SI constants, ⁸⁷Rb D1 data, LP mode constants (`U01`, `U1`), `amp_ratio`, `gfac`, `fibre_case(a)` → trap parameters, `paper_cases()` |
+| `atoms.py` | ⁸⁷Rb D1/D2 data (Steck rev. 2.3.4; D1 Γ kept at 5.746 MHz), `strength` S_FF′, `branching`, `zeeman_coupling` (6j/CG via sympy), `lambda_config(line, Fe, gp)`, `neighbour_shift` |
+| `fibre.py` | SI constants, ⁸⁷Rb D1 data, LP mode constants (`U01`, `U1`), `amp_ratio`, `gfac`, `fibre_case(a, line=)` → trap parameters + line data, `lp01_power`, `paper_cases(line)` |
 | `eit.py` | Λ-system parameters `params(fc, s, Delta_G, m, eps, xs, d2, nu_rel, bp, N)` → dimensionless dict; emission-pattern quadrature `NODES/WEIGHTS/ALPHA`; Fano profile `fano` |
 | `operators.py` | oscillator operators, functions of x̂ via the eigenbasis of the truncated b+b†, probe/coupling profiles and recoil operators |
 | `master_equation.py` | `liouvillian`, `factorize`, `steady_state`, `relax_rate`, `solve_me`, BDF2 `evolve`, `fock_drift` |
@@ -202,8 +212,9 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
-- Simulations use an ideal closed Λ system and one radial axis. Next steps are the full D1 Zeeman
-  structure (leakage increases κ) and both radial axes, e.g. alternating LP₁₁ lobes.
+- Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
+  done; next stage 2 (several excited hyperfine levels in the master equation), then the full
+  Zeeman structure (leakage increases κ) and both radial axes, e.g. alternating LP₁₁ lobes.
 - For submission, move the text into the official Springer Nature template (`sn-jnl.cls`, option
   `sn-nature`).
 - The background report still quotes the old purity estimate ε ≲ 2.8 η⊥. The master equation gives
@@ -212,7 +223,11 @@ Conventions and gotchas:
 
 ## Git
 
-- `main` is the working branch. Use small, focused commits with imperative messages.
+- **Branch per stage (default workflow, requested by the author).** Do each piece of work on a
+  short-lived branch from `main` (e.g. `lines-stage1`), in small, focused commits with imperative
+  messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
+  that should not change are reproduced exactly, new results are committed, and the code guide and
+  this file are updated. `main` must always have code, results, paper and tests in agreement.
 - Do not commit LaTeX build products (see `.gitignore`).
 - `figures/*.pdf` and `results/*.dat` *are* tracked: they are inputs or outputs the paper depends on.
 - Run `make test` before committing changes to `simulation/`.
