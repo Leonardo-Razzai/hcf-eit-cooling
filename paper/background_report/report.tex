@@ -37,7 +37,7 @@
 \maketitle
 
 \begin{abstract}
-We collect the theory needed to judge whether lattice-trapped $^{87}$Rb atoms inside a hollow-core photonic-crystal fibre (HC-PCF) can be cooled radially with electromagnetically-induced-transparency (EIT) cooling. If all beams are guided in the fundamental LP$_{01}$ mode, the dark state does not depend on the radial coordinate, so EIT cooling acts only axially. A probe beam in an LP$_{1m}$ higher-order mode, with its node on the fibre axis, together with an LP$_{01}$ coupling beam, gives a sideband coupling that is linear in the radial displacement and has no carrier. The effective radial Lamb--Dicke parameter is $\etaeff=G_{1m}x_0/a$, where $a$ is the core radius and $G_{1m}\simeq 0.46\,u_{1m}^{3/2}$ is a geometric factor that grows with mode order. In a conventional configuration, where the carrier is present, the cooling rate scales as $\etaeff^2\propto G_{1m}^2/a^2$. That is a few tens of s$^{-1}$ for a \SI{30}{\micrometre} core and LP$_{11}$. In the carrier-free node configuration, the small $\etaeff$ appears only as a probe-power penalty, which is at the nW level. The rate is then bounded by the width of the narrow EIT resonance, $\sim\nu_r/10$, i.e.\ $10^3$--$10^4\,$s$^{-1}$ for an ideal $\Lambda$ system. Very high-order modes ($m\gg1$) increase the cooling rate as $u_{1m}^3$ in the $\eta^2$-limited regime. In the node regime they mainly reduce the required power and the sensitivity to mode impurity. They also shrink the capture range ($\propto a/u_{1m}$) and add loss. Larger cores transmit more modes over a given length ($N\propto a^3/\lambda^2L$). Fibre loss turns this into a core-size trade-off through the growth of LP$_{01}$ contamination along the fibre, and the optimum mode loses about 6.5\,dB over the fibre section. For low-loss inhibited-coupling fibres the smallest core with a clean LP$_{11}$ or LP$_{12}$ remains optimal; only lossy fibres push the optimum to $a\approx25$--\SI{45}{\micrometre}. Raman sideband cooling can use the same mode-gradient coupling and has the same kind of resolved-sideband rate ceiling. It allows simultaneous cooling of the axial and radial modes, but it costs more recoil heating per removed phonon at the low radial frequencies typical of fibres. Lattice theory is taken as known.
+We collect the theory needed to judge whether lattice-trapped $^{87}$Rb atoms inside a hollow-core photonic-crystal fibre (HC-PCF) can be cooled radially with electromagnetically-induced-transparency (EIT) cooling. If all beams are guided in the fundamental LP$_{01}$ mode, the dark state does not depend on the radial coordinate, so EIT cooling acts only axially. A probe beam in an LP$_{1m}$ higher-order mode, with its node on the fibre axis, together with an LP$_{01}$ coupling beam, gives a sideband coupling that is linear in the radial displacement and has no carrier. The effective radial Lamb--Dicke parameter is $\etaeff=G_{1m}x_0/a$, where $a$ is the core radius and $G_{1m}\simeq 0.46\,u_{1m}^{3/2}$ is a geometric factor that grows with mode order. In a conventional configuration, where the carrier is present, the cooling rate scales as $\etaeff^2\propto G_{1m}^2/a^2$. That is a few tens of s$^{-1}$ for a \SI{30}{\micrometre} core and LP$_{11}$. In the carrier-free node configuration, the small $\etaeff$ appears only as a probe-power penalty, which is at the nW level. The rate is then bounded by the width of the narrow EIT resonance, $\sim\nu_r/10$, i.e.\ $10^3$--$10^4\,$s$^{-1}$ for an ideal $\Lambda$ system. Very high-order modes ($m\gg1$) increase the cooling rate as $u_{1m}^3$ in the $\eta^2$-limited regime. In the node regime they mainly reduce the required power and the sensitivity to mode impurity. They also shrink the capture range ($\propto a/u_{1m}$) and add loss. Larger cores transmit more modes over a given length ($N\propto a^3/\lambda^2L$). Fibre loss turns this into a core-size trade-off through the growth of LP$_{01}$ contamination along the fibre, and the optimum mode loses about 6.5\,dB over the fibre section. For low-loss inhibited-coupling fibres the smallest core with a clean LP$_{11}$ or LP$_{12}$ remains optimal; only lossy fibres push the optimum to $a\approx25$--\SI{45}{\micrometre}. Raman sideband cooling can use the same mode-gradient coupling and has the same kind of resolved-sideband rate ceiling. It allows simultaneous cooling of the axial and radial modes, but it costs more recoil heating per removed phonon at the low radial frequencies typical of fibres. Inside the core the atom radiates almost as in free space. Only $10^{-3}$--$10^{-2}$ of the light is guided, the wall changes the decay rate by a few per cent, and the recoil follows the dipole pattern. The fibre acts mainly collectively, through a large optical depth at which cooling photons are reabsorbed on the narrow EIT line. This costs only a few per cent of the rate, because the narrow line resolves the trap frequency. Lattice theory is taken as known.
 \end{abstract}
 
 \tableofcontents
@@ -266,6 +266,102 @@ $n_{\rm ss}$ (Fano + recoil) & $\approx0.010$ & $\approx0.008$\\
 \end{table}
 
 Table~\ref{tab:numbers} shows the difference between the two regimes. With a carrier present, radial cooling in a large-core fibre runs at a few tens of s$^{-1}$. That competes poorly with lattice photon scattering and technical heating~\cite{savard1997,grimm2000}. In the node geometry the ideal ceiling is two orders of magnitude higher, and the probe power needed is negligible. The $n_{\rm ss}$ values are ideal-$\Lambda$ limits. In practice the floor will be set by imperfect pumping, residual carrier from mode impurity or atom displacement, and technical heating (Sec.~\ref{sec:practical}).
+
+%=====================================================================
+\section{Spontaneous emission inside the hollow core}
+\label{sec:emission}
+%=====================================================================
+The cooling theory above treats spontaneous emission as in free space. It assumes a total decay rate $\Gamma$, a recoil drawn from the dipole radiation pattern, and photons that never return. The master-equation simulations of the paper make the same assumptions. Inside a fibre the atom radiates into a structured electromagnetic environment that guides only a few modes, so the assumptions need checking. We ask three questions. Does the fibre change the decay rate (Purcell effect)? Does it change the recoil distribution? What happens to the photons that stay in the fibre? In short: a single atom on the axis of a hollow core with $ka\gg1$ radiates almost as in free space, with corrections of a few per cent. The fibre matters mainly collectively, through the large optical depth of the atomic column in the guided modes. Table~\ref{tab:emission} collects the numbers.
+
+\subsection{Guided fraction of the emission}
+A photon stays in the fibre only if it is emitted into one of the few low-loss core modes, i.e.\ into a narrow cone around the axis. All other directions hit the core wall at angles where it reflects weakly, and that light leaves through the cladding. A linear dipole matched to the polarisation of a mode with transverse profile $\psi$, normalised to $\int|\psi|^2dA=1$, emits into one propagation direction of that mode with the fraction~\cite{lekien2005}
+\begin{equation}
+  \frac{\Gamma_{\rm mode}}{\Gamma}=\frac{3\lambda^2}{8\pi}\,|\psi(\mathbf r_0)|^2
+  \quad\Rightarrow\quad
+  \beta_{01}=\frac{3\lambda^2}{8\pi^2a^2J_1^2(u_{01})}\approx0.14\,\frac{\lambda^2}{a^2}
+  \label{eq:beta01}
+\end{equation}
+for LP$_{01}$ and an atom on the axis (group velocity $\simeq c$). This gives $\beta_{01}=4\times10^{-4}$ for $a=\SI{15}{\micrometre}$ and $7\times10^{-3}$ for $a=\SI{3.5}{\micrometre}$. On the axis only the LP$_{0m}$ modes receive light, because all LP$_{lm}$ with $l\ge1$ have a node there. Summed over the LP$_{0m}$ modes that remain low-loss, the guided fraction is the emission of a transverse dipole into a cone of half-angle $\theta_g\approx u_{0m,\max}/ka$ in both directions:
+\begin{equation}
+  f_g\simeq\tfrac34\,\theta_g^2 .
+  \label{eq:fg}
+\end{equation}
+This gives $f_g\approx(2$--$4)\times10^{-3}$ for case A (LP$_{01}$--LP$_{03}$) and $(1.5$--$3)\times10^{-2}$ for case B (LP$_{01}$--LP$_{02}$). The polarisation matters as well. In the weak-guidance limit the LP$_{0m}$ fields are transverse and have no longitudinal component on the axis. A dipole along the fibre axis, which is the orientation assumed for the recoil in the simulations, therefore emits into guided modes only at a further reduced level $\sim(u/ka)^2$. In every case, more than 97\% of the light leaves the core as it would in free space. This is the essential difference from nanofibres, where the atom sits in the evanescent field of a sub-wavelength guide and $\beta$ reaches a few tens of per cent~\cite{lekien2005,chang2018}. A hollow core with $a\gg\lambda$ is a weak-coupling waveguide: its strength lies in the collective coupling of many atoms (Sec.~\ref{sec:collective}), not in the single-atom $\beta$.
+
+\subsection{Total decay rate}
+The decay rate is set by the local density of optical states at the atom, which a nearby boundary can raise or lower~\cite{kleppner1981}. Here the boundary is far away ($ka=118$ and 28 for the two cases) and reflects weakly. At normal incidence the amplitude reflection coefficient is $|r_\perp|=0.18$ for bulk silica and up to 0.35 for a thin silica membrane. The cylindrical shape gives one specific feature: light emitted perpendicular to the axis is reflected back onto the axis from the whole circumference, so the reflected wave refocuses on the atom. We expand the dipole field in cylindrical waves $H_0^{(1)}(k_\perp\rho)e^{i\beta z}$ and reflect each with its Fresnel coefficient. Evaluating the returning field at the stationary phase $\beta=0$ gives, for a dipole along the axis on the axis,
+\begin{equation}
+  \frac{\Delta\Gamma}{\Gamma}\simeq\frac32\,|r_\perp|\sqrt{\frac{\pi}{ka}}\,
+  \sin\!\big(2ka+\varphi_r-\tfrac{\pi}{4}\big).
+  \label{eq:purcell}
+\end{equation}
+A transverse dipole gives a result of the same order. The full integral over $\beta$, including multiple reflections, agrees with Eq.~\eqref{eq:purcell}. With the angle-dependent Fresnel coefficients and $a$ varied over $\lambda/2$, it gives $\Delta\Gamma/\Gamma$ between $-4\%$ and $+5\%$ for a bulk-silica wall with $a=\SI{15}{\micrometre}$, and up to $\pm9\%$ for membranes of thickness 0.2--\SI{0.7}{\micrometre}. For $a=\SI{3.5}{\micrometre}$ the range is $\pm10\%$ for bulk silica and up to $-14\%$ to $+22\%$ for membranes. In practice the correction is smaller, for three reasons:
+\begin{itemize}
+\item It oscillates with period $\lambda/2$ in $a$ and so depends on sub-wavelength details of the core shape.
+\item It varies across the atom on the scale $1/2k$. For an atom in the radial ground state it is reduced by $\approx e^{-2\eta_{\rm sp}^2}$ (0.36 for A, 0.79 for B), and at \SI{10}{\microkelvin} it averages out.
+\item A nested antiresonant fibre has no continuous cylindrical wall. Its cladding tubes are convex towards the core and defocus the reflected light.
+\end{itemize}
+The estimate therefore applies best to bandgap and capillary cores, i.e.\ to case B.
+
+For cooling, a modified $\Gamma$ is a constant renormalisation. The dark state does not involve $\Gamma$, and $\Delta$, $\Gamma_n$ and $s$ are set experimentally from the measured linewidth anyway. The two legs of the $\Lambda$ system share the excited state. Because they have different polarisations, however, the branching ratio $b_p$ can shift at the per-cent level. That enters only through the photon number per cycle, $\kappa=1/b_p$. The fibre also introduces no memory effects. The round trip to the wall, $2a/c\lesssim\SI{0.1}{ps}$, and even that to a fibre facet \SI{10}{cm} away, \SI{0.7}{ns}, are far shorter than $1/\Gamma=\SI{27}{ns}$. Facet reflections act only on the small guided fraction. The Markovian free-space master equation is therefore appropriate.
+
+\subsection{Recoil}
+\label{sec:emission-recoil}
+The radial recoil per photon, $\alpha\eta_{\rm sp}^2$ in Eq.~\eqref{eq:rate}, comes from the dipole pattern ($\alpha\approx2/5$ for $x$ perpendicular to the dipole). A guided photon carries transverse momentum $\sim\hbar u_{0m}/a\ll\hbar k$, so the guided fraction lowers the radial recoil by at most $f_g$, i.e.\ 0.4\% for A and 3\% for B. The wall reflections make the direct and reflected emission interfere. This is the atom--mirror-image interference observed with single ions~\cite{eschner2001}. It redistributes the photons around $\theta=\pi/2$ but changes $\langle k_x^2\rangle$ only at the level of $\Delta\Gamma/\Gamma$. The recoil model of the simulations thus holds to within a few per cent. The fibre gives no reduction of the recoil heating, unlike a high-$\beta$ waveguide or a cavity, where most photons could be emitted along the axis.
+
+The node geometry has one curious consequence. Because $\psi_{11}$ vanishes on the axis and grows linearly with $x$, an atom emits into LP$_{11}$ only when its radial vibrational number changes by one. This is the time reverse of the probe coupling. Guided LP$_{11}$ fluorescence is thus pure sideband light, with the fraction $2\beta_{01}\etaeff^2(2\langle n\rangle+1)$ per emitted photon. That is $4\times10^{-7}$ (A) and $3\times10^{-5}$ (B) in the ground state: negligible as a heating channel and too weak for thermometry with a single atom.
+
+\subsection{Collective effects: reabsorption and probe depletion}
+\label{sec:collective}
+The single-atom $\beta_{01}$ is small, but the guided mode is shared by the whole column. On a two-level transition with $\sigma_0=3\lambda^2/2\pi$, the resonant optical depth of $N$ atoms in LP$_{01}$ is $\mathrm{OD}=4N\beta_{01}$. For $N=10^4$ this is $\approx16$ (A) and $\approx290$ (B), before D1 Clebsch--Gordan factors. Optical depths of this size have been measured in hollow-core fibres~\cite{blatt2014}.
+
+\paragraph{Reabsorption of cooling photons.} There is a point specific to EIT cooling. In a cooling cycle the atom absorbs a red-sideband probe photon and returns to $\gp$ on the motional carrier. The emitted photon then has frequency $\omega_p+\nu_r$, which coincides with the narrow resonance $\delta_+=\nu_r$ of every other atom in the dark state. There the peak cross-section is the full $\sigma_0$ [Eq.~\eqref{eq:narrow}]. Photons emitted towards $\gc$ meet an almost empty coupling transition, and photons emitted on a motional sideband fall on the transparency zero ($\delta=0$) or at $\delta=2\nu_r$, so these pass. A fraction $\approx b_p(1-\alpha\eta_{\rm sp}^2)$ of the scattered light is therefore resonant with the ensemble. Two channels bring it back to the atoms:
+\begin{itemize}
+\item the guided fraction $f_g$, which is almost surely reabsorbed when OD\,$\gg1$;
+\item the light reflected by the wall, which refocuses onto the axis. Weighted by the dipole pattern, the reflected fraction is $\bar R\approx2$--9\% (bulk silica to membranes). A converging cylindrical wave meets a line of absorbers with linear density $\rho_l$ and is absorbed with probability $\approx\min(1,3\lambda\rho_l)$, which is close to 1 for $\sim1$ atom per \si{\micro m}.
+\end{itemize}
+Hence the reabsorption probability per emitted photon is
+\begin{equation}
+  p_{\rm re}\lesssim b_p(1-\alpha\eta_{\rm sp}^2)\,(f_g+\bar R)\approx4\%\ \text{(A)},\ 6\%\ \text{(B)}.
+\end{equation}
+A reabsorbed photon is absorbed on the narrow resonance, whose width $\Gamma_n=\nu_r/3$ resolves the motional sidebands. For the absorbing atom, the sidebands lie at $\delta=2\nu_r$ (off resonance) and $\delta=0$ (dark), so the absorption happens on the motional carrier. This is the festina-lente regime, in which reabsorption heating is suppressed~\cite{castin1998}. Only the recoil of the re-emitted photon heats, so the rate is reduced by
+\begin{equation}
+  \frac{\Delta W}{W}\approx-\frac{\kappa\,p_{\rm re}\,\alpha\eta_{\rm sp}^2}{1-\kappa\alpha\eta_{\rm sp}^2}\approx-3\%\ \text{(A)},\ -0.6\%\ \text{(B)}
+\end{equation}
+with $\kappa=2$, and $n_{\rm ss}$ grows by the same relative amount. For atom numbers of order $10^4$, reabsorption is thus a small correction. It would grow mainly through $\bar R$, i.e.\ with a strongly reflecting core surround. Unlike free space, it is dominated by the refocusing wall rather than by the density of the cloud.
+
+\paragraph{Probe depletion.} The same collective coupling acts on the LP$_{11}$ probe, which loses one photon per sideband absorption. An atom absorbs at most $\sim\Gamma_n/2$ probe photons per second (saturated narrow line), so the probe must carry at least $P_{\min}\approx N\hbar\omega\,\Gamma_n/2$. For $N=10^4$ this is \SI{0.02}{nW} (A) and \SI{0.08}{nW} (B), compared with \SI{8}{nW} and \SI{0.4}{nW} needed for $s=1$ (Table~\ref{tab:numbers}). In case A depletion is negligible. In case B up to $\sim20\%$ of the probe is absorbed while the hot thermal tail is cooled, so the saturation parameter falls along the column. Raising the probe power or launching it from both ends compensates for this. Near the ground state the absorption vanishes, because the red-sideband rate is $\propto\langle n\rangle$.
+
+\begin{table}[t]
+\centering
+\caption{Emission inside the hollow core compared with free space, for an atom on the axis at \SI{795}{nm}. The free-space values are $\beta=0$, $\Delta\Gamma=0$ and no reabsorption. Ranges for $\Delta\Gamma/\Gamma$ cover bulk-silica and membrane walls of a continuous cylindrical core surround, with $a$ varied over $\lambda/2$; nested-tube claddings give less. Reabsorption assumes $N=10^4$, $\sim1$ atom/\si{\micro m}, $b_p=1/2$ and $\kappa=2$.}
+\label{tab:emission}
+\small
+\begin{tabular}{lcc}
+\toprule
+& case A, $a=\SI{15}{\micrometre}$ & case B, $a=\SI{3.5}{\micrometre}$\\
+\midrule
+$ka$ & 118 & 28\\
+$\beta_{01}$ per direction, Eq.~\eqref{eq:beta01} & $4.0\times10^{-4}$ & $7.3\times10^{-3}$\\
+guided fraction $f_g$ (all low-loss LP$_{0m}$) & $(2$--$4)\times10^{-3}$ & $(1.5$--$3)\times10^{-2}$\\
+$\Delta\Gamma/\Gamma$ (wall refocusing) & $\pm(4$--$9)\%$ & $\pm(10$--$20)\%$\\
+\quad averaged over radial ground state & $\times0.36$ & $\times0.79$\\
+change of radial recoil per photon & $\lesssim0.4\%$ & $\lesssim3\%$\\
+OD in LP$_{01}$ (two-level, $N=10^4$) & 16 & 290\\
+reabsorption probability $p_{\rm re}$ & $\lesssim4\%$ & $\lesssim6\%$\\
+resulting change of $W$ and $n_{\rm ss}$ & $\lesssim3\%$ & $\lesssim1\%$\\
+minimum probe power for $N=10^4$ & \SI{0.02}{nW} & \SI{0.08}{nW}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{What changes with respect to free space}
+\begin{enumerate}
+\item \textbf{Decay rate:} essentially unchanged. The wall changes $\Gamma$ by a few per cent (up to $\sim$10--20\% for a perfectly circular small core). The change acts as a constant that is calibrated in situ.
+\item \textbf{Mode selectivity:} only a cone of half-angle $\sim u/ka$ is guided, i.e.\ $10^{-3}$--$10^{-2}$ of the light. An atom on the node does not emit into LP$_{l\ge1}$ modes at all, except through motional sidebands. More than 97\% of the photons leave sideways as in free space.
+\item \textbf{Recoil:} free-space dipole pattern to within a few per cent. The free-space recoil model of the master equation is adequate, and the fibre offers no reduction of recoil heating.
+\item \textbf{Collective coupling:} this is what really changes. The column has an optical depth of tens to hundreds in the guided modes, and the wall refocuses side-scattered light onto the axis. Cooling photons are resonant with the narrow EIT line of the other atoms. Reabsorption costs only a few per cent of the rate, because $\Gamma_n<\nu_r$ suppresses heating on reabsorption. In small cores with many atoms, the probe photon budget becomes relevant.
+\end{enumerate}
 
 %=====================================================================
 \section{Trends and scaling laws}
@@ -571,6 +667,7 @@ Both schemes share the geometric factor $G_{1m}x_0/a$, and both can use the node
 \item Very high-order modes raise $\etaeff$ as $m^{3/2}$. They help most in the carrier regime (rate $\propto m^3$) and improve robustness against mode impurity in the node regime. Their shrinking capture range, higher loss and harder excitation make a cascade from low to high $m$ the sensible strategy.
 \item Bigger cores transmit more modes ($N\propto a^3/\lambda^2L$), but the node scheme needs only $\etaeff/\epsilon\gtrsim0.35$. Loss enters through the growth of LP$_{01}$ contamination, and the best mode loses $\approx6.5$\,dB over the fibre section. With kagome-quality loss the smallest core with LP$_{11}$/LP$_{12}$ wins; with capillary-like loss the optimum is $a\approx25$--\SI{45}{\micrometre} at 10--100 times lower rate. Launch purity and cladding mode filtering matter more than the loss-limited mode count.
 \item Nested antiresonant fibres are suitable for an LP$_{11}$ probe over cm--dm sections (LP$_{11}$ excess-loss budget $\approx5$--\SI{16}{dB}), and their HOM stripping cleans the lattice beam. They rule out higher LP$_{1m}$, however. A purpose-built two-mode antiresonant fibre at 795/\SI{1064}{nm} would be the ideal platform; related few-mode and mode-selective designs exist but have not been made for these wavelengths.
+\item Spontaneous emission inside the core is free-space-like: guided fraction $10^{-3}$--$10^{-2}$, wall-induced change of $\Gamma$ of a few per cent, and dipole-pattern recoil (Sec.~\ref{sec:emission}). The fibre acts collectively. Cooling photons are resonant with the narrow EIT line of the other atoms, but reabsorption lowers the rate by only $\lesssim3\%$ because $\Gamma_n<\nu_r$. In small cores with $\gtrsim10^4$ atoms the probe photon budget matters.
 \item Raman sideband cooling uses the same geometric coupling and reaches comparable ceilings. It can address axial and radial modes at once, at the price of more lasers and more recoil per removed phonon.
 \end{enumerate}
 
