@@ -91,7 +91,7 @@ simulation/
   docs/                  code_guide.tex: implementation and motivation of every module
                          (make docs); update it when the code changes
   requirements.txt
-presentation/            17-slide talk for an atomic-physics audience
+presentation/            18-slide talk for an atomic-physics audience
   make_assets.py         slide images: setup schematic, level scheme, equations
                          (matplotlib mathtext), result plots, memory dephasing plot
   build_deck.js          pptxgenjs deck (theme, layouts, speaker notes); apply_theme.js
@@ -132,7 +132,9 @@ If a build stalls, check fonts first.
 | Build code guide | `make docs` | — |
 | Build the talk | `make slides` (needs Node.js; `cd presentation && npm install` once) | ~30 s |
 
-The talk reuses `simulation/results`. Slide text uses `x_sub` notation, which `build_deck.js`
+The talk reuses `simulation/results`. On WSL, render figures and slide images with the Windows
+fonts registered (Arial/Calibri from `/mnt/c/Windows/Fonts`); without them matplotlib falls back to
+DejaVu Sans and every regenerated image changes. Slide text uses `x_sub` notation, which `build_deck.js`
 turns into real subscripts (`rich()`). ν is set in Cambria, because Calibri's ν looks like a v.
 After layout changes, export the slides as images and check them: no text may overlap the
 figures, and margins must be at least 0.5 in.
@@ -152,8 +154,9 @@ Study scripts (run from `simulation/studies/`):
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
-`plotting/make_figures.py [mechanism|saturation|robust|dynamics|temperature]` writes
-`paper/manuscript/figures/{mechanism,saturation,robust,dynamics,temperature}.pdf` (paper Figs 1, 3, 4, 5, 6).
+`plotting/make_figures.py [mechanism|saturation|robust|dynamics|temperature|lines]` writes
+`paper/manuscript/figures/{mechanism,saturation,robust,dynamics,temperature}.pdf` (paper Figs 1, 3, 4, 5, 6)
+and `lines.pdf` (D1 vs D2, stage 2; not yet in the paper).
 Fig. 2, the level scheme, is TikZ inside `main.tex`.
 
 ## Simulation package `eitsim`
