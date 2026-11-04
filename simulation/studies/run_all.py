@@ -1,8 +1,9 @@
-"""Regenerate every result file of the paper (~45 min in total)."""
+"""Regenerate every result file of the paper (~55 min in total)."""
 import time
 
 import calibration
 import dynamics
+import lines
 import robustness
 import saturation
 import temperature
@@ -13,7 +14,8 @@ if __name__ == '__main__':
                      ('robustness', lambda: [f() for f in robustness.STUDIES.values()]),
                      ('calibration', lambda: [f() for f in calibration.STUDIES.values()]),
                      ('dynamics', lambda: [f() for f in dynamics.STUDIES.values()]),
-                     ('temperature', lambda: [f() for f in temperature.STUDIES.values()])):
+                     ('temperature', lambda: [f() for f in temperature.STUDIES.values()]),
+                     ('lines', lambda: [f() for f in lines.STUDIES.values()])):
         t0 = time.time()
         fn()
         log(name, 'done in %.0f s' % (time.time() - t0))
