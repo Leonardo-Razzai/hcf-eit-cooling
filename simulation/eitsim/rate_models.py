@@ -10,7 +10,7 @@ grm_matrix(): Markov chain on Fock populations of |g_p, n> with exact
 """
 import numpy as np
 
-from .eit import NODES, WEIGHTS, ALPHA, fano
+from .eit import NODES, WEIGHTS, ALPHA, absorption, excited_weights
 from .operators import oscillator, profile_ops
 
 # GRM saturation constant fitted to the master-equation phonon drift
@@ -21,8 +21,8 @@ CSAT = 2.25
 def simple(p, photons=1.0, sat=True):
     """Simple model: rate W, steady state n and sideband rates (units of nu_r)."""
     Wperp2 = (p['Wp'] * p['etap'])**2
-    Am = Wperp2 * fano(p, 1.0 + p['d2'])
-    Ap = Wperp2 * fano(p, -1.0 + p['d2'])
+    Am = Wperp2 * absorption(p, 1.0 + p['d2'])
+    Ap = Wperp2 * absorption(p, -1.0 + p['d2'])
     if sat:                       # only the resonant red sideband saturates
         Am = Am / (1 + p['s'])
     h = photons * ALPHA * p['eta_sp']**2
@@ -45,7 +45,8 @@ def grm_matrix(p, N=300, sat=True, csat=CSAT):
     F2 = np.abs(fpd)**2                                # |<m|f_p|n>|^2
     n = np.arange(N)
     dn = n[None, :] - n[:, None]                       # phonons removed n -> m
-    kabs = p['Wp']**2 * F2 * fano(p, dn + p['d2'])
+    R = absorption(p, np.arange(-(N - 1), N) + p['d2'])     # one value per dn
+    kabs = p['Wp']**2 * F2 * R[dn + N - 1]
     if sat:
         s_n = 2 * p['Wp']**2 * np.abs(np.diag(fpd, 1))**2 / (p['G'] * p['Gn'])
         s_n = np.concatenate([[0.0], s_n])             # sideband n -> n-1
@@ -55,7 +56,9 @@ def grm_matrix(p, N=300, sat=True, csat=CSAT):
         Dk = (V * np.exp(1j * p['eta_sp'] * u * w)) @ V.conj().T
         P += wk * np.abs(Dk)**2
     P /= P.sum(axis=0, keepdims=True)
-    T = p['bp'] * P @ np.linalg.inv(np.eye(N) - (1 - p['bp']) * P)
+    # branching into g_p of the excited mixture reached on the red sideband
+    bp = float(np.dot(excited_weights(p, 1.0 + p['d2']), [l[3] for l in p['levels']]))
+    T = bp * P @ np.linalg.inv(np.eye(N) - (1 - bp) * P)
     Q = T @ kabs
     Q -= np.diag(kabs.sum(axis=0))
     return Q

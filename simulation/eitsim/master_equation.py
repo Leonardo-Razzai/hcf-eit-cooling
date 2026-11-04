@@ -1,5 +1,8 @@
 """Lindblad master equation: Lambda atom x one radial oscillator.
 
+Atomic levels: |g_p>, |g_c> and K excited hyperfine levels (p['levels'];
+K = 1 is the closed three-level Lambda).
+
 Column-stacking vectorisation, vec(A rho B) = (B^T kron A) vec(rho).
 Solves for the steady state, the cooling rate (inverse integrated relaxation
 time of <n>) and time evolution (fixed-step BDF2).
@@ -13,33 +16,50 @@ from .operators import oscillator, projector, profile_ops, recoil_op
 
 
 def liouvillian(p):
-    """Return (L, d, b): sparse Liouvillian, Hilbert dimension 3N, annihilation op."""
+    """Return (L, d, b): sparse Liouvillian, Hilbert dimension (2+K)N, annihilation op.
+
+    Excited level k (index EX + k) has energy offset eps_k from the level the
+    lasers are tuned to, relative couplings cp_k, cc_k and branching bp_k into
+    g_p. Decays of different excited levels are independent (secular
+    approximation, valid for hyperfine splittings >> Gamma).
+    """
     N = p['N']
+    levels = p.get('levels', [(0.0, 1.0, 1.0, p['bp'])])
+    na = 2 + len(levels)
     b, w, V = oscillator(N)
     Im = sp.identity(N, format='csr')
     fp, fcpl = profile_ops(p, w, V)
-    H = sp.kron(sp.identity(3), b.T @ b)
-    H = H - p['D'] * sp.kron(projector(EX, EX), Im) - p['d2'] * sp.kron(projector(GC, GC), Im)
-    Hp = 0.5 * p['Wp'] * sp.kron(projector(EX, GP), fp)
-    Hc = 0.5 * p['Wc'] * sp.kron(projector(EX, GC), fcpl)
-    H = (H + Hp + Hp.getH() + Hc + Hc.getH()).tocsr()
-    d = 3 * N
+    H = sp.kron(sp.identity(na), b.T @ b)
+    H = H - p['d2'] * sp.kron(projector(GC, GC, na), Im)
+    for k, (off, cp, cc, _) in enumerate(levels):
+        e = EX + k
+        H = H - (p['D'] - off) * sp.kron(projector(e, e, na), Im)
+        if cp:
+            Hp = 0.5 * p['Wp'] * cp * sp.kron(projector(e, GP, na), fp)
+            H = H + Hp + Hp.getH()
+        if cc:
+            Hc = 0.5 * p['Wc'] * cc * sp.kron(projector(e, GC, na), fcpl)
+            H = H + Hc + Hc.getH()
+    H = H.tocsr()
+    d = na * N
     I = sp.identity(d, format='csr')
     L = -1j * (sp.kron(I, H) - sp.kron(H.T, I))
-    branch = {GP: p['bp'], GC: 1 - p['bp']}
     for u, wk in zip(NODES, WEIGHTS):
         Dk = recoil_op(p['eta_sp'], u, w, V)
-        for j, bj in branch.items():
-            C = np.sqrt(p['G'] * bj * wk) * sp.kron(projector(j, EX), Dk)
-            L = L + sp.kron(C.conj(), C)
-    CdC = p['G'] * sp.kron(projector(EX, EX), Im)
+        for k, (_, _, _, bpk) in enumerate(levels):
+            for j, bj in ((GP, bpk), (GC, 1 - bpk)):
+                if bj:
+                    C = np.sqrt(p['G'] * bj * wk) * sp.kron(projector(j, EX + k, na), Dk)
+                    L = L + sp.kron(C.conj(), C)
+    Pe = sum(projector(EX + k, EX + k, na) for k in range(len(levels)))
+    CdC = p['G'] * sp.kron(Pe, Im)
     L = L - 0.5 * (sp.kron(I, CdC) + sp.kron(CdC.T, I))
     return L.tocsc(), d, b
 
 
-def number_op(b):
-    """Phonon number operator on the full (atom x oscillator) space."""
-    return sp.kron(sp.identity(3), b.T @ b).tocsr()
+def number_op(b, na=3):
+    """Phonon number operator on the full (atom x oscillator) space, na atomic levels."""
+    return sp.kron(sp.identity(na), b.T @ b).tocsr()
 
 
 def expect(op, rho):
@@ -79,17 +99,19 @@ def relax_rate(lu, d, rho_ss, nop, N, n0=1):
 def solve_me(p, rate=True):
     """Steady state of the master equation.
 
-    Returns dict(n=<n>_ss, W=cooling rate (units of nu_r), pe, pgc, rho).
+    Returns dict(n=<n>_ss, W=cooling rate (units of nu_r), pe (total excited
+    population), pgc, rho).
     """
     L, d, b = liouvillian(p)
     lu = factorize(L, d)
     rho = steady_state(L, d, lu)
-    nop = number_op(b)
     N = p['N']
+    na = d // N
+    nop = number_op(b, na)
     pop = [float(np.real(np.trace(rho[i * N:(i + 1) * N, i * N:(i + 1) * N])))
-           for i in range(3)]
+           for i in range(na)]
     W = relax_rate(lu, d, rho, nop, N) if rate else np.nan
-    return dict(n=expect(nop, rho), W=W, pe=pop[EX], pgc=pop[GC], rho=rho)
+    return dict(n=expect(nop, rho), W=W, pe=sum(pop[EX:]), pgc=pop[GC], rho=rho)
 
 
 def evolve(L, rho0, tmax, observable, h=0.02, n_out=60):
@@ -116,7 +138,7 @@ def fock_drift(p, n0s, h=0.05, t1=100, t2=400):
     |g_p, n0>, measured between implicit-Euler steps t1 and t2 (after the
     fast atomic transient)."""
     L, d, b = liouvillian(p)
-    nop = number_op(b)
+    nop = number_op(b, d // p['N'])
     lu = spla.splu((sp.identity(d * d, format='csc') - h * L).tocsc(),
                    permc_spec='MMD_AT_PLUS_A')
     out = []

@@ -140,7 +140,9 @@ D2 & 2 & 2 & 1 & 1/2 & 1/4 & 5/12 & 0, 1 ($-229$, $-157$\,MHz)\\
 \begin{equation}
   \frac{\delta_+^{(\rm nb)}}{\delta_+}\simeq\sum_{F''}\frac{S_{g_cF''}}{S_{g_cF'}}\frac{\Delta}{\Delta''}\qquad(\code{neighbour\_shift}),
 \end{equation}
-a far-off-resonance estimate that flags where the three-level model is unreliable. Stage 2 will include these levels exactly.
+a far-off-resonance estimate that flags where the three-level model is unreliable.
+
+\paragraph{Excited manifold (stage 2).} \code{excited\_manifold(line, Fe, gp)} lists every excited level coupled to $g_p$ or $g_c$, with its energy offset from $F'$, its branching ratio into $g_p$ and the probe and coupling amplitudes relative to the $F'$ legs, $c_p=\langle g_p\|d\|F''\rangle/\langle g_p\|d\|F'\rangle$ and likewise $c_c$, from the signed reduced hyperfine elements $\langle F\|er\|F'\rangle=(-1)^{F'+J+1+I}\sqrt{(2F'+1)(2J+1)}\{\cdots\}\langle J\|er\|J'\rangle$ (\code{reduced\_hyperfine}). This is a hyperfine-level, polarisation-averaged model: $|c|^2$ (light shifts, scattering) is exact, but the relative sign of the Raman paths through different $F''$, which decides whether they interfere constructively or destructively, depends on the polarisations and $m_F$ in reality. The code therefore computes both signs (\code{sign}$=\pm1$ on the neighbours' probe amplitudes) and treats the spread as the model uncertainty.
 
 %=====================================================================
 \section{Fibre modes and trap parameters (\code{fibre.py})}
@@ -197,6 +199,8 @@ peaks where $(\Delta+\delta)\delta=\Om_c^2/4$. Requiring the peak at exactly $\d
 \end{itemize}
 Quantile nodes reproduce the whole distribution, not only its second moment, which matters because $\eta_{\rm sp}\approx0.7$ (case A) is not small: multi-phonon recoil events are frequent, and their weight depends on the tails of $u_x$. Bin means slightly reduce the variance, giving \code{ALPHA}$=\langle u_x^2\rangle=0.397$ instead of 0.400, a 0.7\% underestimate of the recoil heating. The fixed seed makes all results reproducible to $\sim10^{-8}$, which the regression tests rely on.
 
+\paragraph{Excited manifold.} With \code{levels} from \code{excited\_manifold}, \code{params} stores \code{p['levels']}, a list of (offset in units of $\nu_r$, $c_p$, $c_c$, $b_p$) per level; the first is the level the lasers are tuned to, and $\Delta$, $\Om_c$, $\Gamma_n$ and $s$ keep their three-level design values. Without \code{levels} the list has one entry and everything reduces to the three-level model. \code{absorption(p, delta)} is the weak-probe spectrum of the manifold: the single-excitation amplitudes on $\{g_c,e_k\}$ driven from $g_p$ solve $(H_{\rm eff}-\delta)v=-s$ with $H_{\rm eff}=-\sum_k(\Delta-\epsilon_k+i\Gamma/2)\ket{e_k}\bra{e_k}+\tfrac{\Om_c}2\sum_kc_{c,k}(\ket{e_k}\bra{g_c}+{\rm h.c.})$ and $s=\tfrac{\Om_p}2\sum_kc_{p,k}\ket{e_k}$, and $R=\Gamma\sum_k|v_k|^2$; for one level it equals the Fano profile exactly. \code{excited\_weights} gives the share of each level in the excitation on the red sideband.
+
 \paragraph{Line.} $\Gamma$ is taken from the fibre case, so the same function serves D1 and D2; the branching ratio is passed as \code{bp} (from \code{lambda\_config}).
 
 \paragraph{Fano function.} \code{fano(p, delta)} returns $R(\delta)/\Om_p^2$ from Eq.~\eqref{eq:fano}. It is shared by the simple model and the GRM.
@@ -232,6 +236,13 @@ Elements smaller than $10^{-11}$ of the largest are dropped to keep the matrices
   C_{jk}=\sqrt{\Gamma b_jw_k}\,\ket{g_j}\bra e\otimes D_k .
 \end{align}
 This is the standard Lindblad form for a driven atom with recoil~\cite{cirac1992,breuer2007}. The jump operators combine the decay channel ($j$) with the discretised emission direction ($k$). Since $\sum_{jk}C^\dagger_{jk}C_{jk}=\Gamma\ket e\bra e\otimes\mathbb1$ exactly (unitarity of $D_k$), the code inserts this term directly. The approximations are those of a closed three-level $\Lambda$ system: no Zeeman structure, no other hyperfine levels, and one radial axis, with the axial motion frozen. The axial motion can be frozen because co-propagating guided beams have an axial Lamb--Dicke parameter below $10^{-3}$ (paper, Methods).
+
+\paragraph{Several excited levels (stage 2).} With $K$ levels the atomic space is $\{\gp,\gc,\ket{e_1},\dots,\ket{e_K}\}$ and
+\begin{align}
+  H&\supset-\sum_k(\Delta-\epsilon_k)\ket{e_k}\bra{e_k}+\sum_k\Big[\tfrac{\bar\Om_pc_{p,k}}2\ket{e_k}\bra{g_p}f_p(\hat x)+\tfrac{\Om_cc_{c,k}}2\ket{e_k}\bra{g_c}f_c(\hat x)+{\rm h.c.}\Big],\\
+  C_{jkl}&=\sqrt{\Gamma b_{kj}w_l}\,\ket{g_j}\bra{e_k}\otimes D_l .
+\end{align}
+Decays of different excited levels are independent: their cross terms oscillate at the hyperfine splittings ($\ge12\Gamma$) and are dropped (secular approximation). For $K=1$ the code performs the same operations as the three-level version and reproduces it to $10^{-13}$. The cost is set by the LU fill: $1.7\times10^7$ non-zeros and $\approx20$\,s for $K=4$, $N=20$ (all three SuperLU orderings tried; \code{MMD\_AT\_PLUS\_A} remains best). Studies with many solves therefore run configurations in parallel processes (\code{WORKERS}$=4$, memory-limited at $\sim1$\,GB per factorisation).
 
 \paragraph{Vectorisation.} $\rho$ is stacked column-wise, so ${\rm vec}(A\rho B)=(B^{\rm T}\otimes A)\,{\rm vec}(\rho)$. Then
 \begin{equation}
@@ -290,6 +301,8 @@ The Fano profile selects the energy-conserving transitions; the full Bessel prof
 \end{enumerate}
 The generator is $Q=TK-{\rm diag}\big(\sum_mK_{mn}\big)$ with $\dot{\bm p}=Q\bm p$. Dynamics use $e^{Q\Delta t}$ (dense \code{scipy.linalg.expm}) applied repeatedly on a uniform grid, and the steady state is the eigenvector of the eigenvalue closest to zero (\code{grm\_steady\_state}). \code{thermal(nbar, N)} gives the truncated Bose distribution used as initial state.
 
+\paragraph{Several excited levels.} Both rate models take the sideband rates from \code{absorption}, so they include the light shifts and interference of the whole manifold. In the GRM the branching ratio of a cycle is that of the excited mixture reached on the red sideband, $b_p=\sum_kw_kb_{kp}$ with $w_k$ from \code{excited\_weights}. $c_{\rm sat}$ has not been recalibrated for $K>1$.
+
 \paragraph{What the GRM misses.} The GRM is a perturbative picture in which each sideband is an incoherent rate. At $s\gtrsim0.1$ the effective Raman coupling $\Om_R=\Om_c\Om_\perp/2\Delta$ between $\ket{g_p,n}$ and $\ket{g_c,n\mp1}$ becomes comparable to $\Gamma_n$, with $\Om_R^2=s\Gamma_n^2/2$. The narrow resonance then splits, and coherences between $\gp$ and $\gc$ build up. The plain saturation factor ($c_{\rm sat}=1$) overestimates the saturated phonon-removal rate by a factor of 2--2.5. The constant $c_{\rm sat}$ absorbs this to leading order.
 
 \subsection{Calibration and validity of the GRM}
@@ -325,6 +338,8 @@ Script (sub-study) & What is varied, and why & Model & Output / paper item\\
 \code{temperature scan} & $k_BT_r/U_0=10^{-3}$--$10^{-1}$, 20 log steps, $s=1$ & GRM & \code{temperature}, \code{temptrace}, Fig.~6\\
 \code{temperature drift} & ME drift at $n_0=20,30$: GRM extrapolation & ME, GRM & \code{drift\_hi}\\
 \code{lines effective} & every closed $\Lambda$ (D1/D2, $F'$, $g_p$), $s=0.01$--10: rate, $n_{\rm ss}$, powers, neighbour shift & ME, SM & \code{lines}, \code{lines\_scan}\\
+\code{lines multilevel} & every $\Lambda$ with all excited levels, $\Delta=3\Gamma$, $s=1$, both interference signs; lasers as designed and with $\delta_{\rm e}$ re-optimised & ME, SM & \code{lines\_ml}\\
+\code{lines delta} & cooling configurations ($b_p\ge1/2$) versus $\Delta/\Gamma=1$--12, $\delta_{\rm e}$ re-optimised & ME & \code{lines\_delta}\\
 \code{report\_scaling} & analytic scaling for the background report (independent of \code{eitsim}) & analytic & \code{results/report/}\\
 \bottomrule
 \end{tabularx}
@@ -334,6 +349,7 @@ Three study-level choices deserve a comment.
 \begin{itemize}
 \item \emph{Maximum rate under impurity.} For each $\epsilon$ or $x_s$, the carrier study scans $s$ and keeps the best $W$, because an experiment would re-optimise the probe power. A trap offset is converted to an equivalent admixture, $\epsilon_{\rm eff}=\etap x_s/x_0$, which follows from expanding $J_1$ around $x_s$.
 \item \emph{Metrics of the temperature scan.} The initial occupation is Bose--Einstein, $\bar n_0=1/(e^{\hbar\omega_r/k_BT}-1)$, not the classical $k_BT/\hbar\omega_r$, because the cold end has $\bar n_0<1$. Three metrics are reported: the $1/e$ time of the excess $\langle n\rangle-n_{\rm ss}$, the time to reach $P_0\ge0.9$, and the initial phonon-removal rate $-\sum_n n\,(Q\bm p_0)_n$. The ground-state criterion is used because it is insensitive to the sparse hot tail that dominates $\langle n\rangle$ at late times.
+\item \emph{Re-optimised two-photon detuning (stage 2).} The other excited levels light-shift $g_c$ and move the narrow resonance off the red sideband; an experiment compensates this by retuning the Raman detuning. \code{optimise\_d2} locates the narrow resonance as the strongest interior maximum of the multi-level absorption within $\pm10\nu_r$ (cheap), then refines $\delta_{\rm e}$ with three or four ME solves (parabola). The selection is restricted to $n_{\rm ss}<0.2$, because the relaxation rate from $\ket{g_p,1}$ is ill-defined when $n_{\rm ss}$ is not small (it can even become negative); points above are flagged in the output. When the neighbours wash the narrow resonance out (D2 $F'=1$ at large $\Delta$), no peak exists and cooling fails.
 \item \emph{Capture protocols.} The staged protocol starts with $\Delta=\Gamma$, which gives a broader narrow line and faster capture of hot atoms, and switches to $\Delta=3\Gamma$ for a lower floor. LP$_{12}$ is included to show that the mode order affects only the probe power.
 \end{itemize}
 
@@ -342,14 +358,15 @@ Three study-level choices deserve a comment.
 %=====================================================================
 \paragraph{Plotting.} \code{plotting/style.py} fixes the Nature figure style (Arial 7\,pt, 183\,mm width, Okabe--Ito colours). \code{make\_figures.py} reads only \code{results/} and writes \code{paper/manuscript/figures/}. Rule: no text may overlap data; legends are placed outside the axes or in regions kept empty by fixed axis limits.
 
-\paragraph{Regression tests} (\code{tests/test\_regression.py}, $\sim10$\,s, run before every commit to \code{simulation/}). They check:
+\paragraph{Regression tests} (\code{tests/test\_regression.py}, $\sim30$\,s, run before every commit to \code{simulation/}). They check:
 \begin{itemize}
 \item the mode constants ($G_{11}$, $A_{11}/A_{01}$, $\langle u_x^2\rangle$) and the trap parameters of both cases;
 \item that the ME reproduces a stored point of \code{sat\_A} to $10^{-6}$ and the SM points of \code{sat\_B} to $10^{-9}$;
 \item the GRM steady state against \code{grmcheck};
 \item the initial states and ground-state outcome of the temperature scan, one recomputed scan point, the high-$n$ GRM drift and the threshold helper;
 \item the atomic data: $S_{FF'}$ against Steck's Table~8, the sum rules for $S_{FF'}$, $b_{F'\to F}$ and the Zeeman couplings, the D2 cycling element, the allowed $\Lambda$ configurations;
-\item that the D1 fibre case is unchanged by the line parameter, and that the D1 rows of the line study reproduce \code{sat\_B}.
+\item that the D1 fibre case is unchanged by the line parameter, and that the D1 rows of the line study reproduce \code{sat\_B};
+\item the stage-2 model: manifold amplitudes against $S_{FF'}$, the one-level and decoupled-level limits of \code{absorption}, far neighbours reproducing the three-level ME, and one recomputed point of \code{lines\_ml}.
 \end{itemize}
 Any change in the physics, the quadrature or the numerics shows up as a failure, which is then resolved by rerunning the affected study, never by editing results.
 
@@ -379,7 +396,7 @@ Fock-drift window & $t=5$--$20/\nu_r$ & after the internal transient $\sim1/\Gam
 %=====================================================================
 The model is an ideal closed $\Lambda$ system with one radial axis. Each limitation below has a natural place in the code.
 \begin{itemize}
-\item \emph{Atomic structure.} The line (D1/D2) and the $\Lambda$ configuration enter only through $\Gamma$, $\lambda$, $b_p$ and the leg strengths (stage 1); the dynamics still use a single excited level. Hyperfine neighbours, Zeeman sublevels, polarisation-resolved couplings, the excited-state light shift of the lattice and the choice of D1 versus D2 require a multi-level \code{liouvillian}. For the full Zeeman problem, adiabatic elimination of the excited states (effective-operator formalism~\cite{reiter2012}) keeps the problem tractable.
+\item \emph{Atomic structure.} The excited hyperfine manifold is included (stage 2), but without Zeeman structure: the relative sign of Raman paths through different $F'$ is bracketed, not computed. Zeeman sublevels, polarisation-resolved couplings (and the dark states they create), magnetic-field remixing and the excited-state light shift of the lattice (tensor part for $5P_{3/2}$) require the Zeeman-resolved model of the next stage; \code{zeeman\_coupling} already provides its couplings. For the full Zeeman problem, adiabatic elimination of the excited states (effective-operator formalism~\cite{reiter2012}) keeps the problem tractable.
 \item \emph{Second radial axis.} The radial motion is separable in the harmonic approximation, but the LP$_{11}$ lobe addresses only $x$. Cooling of $y$ needs the orthogonal lobe or trap anisotropy; this means two oscillators, or alternating stages in the GRM.
 \item \emph{Anharmonic trap and loss.} Above $k_BT_r/U_0\approx0.1$, a Gaussian radial potential and an absorbing boundary at $U_0$ are needed. Both fit naturally into the GRM, through an energy-dependent $\omega_r(n)$ and an absorbing state.
 \item \emph{Collective effects} (reabsorption, probe depletion) are estimated analytically in the background report and not simulated.

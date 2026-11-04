@@ -173,6 +173,51 @@ def test_lines_study():
     assert np.isclose(r['W'] * fc['om'], row['W1'], rtol=1e-6)
     assert np.isclose(r['n'], row['n1'], rtol=1e-6)
 
+
+# ---------------------------------------------------------------- multi-level (stage 2)
+def test_excited_manifold_amplitudes():
+    for line, Fe, gp in (('D1', 2, 1), ('D1', 1, 2), ('D2', 1, 1), ('D2', 2, 2)):
+        cfg = E.lambda_config(line, Fe, gp)
+        lv = E.excited_manifold(line, Fe, gp)
+        assert lv[0]['F'] == Fe and lv[0]['eps'] == 0 and np.isclose(lv[0]['bp'], cfg['bp'])
+        for l in lv:
+            assert np.isclose(l['cp']**2 * cfg['Sp'], E.strength(line, gp, l['F']))
+            assert np.isclose(l['cc']**2 * cfg['Sc'], E.strength(line, cfg['gc'], l['F']))
+    p = E.params(E.paper_cases('D2')['A'], levels=E.excited_manifold('D2', 1, 1), sign=-1)
+    assert p['levels'][0][1] == 1.0 and p['levels'][2][1] < 0       # sign acts on neighbours only
+
+
+def test_multilevel_absorption_single_level_is_fano():
+    p = E.params(E.paper_cases()['A'], s=1.0)
+    d = np.linspace(-3, 3, 41)
+    assert np.allclose(E.absorption(p, d), E.fano(p, d), rtol=1e-12)
+    lv = [dict(F=2, eps=0.0, cp=1.0, cc=1.0, bp=0.5)]                # explicit one-level manifold
+    p1 = E.params(E.paper_cases()['A'], s=1.0, levels=lv)
+    p1['levels'].append((1e9, 0.0, 0.0, 0.5))                       # decoupled level: no effect
+    assert np.allclose(E.absorption(p1, d), E.fano(p, d), rtol=1e-10)
+
+
+def test_multilevel_me_far_neighbours_reproduce_three_level():
+    fc = E.paper_cases()['B']
+    three = E.solve_me(E.params(fc, s=1.0, N=12))
+    lv = [dict(F=2, eps=0.0, cp=1.0, cc=1.0, bp=0.5), dict(F=1, eps=1e13, cp=0.5, cc=1.0, bp=0.2)]
+    multi = E.solve_me(E.params(fc, s=1.0, N=12, levels=lv))
+    assert np.isclose(multi['n'], three['n'], rtol=1e-5)
+    assert np.isclose(multi['W'], three['W'], rtol=1e-5)
+
+
+def test_lines_multilevel_study():
+    d = load('lines_ml_B.dat')
+    row = d[(d['line'] == 1) & (d['Fe'] == 2) & (d['gp'] == 1) & (d['sign'] == 1)][0]
+    fc = E.paper_cases('D1')['B']
+    p = E.params(fc, s=1.0, N=20, d2=row['d2opt'], levels=E.excited_manifold('D1', 2, 1))
+    r = E.solve_me(p)
+    assert np.isclose(r['W'] * fc['om'], row['Wopt'], rtol=1e-6)
+    assert np.isclose(r['n'], row['nopt'], rtol=1e-6)
+    dl = load('lines_delta_A.dat')
+    assert set(np.unique(dl['DeltaG'])) == {1, 2, 3, 5, 8, 12}
+    assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):

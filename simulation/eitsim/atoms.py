@@ -109,3 +109,33 @@ def neighbour_shift(line, Fe, gc, Delta):
             continue
         tot += strength(line, gc, f) / S0 * Delta / (Delta - 2 * np.pi * (e - hfs[Fe]))
     return tot
+
+
+def reduced_hyperfine(line, F, Fe):
+    """<F||er||F'> / <J||er||J'> (Steck Eq. 37), sign included."""
+    Je = LINES[line]['Je']
+    return float((-1)**(Fe + J_G + 1 + I_NUC) * sqrt((2 * Fe + 1) * (2 * J_G + 1))
+                 * wigner_6j(J_G, Je, 1, Fe, F, I_NUC))
+
+
+def excited_manifold(line, Fe, gp):
+    """All excited hyperfine levels seen by the Lambda (F', g_p) of lambda_config.
+
+    For each level F'' returns its energy offset from F' (Hz), the probe and
+    coupling amplitudes relative to the F' legs, cp = <g_p||d||F''>/<g_p||d||F'>
+    and cc likewise for g_c (signed reduced hyperfine elements, so
+    cp^2 = S_gp,F''/S_gp,F'), and its branching ratio into g_p. The F' level
+    comes first. This is the hyperfine (polarisation-averaged) model of stage 2;
+    with Zeeman structure the relative signs of the Raman paths through
+    different F'' depend on the polarisations.
+    """
+    cfg = lambda_config(line, Fe, gp)
+    gc, hfs = cfg['gc'], LINES[line]['hfs']
+    rp0, rc0 = reduced_hyperfine(line, gp, Fe), reduced_hyperfine(line, gc, Fe)
+    out = []
+    for f in sorted(hfs, key=lambda f: f != Fe):
+        cp, cc = reduced_hyperfine(line, gp, f) / rp0, reduced_hyperfine(line, gc, f) / rc0
+        if cp == 0 and cc == 0:
+            continue
+        out.append(dict(F=f, eps=hfs[f] - hfs[Fe], cp=cp, cc=cc, bp=branching(line, f, gp)))
+    return out
