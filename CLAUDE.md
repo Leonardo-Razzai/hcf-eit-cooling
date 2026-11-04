@@ -51,6 +51,15 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
   and a neighbour light shift of −1.3× δ₊, so stage 2 must decide it; D1 F′=1 has −0.11×.
   D2 is otherwise ~5% slower (larger Γ, η_sp). Paper probe powers use S = 1; with S_FF′ they
   are 1.2–2× higher.
+- **D1 vs D2, stage 2 (all excited hyperfine levels in the ME, Δ = 3Γ, s = 1, two-photon detuning
+  re-optimised, both signs of the Raman interference through the other levels):**
+  D1 is robust: F′=2 (paper) changes by < 2% (retune ≤ 0.05 ν_r); F′=1 with probe on F=2 gives
+  W = 2.8–3.1×10³ s⁻¹, n_ss = 0.033–0.042 (A) and 1.6–1.8×10⁴ s⁻¹, 0.018–0.022 (B) after retuning
+  δ_e ≈ −0.1 ν_r, i.e. 2.1–2.3× the paper rate. D2 F′=2 is within ±5% of its three-level value
+  (retune ≈ ±0.16 ν_r) but degrades at large Δ (−18% at 8Γ, A). D2 F′=1 (probe on F=1, b_p = 5/6)
+  needs δ_e ≈ −1.3 ν_r, depends on the interference sign by a factor 2 (A: 1.7–3.2×10³ s⁻¹) and
+  stops cooling for Δ ≥ 8Γ: unreliable without the Zeeman model. Rates with n_ss > 0.2 are
+  ill-defined (relaxation from |g_p,1⟩) and flagged.
 - **Initial temperature:** above n̄₀ ≈ 3 the sideband saturates and the cooling time grows linearly
   with k_BT_r/U₀ (U₀/k_B = 530 µK). Recoil makes hot atoms diffuse in energy (≈ η_sp√n per photon),
   so ⟨n⟩ lags behind P₀. Beyond its calibration range (n ≤ 15) the GRM underestimates the
@@ -96,7 +105,7 @@ Makefile                 make test | results | figures | paper | report | slides
 
 ```bash
 make venv                       # python3 -m venv .venv; pip install -r simulation/requirements.txt
-make test                       # ~10 s, must pass before committing simulation changes
+make test                       # ~30 s, must pass before committing simulation changes
 ```
 
 LaTeX needs TeX Live with `latexmk`, `pgfplots`/`tikz`, `natbib`, `booktabs`, `caption`,
@@ -114,7 +123,7 @@ If a build stalls, check fonts first.
 
 | Task | Command | Time |
 |---|---|---|
-| Regression tests | `make test` | ~10 s |
+| Regression tests | `make test` | ~30 s |
 | Rerun all studies | `make results` | ~45 min |
 | One study | `cd simulation/studies && python robustness.py twophoton` | — |
 | Regenerate figures | `make figures` | seconds |
@@ -137,8 +146,9 @@ Study scripts (run from `simulation/studies/`):
   and Methods Table 3.
 - `temperature.py [scan|drift]` → `temperature_{A,B}.dat`, `temptrace_{A,B}.dat` (Fig. 6, ~2 min);
   `drift_hi.dat` (master-equation check of the GRM at n₀ = 20, 30, ~25 min).
-- `lines.py [effective]` → `lines_{A,B}.dat`, `lines_scan_{A,B}.dat`: D1 vs D2 stage 1, every
-  closed Λ as a three-level system (~7 min).
+- `lines.py [effective|multilevel|delta]` → `lines_{A,B}.dat`, `lines_scan_{A,B}.dat` (stage 1,
+  three-level, ~7 min); `lines_ml_{A,B}.dat` (stage 2 at Δ = 3Γ, ~35 min) and
+  `lines_delta_{A,B}.dat` (stage 2 vs Δ, ~40 min); 4 worker processes, ~1 GB each.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
@@ -174,6 +184,8 @@ Conventions and gotchas:
   into g_c are re-pumped. Any rate model must include this.
 - **Detuning convention.** `params` keeps lasers at the design values when `nu_rel ≠ 1`
   (trap-frequency mismatch). Results are rescaled to the actual ν_r.
+- **Multi-level ME.** `params(..., levels=E.excited_manifold(line, Fe, gp), sign=±1)`; K = 1
+  reproduces the three-level model. LU fill dominates (≈ 20 s per solve for D2, K = 4, N = 20).
 - **Determinism.** The emission quadrature uses a fixed RNG seed, so results are reproducible to
   ~1e-8. The tests rely on this.
 
@@ -213,8 +225,9 @@ Conventions and gotchas:
 ## Open items / next steps
 
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
-  done; next stage 2 (several excited hyperfine levels in the master equation), then the full
-  Zeeman structure (leakage increases κ) and both radial axes, e.g. alternating LP₁₁ lobes.
+  and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
+  F=2→F′=1, interference signs, tensor light shift of 5P₃/₂, leakage increases κ) and both
+  radial axes, e.g. alternating LP₁₁ lobes.
 - For submission, move the text into the official Springer Nature template (`sn-jnl.cls`, option
   `sn-nature`).
 - The background report still quotes the old purity estimate ε ≲ 2.8 η⊥. The master equation gives
