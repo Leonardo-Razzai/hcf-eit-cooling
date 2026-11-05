@@ -181,8 +181,12 @@ Conventions and gotchas:
 - **Cooling rate.** `relax_rate` returns the inverse *integrated* relaxation time from |g_p,1⟩.
   Do **not** use the slowest Liouvillian eigenvalue. It picks up slow modes at the truncation edge
   and drifts with N, because saturated high-n states cool linearly in time.
-- **Truncation.** N = 20 Fock states is enough for steady states with ⟨n⟩ ≲ 0.5. Use N ≥ 30 for
-  dynamics. Thermal GRM dynamics need N up to the trap depth, U₀/ħν_r = 1552 (A) / 362 (B):
+- **Truncation.** N = 20 Fock states is **not** enough for case A (η_sp ≈ 0.71) at s ≲ 1: a smooth,
+  roughly exponential recoil-diffusion tail (P(n) falls ≈ ×0.89 per quantum; 0.3 % of atoms above
+  n = 10 carry a third of ⟨n⟩) is cut off. Case A, s = 1: n_ss = 0.133 / 0.147 / 0.152 / 0.154 and
+  W = 1319 / 1446 / 1546 / 1605 s⁻¹ for N = 20 / 30 / 40 / 60 (n_ss converged ≈ 0.155, W still
+  rising). Case A at s = 5 and case B are converged at N = 20. Always check N-convergence when
+  η_sp ≳ 0.5. Use N ≥ 30 for dynamics. Thermal GRM dynamics need N up to the trap depth, U₀/ħν_r = 1552 (A) / 362 (B):
   the code uses N = 1600 / 400. Recoil diffusion carries a few atoms to high n, and a smaller N
   acts as an artificial sink (N = 300 gave ⟨n⟩ = 0.24 instead of 1.45 for case A from 10 µK).
 - **Recoil.** The master equation scatters κ = 1/b_p photons per cycle automatically, since decays
@@ -228,6 +232,20 @@ Conventions and gotchas:
   Never hand-edit files in `results/`.
 
 ## Open items / next steps
+
+- **Case-A convergence fix in progress (branch `fix-truncation`, from `main`).** The case-A
+  master-equation results at N = 20 (key results table, Figs 3, 4, 5a, GRM calibration) are not
+  converged (see Truncation). Brute force is too slow (one N = 90 solve > 1 h, 7 GB). Plan:
+  **adiabatic elimination of the excited state** (effective-operator formalism, Reiter & Sørensen,
+  PRA 85, 032111, 2012) as an option of the ME solver. Valid because |Δ + iΓ/2| ≫ Ω_c, ν_r, Γ_n,
+  Ω⊥√n (Ω_c/Δ ≈ 0.04, ν_r/Δ ≈ 4×10⁻⁴); it keeps the EIT interference exactly (effective Hamiltonian
+  and jump operators are built from the bright combination Ω̄_p f_p⟨g_p| + Ω_c⟨g_c|, so the dark
+  state stays dark), reproduces the Fano profile for |δ| ≪ Δ (narrow peak, zero at δ = 0, blue-sideband
+  suppression (Γ/4Δ)²) and removes the stiffness (fastest rate Γ_n instead of Γ ≈ 800 ν_r) and a third
+  of the dimension ((2N)² instead of (3N)²). Steps: implement → validate against the full ME at
+  N = 20, 40 (A and B, several s; < 1 % in n_ss and W) → converge case A in N (60, 90, 120) → rerun
+  affected case-A studies and figures (results only; paper text changes need the author's approval)
+  → merge into `main`. Then redo the `universal` studies with converged N.
 
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
