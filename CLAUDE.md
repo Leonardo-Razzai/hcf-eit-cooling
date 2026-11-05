@@ -246,6 +246,10 @@ Conventions and gotchas:
   messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
   that should not change are reproduced exactly, new results are committed, and the code guide and
   this file are updated. `main` must always have code, results, paper and tests in agreement.
+- **One simulation at a time (requested by the author).** Never run simulations in parallel: do not
+  start a study, check or diagnostic while another is still running (check with
+  `ps -eo pid,etime,rss,args | grep python`), and wait for it to finish first. Concurrent jobs
+  compete for CPU and memory (7 GB) and make every run slower.
 - Do not commit LaTeX build products (see `.gitignore`).
 - `figures/*.pdf` and `results/*.dat` *are* tracked: they are inputs or outputs the paper depends on.
 - Run `make test` before committing changes to `simulation/`.
