@@ -246,6 +246,13 @@ Conventions and gotchas:
   N = 20, 40 (A and B, several s; < 1 % in n_ss and W) → converge case A in N (60, 90, 120) → rerun
   affected case-A studies and figures (results only; paper text changes need the author's approval)
   → merge into `main`. Then redo the `universal` studies with converged N.
+  **Status:** elimination validated (< 0.5 % vs full ME, N = 20 and 40) but gives no speed-up for
+  direct solves (recoil operator nearly dense, nnz ∝ N⁴). Added `solve_banded` (eliminated ME,
+  coherences |n − m| ≤ B = 6, dense LU): exact for B ≥ N, 2×10⁻⁸ error at B = 6, N = 160 in 34 s.
+  Converged case A, s = 1: n_ss = 0.1545, W = 1614 s⁻¹ (paper N = 20: 0.133, 1319). Checks and plots:
+  `studies/convergence.py` → `results/convergence/`, `plotting/convergence_plots.py`.
+  **To do when finished:** add the eliminated + banded method, its validity conditions and the
+  convergence evidence to `simulation/docs/code_guide.tex` (requested by the author).
 
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of

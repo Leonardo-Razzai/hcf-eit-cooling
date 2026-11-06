@@ -223,6 +223,37 @@ def test_lines_multilevel_study():
     assert set(np.unique(dl['DeltaG'])) == {1, 2, 3, 5, 8, 12}
     assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
 
+
+# ---------------------------------------------------------------- eliminated / banded ME
+def test_eliminated_me_matches_full():
+    """Adiabatic elimination of |e> (Delta = 3 Gamma): < 1 % in n_ss and W."""
+    for key in 'AB':
+        p = E.params(E.paper_cases()[key], s=1.0, N=12)
+        f, e = E.solve_me(p), E.solve_me(p, eliminate=True)
+        assert abs(e['n'] / f['n'] - 1) < 1e-2 and abs(e['W'] / f['W'] - 1) < 1e-2
+
+
+def test_banded_solver():
+    p = E.params(E.paper_cases()['A'], s=1.0, N=16)
+    e = E.solve_me(p, eliminate=True)
+    full_band = E.solve_banded(p, B=16)                 # band holds everything: exact
+    assert np.isclose(full_band['n'], e['n'], rtol=1e-10)
+    assert np.isclose(full_band['W'], e['W'], rtol=1e-10)
+    b6 = E.solve_banded(p, B=6)
+    assert abs(b6['n'] / e['n'] - 1) < 1e-5 and abs(b6['W'] / e['W'] - 1) < 1e-5
+    assert np.isclose(b6['P'].sum(), 1.0, atol=1e-10)
+
+
+def test_convergence_results():
+    d = np.genfromtxt(RESULTS / 'convergence' / 'nconv.dat', names=True)
+    r = d[(d['case'] == 0) & (d['s'] == 1.0) & (d['method'] == 1)]
+    assert np.isclose(r['n'][r['N'] == 160][0], 0.15447, atol=2e-5)
+    assert np.isclose(r['W'][r['N'] == 160][0], 1614.1, rtol=1e-3)
+    fc = E.paper_cases()['A']
+    x = E.solve_banded(E.params(fc, s=1.0, N=40), B=6)
+    row = r[r['N'] == 40][0]
+    assert np.isclose(x['n'], row['n'], rtol=1e-8) and np.isclose(x['W'] * fc['om'], row['W'], rtol=1e-8)
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):
