@@ -11,7 +11,8 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
-from .eit import GP, GC, EX, NODES, WEIGHTS
+from .config import me_cutoffs
+from .eit import GP, GC, EX, NODES, WEIGHTS, params
 from .operators import oscillator, projector, profile_ops, recoil_op
 
 
@@ -132,16 +133,21 @@ def solve_banded(p, B=6, rate=True):
     n_of = np.tile(np.arange(N), 2)                     # Fock number of each ground index
     r, c = np.nonzero(np.abs(n_of[:, None] - n_of[None, :]) <= B)   # kept (row, col)
     S = r.size
-    Hd = H.toarray()
     K = sum((C.getH() @ C) for C in Cs).toarray()
-    G = -1j * Hd - 0.5 * K                              # rho -> G rho + rho G^dag + jumps
-    dr = (r[:, None] == r[None, :])
-    dc = (c[:, None] == c[None, :])
-    M = G[np.ix_(r, r)] * dc + dr * G.conj()[np.ix_(c, c)]
-    del dr, dc
-    for C in Cs:
-        Cd = C.toarray()
-        M += Cd[np.ix_(r, r)] * Cd.conj()[np.ix_(c, c)]
+    G = -1j * H.toarray() - 0.5 * K                     # rho -> G rho + rho G^dag + jumps
+    Gc = G.conj()
+    Cd = [C.toarray() for C in Cs]
+    Cc = [x.conj() for x in Cd]
+    M = np.empty((S, S), complex)
+    step = max(1, int(2e7 // S))                        # rows per block (bounded temporaries)
+    for i0_ in range(0, S, step):
+        sl = slice(i0_, min(S, i0_ + step))
+        rs, cs = r[sl], c[sl]
+        blk = G[np.ix_(rs, r)] * (cs[:, None] == c[None, :])
+        blk += (rs[:, None] == r[None, :]) * Gc[np.ix_(cs, c)]
+        for Cj, Ccj in zip(Cd, Cc):
+            blk += Cj[np.ix_(rs, r)] * Ccj[np.ix_(cs, c)]
+        M[sl] = blk
     diag = np.nonzero(r == c)[0]
     i0 = int(np.nonzero((r == 0) & (c == 0))[0][0])     # |g_p,0><g_p,0|
     M[i0, :] = 0.0
@@ -165,6 +171,19 @@ def solve_banded(p, B=6, rate=True):
     rho[r, c] = x
     P = np.real(np.diag(rho)[:N] + np.diag(rho)[N:])
     return dict(n=nss, W=W, pgc=float(np.real(np.trace(rho[N:, N:]))), P=P, dim=S, rho=rho)
+
+
+def steady(fc, s, rate=True, **kw):
+    """Converged steady state for the fibre case fc at saturation s: builds
+    params(fc, s, **kw), takes the Fock truncation N and the band from the
+    first matching rule of numerics.toml (config.me_cutoffs, using the actual
+    eta_sp) and calls solve_banded. Returns its dict plus N, band, status."""
+    p = params(fc, s=s, **kw)
+    cut = me_cutoffs(p['eta_sp'], s)
+    p['N'] = cut['N']
+    out = solve_banded(p, B=cut['band'], rate=rate)
+    out.update(N=cut['N'], band=cut['band'], status=cut['status'])
+    return out
 
 
 def number_op(b, na=3):

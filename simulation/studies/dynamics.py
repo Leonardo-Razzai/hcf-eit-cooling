@@ -44,7 +44,7 @@ PROTOCOLS = {'s1': [(3.0, 1.0, 1)], 's03': [(3.0, 0.3, 1)],
 def capture(T=10e-6):
     for key, fc in CASES.items():
         nbar = E.KB * T / (E.HBAR * fc['om']) - 0.5
-        N = 1600 if key == 'A' else 400        # up to the trap depth (temperature.py)
+        N = E.CFG['grm']['N_case_' + key]      # up to the trap depth (numerics.toml)
         tmax, tsw = (150e-3, 40e-3) if key == 'A' else (6e-3, 1.5e-3)
         tw = np.linspace(0, tmax, 301)
         cols, data = ['tms'], [tw * 1e3]

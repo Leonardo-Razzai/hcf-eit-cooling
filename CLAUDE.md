@@ -161,6 +161,16 @@ Study scripts (run from `simulation/studies/`):
 and `lines.pdf` (D1 vs D2, stage 2; not yet in the paper).
 Fig. 2, the level scheme, is TikZ inside `main.tex`.
 
+## Numerical settings: `simulation/numerics.toml`
+
+All numerical choices live in `simulation/numerics.toml` (loaded by `eitsim/config.py` as `E.CFG`),
+each with its justification: steady-state cutoff rules, legacy full-ME N, `function_of_x` threshold,
+emission quadrature, GRM `csat` and Fock spaces, `n_rate_max`. **Steady states should use
+`E.steady(fc, s, **kw)`**: it takes N and the band from the first `[[steady_state.rule]]` matching the
+actual η_sp and s (`E.me_cutoffs`) and calls `solve_banded`; parameters no rule covers raise an
+error (run a convergence check, then add a rule). Rules have a `status` (`validated` /
+`provisional`). Change a value only with convergence evidence, then rerun the affected studies.
+
 ## Simulation package `eitsim`
 
 Internal units: **angular radial trap frequency ν_r = 1**. Physical rates = value × `fc['om']`.

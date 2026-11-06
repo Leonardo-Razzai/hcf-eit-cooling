@@ -254,6 +254,27 @@ def test_convergence_results():
     row = r[r['N'] == 40][0]
     assert np.isclose(x['n'], row['n'], rtol=1e-8) and np.isclose(x['W'] * fc['om'], row['W'], rtol=1e-8)
 
+
+# ---------------------------------------------------------------- numerics.toml
+def test_numerics_config_rules():
+    c = E.paper_cases()
+    assert E.me_cutoffs(c['A']['eta_sp'], 1.0)['N'] == 120
+    weak = E.me_cutoffs(c['A']['eta_sp'], 0.1)
+    assert weak['band'] == 4 and weak['status'] == 'provisional'
+    assert E.me_cutoffs(c['B']['eta_sp'], 0.1)['N'] == 40
+    with pytest.raises(ValueError):
+        E.me_cutoffs(1.0, 1.0)                           # no validated rule: must fail
+    assert E.CSAT == E.CFG['grm']['csat'] and len(E.NODES) == E.CFG['emission']['nodes']
+
+
+def test_steady_uses_config():
+    fc = E.paper_cases()['B']
+    r = E.steady(fc, 1.0)
+    p = E.params(fc, s=1.0, N=r['N'])
+    ref = E.solve_banded(p, B=r['band'])
+    assert r['N'] == 40 and r['band'] == 6
+    assert np.isclose(r['n'], ref['n'], rtol=1e-12) and np.isclose(r['W'], ref['W'], rtol=1e-12)
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):

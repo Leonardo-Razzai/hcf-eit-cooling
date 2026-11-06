@@ -1,0 +1,72 @@
+# Numerical settings of the eitsim simulations: truncations, cutoffs, quadrature,
+# step sizes. Physics parameters (fibre, atom, lasers) are NOT here; they are
+# arguments of fibre_case / params. Change a value only together with the
+# convergence evidence that supports it (results/convergence/, CLAUDE.md), and
+# rerun the affected studies. Loaded by eitsim/config.py.
+
+# ---------------------------------------------------------------- steady states
+# eitsim.steady(fc, s, ...) solves the eliminated master equation keeping the
+# coherences |n - m| <= band (master_equation.solve_banded). The Fock
+# truncation N and the band are chosen by the FIRST rule whose ranges contain
+# the actual eta_sp (recoil Lamb-Dicke parameter; eta_sp^2 = omega_rec/nu_r)
+# and the saturation parameter s. Ranges: eta_sp <= eta_sp_max,
+# s_min <= s < s_max. No match -> error: run a convergence check first.
+#
+# Evidence (results/convergence/, case A eta_sp = 0.71, case B 0.34, Delta = 3 Gamma):
+#   - band 6: error < 1e-5 for s <= 1, < 2e-3 (W) at s = 5; band 4: < 1e-8 at s = 0.1
+#   - case B (and any eta_sp <= 0.4): converged at N = 20 for s = 1
+#   - case A, s >= 1: n_ss and W converged to < 1e-4 at N = 120 (s = 5 already at N = 40)
+#   - case A, s = 0.1: n_ss still rising at N = 160 (+1.6 % from 120 to 160): provisional
+
+[steady_state]
+elimination_valid_delta_min = 2.0     # Delta/Gamma; < 0.5 % error at 3 Gamma, ~1 % at Gamma
+
+[[steady_state.rule]]
+name = "stiff trap (case B and stiffer)"
+eta_sp_max = 0.40
+s_min = 0.0
+s_max = 1e9
+N = 40
+band = 6
+status = "validated"                  # N = 20 converged for case B, s = 1; margin x2
+
+[[steady_state.rule]]
+name = "soft trap, saturated probe (case A, s >= 1)"
+eta_sp_max = 0.75
+s_min = 1.0
+s_max = 1e9
+N = 120
+band = 6
+status = "validated"                  # n_ss, W change < 1e-4 between N = 120 and 160
+
+[[steady_state.rule]]
+name = "soft trap, weak probe (case A, s < 1)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 1.0
+N = 250
+band = 4
+status = "provisional"                # long recoil tail; to be confirmed by a N-scan
+
+# ---------------------------------------------------------------- full master equation
+[full_me]
+N_legacy = 20         # fixed truncation of the original studies (not converged for case A)
+
+# ---------------------------------------------------------------- operators
+[operators]
+function_of_x_tol = 1e-11             # elements < tol * max of f(x) are dropped (round-off level)
+
+# ---------------------------------------------------------------- spontaneous emission
+[emission]
+nodes = 10            # equal-probability quadrature of u = k_x / k; <u^2> = 0.397 (exact 0.4)
+seed = 1              # fixed RNG seed: results reproducible to ~1e-8
+
+# ---------------------------------------------------------------- rate model (GRM)
+[grm]
+csat = 2.25           # saturation constant fitted to ME Fock drift (n0 = 1..15, bp = 1/2)
+N_case_A = 1600       # Fock space up to the trap depth (U0 / hbar nu_r = 1552)
+N_case_B = 400        # (U0 / hbar nu_r = 362)
+
+# ---------------------------------------------------------------- rates
+[rates]
+n_rate_max = 0.2      # relax_rate (from |g_p,1>) is reported only where n_ss < n_rate_max
