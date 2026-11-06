@@ -130,6 +130,21 @@ For a field $\Om(\mathbf r)=\Om\,\psi(\mathbf r)/\psi_{\rm ref}$ acting on an at
 \end{equation}
 For a plane wave $e^{ikx}$, the ratio of sideband to carrier coupling is the usual $\eta=kx_0$~\cite{wineland1979,leibfried2003}. In a fibre the only transverse structure comes from the mode profile, so the relevant ratio is $x_0\,\partial_x\psi/\psi_{\rm ref}$.
 
+\paragraph{Spontaneous-emission Lamb--Dicke parameter $\eta_{\rm sp}$.} Two different Lamb--Dicke parameters appear in radial cooling. The \emph{drive} couples to $x$ through the transverse structure of the guided mode, on the scale of the core radius $a$; this gives the small gradient parameter $\etaeff$ of Eq.~\eqref{eq:etaeff}. A \emph{spontaneously emitted} photon, instead, can leave in any direction and carries the full momentum $\hbar k$, with $k=2\pi/\lambda$ and $\lambda=\SI{795}{nm}$ on the D1 line. If its direction has projection $u=\hat{\mathbf k}\cdot\hat{\mathbf x}$ on the radial axis, the motion receives the kick $e^{i\eta_{\rm sp}u(\hat b+\hat b^\dagger)}$, with
+\begin{equation}
+  \eta_{\rm sp}=kx_0=k\sqrt{\frac{\hbar}{2m_{\rm Rb}\omega_r}},\qquad
+  \eta_{\rm sp}^2=\frac{\omega_{\rm rec}}{\omega_r},\qquad
+  \omega_{\rm rec}=\frac{\hbar k^2}{2m_{\rm Rb}}=2\pi\times\SI{3.63}{kHz}.
+  \label{eq:etasp}
+\end{equation}
+$\eta_{\rm sp}^2$ is the recoil energy $\hbar\omega_{\rm rec}$ in units of the radial vibrational quantum $\hbar\omega_r$, so $\eta_{\rm sp}\propto\nu_r^{-1/2}$: the softer the trap, the larger $\eta_{\rm sp}$. Averaged over the emission pattern, one photon deposits $\alpha\eta_{\rm sp}^2$ radial quanta, with $\alpha=\langle u^2\rangle\approx2/5$ for a dipole perpendicular to $x$. The Lamb--Dicke regime for emission requires $\eta_{\rm sp}^2(2n+1)\ll1$. Through Eq.~\eqref{eq:freqs}, $\eta_{\rm sp}^2\propto1/\nu_r\propto a/\sqrt{U_0}$ depends on the core size. The radial trap in a fibre is soft:
+\begin{itemize}
+\item $\nu_r=\SI{7.15}{kHz}$ ($a=\SI{15}{\micrometre}$) gives $\eta_{\rm sp}=0.71$, $\eta_{\rm sp}^2=0.51$;
+\item $\nu_r=\SI{30.6}{kHz}$ ($a=\SI{3.5}{\micrometre}$) gives $\eta_{\rm sp}=0.34$, $\eta_{\rm sp}^2=0.12$;
+\item for comparison, the axial motion at $\nu_z=\SI{300}{kHz}$ has $\eta_{\rm sp}^2=0.012$.
+\end{itemize}
+Radially, then, emission is far outside the Lamb--Dicke regime, while the drive is deep inside it ($\etaeff\approx0.02$). The ratio $\etaeff/\eta_{\rm sp}=G_{1m}/ka$ is small because the guided mode varies on the scale $a\gg\lambda$.
+
 \paragraph{Why LP$_{01}$ alone cannot cool radially.} EIT cooling couples to motion through the position dependence of the dark state $\ket{D}\propto\Om_c(\mathbf r)\gp-\Om_p(\mathbf r)\gc$~\cite{morigi2000,morigi2003}. When the probe and coupling beams are both in LP$_{01}$, the ratio $\Om_p/\Om_c$ is independent of $r$. The phase difference is $(\beta_p\mp\beta_c)z$ and depends only on $z$. Counter-propagating beams therefore give axial cooling with $\eta_z\simeq2kx_{0,z}$, while the radial coupling is of second order, $\propto(x_0/w)^2\sim10^{-4}$, which is useless.
 
 \subsection{Node geometry: probe in LP$_{1m}$, coupling in LP$_{01}$}
@@ -210,7 +225,7 @@ $R$ vanishes at $\delta=0$, where the dark state forms. It has a narrow peak at 
 \end{figure}
 
 \subsection{Rate equation}
-In the secular, weak-probe limit, the absorption rates on the red and blue sidebands are $A_\mp=\etaeff^2R(\pm\nu)$. Set the EIT condition $\Om_c^2/4\Delta=\nu$. Then $A_-$ sits on the narrow peak and the carrier ($\delta=0$) on the transparency zero. Every absorbed probe photon is followed by a spontaneous emission that deposits on average $\alpha\eta_{\rm sp}^2$ quanta in the radial mode considered. Here $\eta_{\rm sp}=k x_0$ and $\alpha\approx2/5$ for a $\pi$ dipole and an axis perpendicular to it. Because $E_{\rm rec}/\hbar\nu=\eta_{\rm sp}^2$, this holds exactly for the mean energy even though radially $\eta_{\rm sp}\sim0.3$--$0.7$ is not small. For the node geometry, where all probe scattering is sideband scattering,
+In the secular, weak-probe limit, the absorption rates on the red and blue sidebands are $A_\mp=\etaeff^2R(\pm\nu)$. Set the EIT condition $\Om_c^2/4\Delta=\nu$. Then $A_-$ sits on the narrow peak and the carrier ($\delta=0$) on the transparency zero. Every absorbed probe photon is followed by a spontaneous emission that deposits on average $\alpha\eta_{\rm sp}^2$ quanta in the radial mode considered. Here $\eta_{\rm sp}$ is the spontaneous-emission Lamb--Dicke parameter of Eq.~\eqref{eq:etasp} and $\alpha\approx2/5$ for a $\pi$ dipole and an axis perpendicular to it. Because $E_{\rm rec}/\hbar\nu=\eta_{\rm sp}^2$, this holds exactly for the mean energy even though radially $\eta_{\rm sp}\sim0.3$--$0.7$ is not small. For the node geometry, where all probe scattering is sideband scattering,
 \begin{equation}
   \frac{d\langle n\rangle}{dt}=-A_-\langle n\rangle(1-\alpha\eta_{\rm sp}^2)+A_+(\langle n\rangle+1)(1+\alpha\eta_{\rm sp}^2),
   \label{eq:rate}
