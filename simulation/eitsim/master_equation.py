@@ -115,19 +115,16 @@ def liouvillian_eliminated(p):
     return L.tocsc(), d, b
 
 
-def solve_banded(p, B=6, rate=True):
-    """Steady state and cooling rate of the eliminated master equation keeping
-    only the coherences rho_(a,n),(b,m) with |n - m| <= B.
+def banded_generator(p, B=6):
+    """Generator of the eliminated master equation restricted to the coherences
+    rho_(a,n),(b,m) with |n - m| <= B: d x/dt = M x for the kept elements x.
 
-    The steady state is almost diagonal in n (case A, N = 40: |rho_n,n+k| < 4e-5
-    for k >= 4), while the nearly dense recoil operator makes the full
-    Liouvillian grow as N^4. Every term X rho Y restricted to the kept set S is
-    the element-wise product X[r_s, r_s'] * Y^T[c_s, c_s'], so the restricted
-    Liouvillian (dimension ~ 4 N (2B + 1)) is assembled from dense 2N x 2N
-    operators and solved with a dense LU. Returns dict(n, W, pgc, P (Fock
-    populations), dim, rho (2N x 2N, zero outside the band)).
+    Every term X rho Y restricted to the kept set S is the element-wise product
+    X[r_s, r_s'] * Y^T[c_s, c_s'], so M (dimension ~ 4 N (2B + 1)) is assembled
+    from dense 2N x 2N operators, in row blocks to bound the temporaries.
+    Returns (M, r, c, n_of): kept (row, col) ground indices and the Fock number
+    of each ground index.
     """
-    from scipy.linalg import lu_factor, lu_solve
     H, Cs, b = effective_ops(p)
     N = p['N']
     n_of = np.tile(np.arange(N), 2)                     # Fock number of each ground index
@@ -148,11 +145,27 @@ def solve_banded(p, B=6, rate=True):
         for Cj, Ccj in zip(Cd, Cc):
             blk += Cj[np.ix_(rs, r)] * Ccj[np.ix_(cs, c)]
         M[sl] = blk
+    return M, r, c, n_of
+
+
+def solve_banded(p, B=6, rate=True):
+    """Steady state and cooling rate of the eliminated master equation keeping
+    only the coherences |n - m| <= B (banded_generator), solved with a dense LU.
+
+    The steady state is almost diagonal in n (case A, N = 40: |rho_n,n+k| < 4e-5
+    for k >= 4), while the nearly dense recoil operator makes the full
+    Liouvillian grow as N^4. Returns dict(n, W, pgc, P (Fock populations),
+    dim, rho (2N x 2N, zero outside the band)).
+    """
+    from scipy.linalg import lu_factor, lu_solve
+    N = p['N']
+    M, r, c, n_of = banded_generator(p, B)
+    S = r.size
     diag = np.nonzero(r == c)[0]
     i0 = int(np.nonzero((r == 0) & (c == 0))[0][0])     # |g_p,0><g_p,0|
     M[i0, :] = 0.0
     M[i0, diag] = 1.0                                   # trace condition
-    lu = lu_factor(M)
+    lu = lu_factor(M, overwrite_a=True, check_finite=False)
     rhs = np.zeros(S, complex)
     rhs[i0] = 1.0
     x = lu_solve(lu, rhs)
@@ -171,6 +184,37 @@ def solve_banded(p, B=6, rate=True):
     rho[r, c] = x
     P = np.real(np.diag(rho)[:N] + np.diag(rho)[N:])
     return dict(n=nss, W=W, pgc=float(np.real(np.trace(rho[N:, N:]))), P=P, dim=S, rho=rho)
+
+
+def banded_fock_drift(p, n0s, B=4, h=0.05, t1=100, t2=400):
+    """Phonon drift d<n>/dt and energy diffusion d Var(n)/dt (per unit time
+    1/nu_r) after preparing |g_p, n0>, from implicit-Euler steps of the banded
+    generator (one dense LU); measured between steps t1 and t2, after the
+    internal transient. Needs N well above max(n0s)."""
+    from scipy.linalg import lu_factor, lu_solve
+    M, r, c, n_of = banded_generator(p, B)
+    S = r.size
+    A = -h * M
+    A[np.diag_indices(S)] += 1.0
+    del M
+    lu = lu_factor(A, overwrite_a=True, check_finite=False)
+    diag = np.nonzero(r == c)[0]
+    n1 = np.zeros(S)
+    n1[diag] = n_of[r[diag]]
+    n2 = n1**2
+    out = []
+    for n0 in n0s:
+        y = np.zeros(S, complex)
+        y[int(np.nonzero((r == n0) & (c == n0))[0][0])] = 1.0
+        mom = []
+        for k in range(t2):
+            y = lu_solve(lu, y)
+            if k in (t1 - 1, t2 - 1):
+                m1, m2 = float(np.real(n1 @ y)), float(np.real(n2 @ y))
+                mom.append((m1, m2 - m1**2))
+        T = (t2 - t1) * h
+        out.append(((mom[1][0] - mom[0][0]) / T, (mom[1][1] - mom[0][1]) / T))
+    return np.array(out)
 
 
 def steady(fc, s, rate=True, **kw):

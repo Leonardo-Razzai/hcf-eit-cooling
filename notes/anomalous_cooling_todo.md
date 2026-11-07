@@ -66,9 +66,35 @@ broad, non-ergodic statistics; random multiplicative ("Kesten") processes with p
 stationary tails. Related high-intensity EIT breakdown: Bartolotta et al., arXiv:2411.18818 (2024);
 Morillas-Rozas et al., arXiv:2607.22243 (2026, preprint).
 
+## First diagnostics (7 Nov 2026, `results/convergence/tail_mechanism.png`)
+
+Banded eliminated ME, case A (h = κα η_sp² = 0.40), drift and diffusion from Fock states
+(`rates_vs_n.dat`), tail at s = 0.1 (`tail_s0p1.dat`):
+
+- **Scale-free tail confirmed at s = 0.1:** P(n) is a clean power law over n = 30–200,
+  d ln P / d ln n = −2.31 … −2.39 (log-linear slope varies 4×, so not exponential). Prediction
+  −1/h = −2.48. Steepens to −2.9 above n ≈ 200. N = 300 and 400 give identical tails;
+  n_ss = 0.03243 → 0.03265 (+0.7 %), W = 335 → 338 s⁻¹.
+- **Saturation crossover confirmed:** removal rate grows ∝ n up to n ≈ 1/s and saturates at
+  ≈ 2000 s⁻¹ (s = 0.01: linear to n ≈ 50–80, plateau from n ≈ 120; s = 0.1: plateau from n ≈ 10–20;
+  s = 1: plateau from n = 1). Diffusion per quantum saturates at ≈ 2800 s⁻¹, i.e. D ∝ n R(n) on
+  the plateau, as assumed.
+- **Unexpected: no collapse at loss of sideband resolution — a fast high-n cooling channel.**
+  Beyond s·n ≈ 20 (≈ 2(Δ/Γ)² = 18, the predicted resolution-loss scale) the removal rate grows again,
+  roughly ∝ n, far above the narrow-line bound (s = 1: 4.6×10³ s⁻¹ at n = 30, 4.4×10⁴ s⁻¹ at n = 200;
+  s = 0.1: rising from n ≈ 120). This channel cuts off the power-law tail. Hierarchy:
+  linear (n < 1/s) → saturated plateau with power-law tail (1/s < n < ~20/s) → fast cooling
+  (n > ~20/s). The plateau spans n ≈ 10–200 at s = 0.1 (inside the computed range → slowest
+  convergence), only n ≈ 1–20 at s = 1 (tail cut early → fast convergence), and n ≈ 100–2000 at
+  s = 0.01 (tail weight tiny, but still drifting +0.1 %/50 states). Mechanism to be understood
+  (hot atoms leave the narrow EIT resonance; Doppler-like cooling on the broad line?).
+- **Fokker–Planck is only qualitative:** the measured local ratio −v n/D is 0.5–1.2 on the plateau,
+  not (1−h)/h = 1.48; the large discrete recoil jumps matter. The tail exponent nevertheless is
+  close to −1/h.
+
 ## To do
 
-- [ ] Analyse the running diagnostics (`studies/convergence.py rates tailshape`):
+- [x] Analyse the running diagnostics (`studies/convergence.py rates tailshape`) — see above:
       drift v(n), diffusion D(n) vs n₀ at s = 0.01, 0.1, 1 (`rates_vs_n.dat`); P(n) at s = 0.1,
       N = 300/400 (`tail_s0p1.dat`); figure `results/convergence/tail_mechanism.png`.
       Check: R(n) saturation at n ≈ 1/s; D ∝ n R; local ratio −v n/D ≈ (1−h)/h, s-independent;
@@ -78,6 +104,8 @@ Morillas-Rozas et al., arXiv:2607.22243 (2026, preprint).
       (e.g. master equation for P(n) with the exact recoil kernel).
 - [ ] Scan h via ν_r/ω_rec and b_p with the banded solver (reduced cases, branch `universal`):
       tail exponents, finite-size-scaling exponents, collapse in h, thresholds h = 1/2 and h = 1.
+- [ ] Understand the fast high-n cooling channel beyond s·n ≈ 2(Δ/Γ)² (vary Δ/Γ: does the onset
+      follow 2(Δ/Γ)²/s?); it truncates the tail and sets where convergence is reached.
 - [ ] Optional: Liouvillian gap vs N near threshold; time-domain relaxation from hot states
       (power-law vs exponential).
 - [ ] Role of the cut-offs: include anharmonicity / trap depth / Bessel non-linearity and see how

@@ -165,6 +165,40 @@ def discarded():
         fig.savefig(OUT / f'discarded.{ext}')
     plt.close(fig)
 
+
+def tail_mechanism():
+    """Why the Fock tail depends on s: cooling drift and energy diffusion per Fock
+    state (banded master equation), and the shape of the s = 0.1 tail."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 60 * MM), constrained_layout=True)
+    d = load('rates_vs_n.dat')
+    cols = {0.01: CG, 0.1: CL, 1.0: CA}
+    for s, col in cols.items():
+        r = d[d['s'] == s]
+        ax[0].loglog(r['n0'], -r['drift'], 'o-', color=col, ms=3, label='$s=%g$' % s)
+        ax[1].semilogx(r['n0'], r['diffusion'] / r['n0'], 'o-', color=col, ms=3)
+        ax[0].axvline(1 / s, color=col, lw=0.6, ls=':')
+    ax[0].set_xlabel(r'initial Fock state $n_0$')
+    ax[0].set_ylabel(r'cooling drift $-d\langle n\rangle/dt$ (s$^{-1}$)')
+    ax[0].legend(loc='lower right')
+    ax[0].text(0.03, 0.97, r'dotted: $n^*=1/s$', transform=ax[0].transAxes, va='top')
+    letter(ax[0], 'a')
+    ax[1].set_xlabel(r'initial Fock state $n_0$')
+    ax[1].set_ylabel(r'diffusion $\frac{d\,{\rm Var}(n)}{dt}\,/\,n_0$ (s$^{-1}$)')
+    letter(ax[1], 'b')
+    t = load('tail_s0p1.dat')
+    for nm, col, lab in (('P_N300', CL, '$N=300$'), ('P_N400', CA, '$N=400$')):
+        ok = np.isfinite(t[nm]) & (t[nm] > 0) & (t['n'] > 0)
+        ax[2].loglog(t['n'][ok], t[nm][ok], color=col, label=lab)
+    ax[2].set_xlabel('Fock state $n$')
+    ax[2].set_ylabel(r'$P(n)$, case A, $s=0.1$')
+    ax[2].legend(loc='lower left')
+    letter(ax[2], 'c')
+    for ext in ('pdf', 'png'):
+        fig.savefig(OUT / f'tail_mechanism.{ext}')
+    plt.close(fig)
+
+
 if __name__ == '__main__':
     main()
     discarded()
+    tail_mechanism()

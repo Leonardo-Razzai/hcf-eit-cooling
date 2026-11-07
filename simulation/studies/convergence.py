@@ -21,7 +21,16 @@ plotting/convergence_plots.py into the same folder. One process, sequential.
                                                  -> rho_A_s1.dat, op_recoil.dat,
                                                     op_probe.dat, op_coupling.dat (~1 min)
 
-Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices]   (default: all)
+  weak   weak-probe N-scan, case A, s = 0.01, 0.1, 0.3, band 4, N = 60..300 (decides the
+         provisional numerics.toml rule)      -> nconv_weak.dat   (~20-30 min)
+
+  rates  cooling drift d<n>/dt and energy diffusion dVar(n)/dt from Fock states n0 = 1..200,
+         case A, s = 0.01, 0.1, 1 (banded, N = 260, B = 4): why the tail depends on s
+                                                 -> rates_vs_n.dat  (~10 min)
+  tailshape  P(n) for case A, s = 0.1 at N = 300 and 400 (band 4)
+                                                 -> tail_s0p1.dat   (~5 min)
+
+Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices] [weak] [rates] [tailshape]
 """
 import sys
 
@@ -121,7 +130,52 @@ def matrices():
         % (N, u, p['eta_sp']))
 
 
-STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices}
+def weak():
+    import time
+    fc = CASES['A']
+    rows = []
+    for s in (0.01, 0.1, 0.3):
+        for N in (60, 100, 150, 200, 250, 300):
+            t = time.time()
+            r = E.solve_banded(E.params(fc, s=s, N=N), B=4)
+            rows.append([s, N, 4, r['n'], r['W'] * fc['om'], r['P'][-20:].sum()])
+            log('weak', 's %g N %d' % (s, N), 'n %.5f W %.1f tail(last 20) %.1e  %.0fs'
+                % (r['n'], r['W'] * fc['om'], rows[-1][-1], time.time() - t))
+            save('nconv_weak.dat', ['s', 'N', 'band', 'n', 'W', 'P_last20'], rows)
+    return rows
+
+
+RATE_N0 = (1, 2, 3, 5, 8, 12, 20, 30, 50, 80, 120, 160, 200)
+
+
+def rates():
+    import time
+    fc = CASES['A']
+    rows = []
+    for s in (0.01, 0.1, 1.0):
+        t = time.time()
+        out = E.banded_fock_drift(E.params(fc, s=s, N=260), RATE_N0, B=4)
+        for n0, (dr, df) in zip(RATE_N0, out):
+            rows.append([s, n0, dr * fc['om'], df * fc['om']])
+        log('rates', 's %g' % s, 'drift(n0) /s:', np.round(out[:, 0] * fc['om']), '%.0fs' % (time.time() - t))
+        save('rates_vs_n.dat', ['s', 'n0', 'drift', 'diffusion'], rows)
+
+
+def tailshape():
+    fc = CASES['A']
+    cols, data = ['n'], [np.arange(400)]
+    for N in (300, 400):
+        r = E.solve_banded(E.params(fc, s=0.1, N=N), B=4)
+        P = np.full(400, np.nan)
+        P[:N] = np.clip(r['P'], 0, None)
+        cols.append('P_N%d' % N)
+        data.append(P)
+        log('tailshape', 'N %d n %.5f W %.1f' % (N, r['n'], r['W'] * fc['om']))
+        save('tail_s0p1.dat', cols, np.column_stack(data))
+
+
+STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices,
+           'weak': weak, 'rates': rates, 'tailshape': tailshape}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
