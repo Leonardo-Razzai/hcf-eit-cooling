@@ -260,7 +260,8 @@ def test_numerics_config_rules():
     c = E.paper_cases()
     assert E.me_cutoffs(c['A']['eta_sp'], 1.0)['N'] == 120
     weak = E.me_cutoffs(c['A']['eta_sp'], 0.1)
-    assert weak['band'] == 4 and weak['status'] == 'provisional'
+    assert weak['band'] == 4 and weak['N'] == 400 and weak['status'] == 'approximate'
+    assert E.me_cutoffs(c['A']['eta_sp'], 0.5)['N'] == 250
     assert E.me_cutoffs(c['B']['eta_sp'], 0.1)['N'] == 40
     with pytest.raises(ValueError):
         E.me_cutoffs(1.0, 1.0)                           # no validated rule: must fail

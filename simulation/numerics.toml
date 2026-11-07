@@ -10,13 +10,17 @@
 # truncation N and the band are chosen by the FIRST rule whose ranges contain
 # the actual eta_sp (recoil Lamb-Dicke parameter; eta_sp^2 = omega_rec/nu_r)
 # and the saturation parameter s. Ranges: eta_sp <= eta_sp_max,
+# status: validated (< 0.1 %), approximate (stated accuracy), provisional (unchecked).
+#
 # s_min <= s < s_max. No match -> error: run a convergence check first.
 #
 # Evidence (results/convergence/, case A eta_sp = 0.71, case B 0.34, Delta = 3 Gamma):
 #   - band 6: error < 1e-5 for s <= 1, < 2e-3 (W) at s = 5; band 4: < 1e-8 at s = 0.1
 #   - case B (and any eta_sp <= 0.4): converged at N = 20 for s = 1
 #   - case A, s >= 1: n_ss and W converged to < 1e-4 at N = 120 (s = 5 already at N = 40)
-#   - case A, s = 0.1: n_ss still rising at N = 160 (+1.6 % from 120 to 160): provisional
+#   - case A, s = 0.3: converged by N = 250 (band 4); s = 0.01: +0.1 % per 50 states at N = 300;
+#     s = 0.1: power-law tail, +0.7 % from N = 300 to 400 (results/convergence/nconv_weak.dat,
+#     tail_s0p1.dat): rule marked approximate
 
 [steady_state]
 elimination_valid_delta_min = 2.0     # Delta/Gamma; < 0.5 % error at 3 Gamma, ~1 % at Gamma
@@ -40,13 +44,24 @@ band = 6
 status = "validated"                  # n_ss, W change < 1e-4 between N = 120 and 160
 
 [[steady_state.rule]]
-name = "soft trap, weak probe (case A, s < 1)"
+name = "soft trap, intermediate probe (case A, 0.3 <= s < 1)"
 eta_sp_max = 0.75
-s_min = 0.0
+s_min = 0.3
 s_max = 1.0
 N = 250
 band = 4
-status = "provisional"                # long recoil tail; to be confirmed by a N-scan
+status = "validated"                  # s = 0.3: n_ss, W change < 1e-3 from N = 250 to 300
+
+[[steady_state.rule]]
+name = "soft trap, weak probe (case A, s < 0.3)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 0.3
+N = 400
+band = 4
+status = "approximate"                # power-law recoil tail (P ~ n^-2.35 at s = 0.1): n_ss within
+                                      # ~2 % (s = 0.1: +0.7 % from N = 300 to 400, extrapolated
+                                      # 0.033), W within ~1 %; s = 0.01 within ~0.3 %
 
 # ---------------------------------------------------------------- full master equation
 [full_me]
