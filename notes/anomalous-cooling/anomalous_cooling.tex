@@ -8,6 +8,8 @@
 \usepackage{graphicx}
 \usepackage{upgreek}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathmorphing,calc}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 \usepackage{caption}
 \captionsetup{font=small,labelfont=bf}
@@ -84,7 +86,7 @@ $U_0/\hbar\nur$ & 1552 & trap depth in radial quanta\\
 \section{Why the LP$_{11}$ node is special}
 \label{sec:special}
 %=====================================================================
-Five properties of the fibre geometry combine. Each is unusual on its own, and together they are what makes the statistics anomalous.
+Five properties of the fibre geometry combine. Each is unusual on its own, and together they are what makes the statistics anomalous. Figure~\ref{fig:mechanism} summarises the resulting mechanism.
 
 \paragraph{(i) The motional ground state is dark.} At the node the carrier vanishes, so the probe drives only sidebands. From $\ket{g_p,0}$ the only allowed process is the blue sideband, suppressed by $(\Gamma/4\Delta)^2$~\cite{morigi2000}. The atom in the ground state therefore hardly scatters. This is the fibre analogue of an ion at a standing-wave node~\cite{cirac1992}, a dark state in Fock space at the bottom of the ladder.
 
@@ -154,6 +156,84 @@ spatial structure of the dark state & on the scale $\lambda$ (if any) & on the s
 \bottomrule
 \end{tabularx}
 \end{table}
+
+
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize, >={Stealth[length=2mm]},
+  stp/.style={circle, draw, inner sep=0.6pt, font=\scriptsize\bfseries, fill=white}]
+% ======================= (a) fibre cross-section =======================
+\begin{scope}
+  \node[font=\bfseries\normalsize] at (-3.0,2.75) {a};
+  \node[font=\scriptsize, align=center] at (0,2.35) {probe in LP$_{11}$ (lobes), coupling in LP$_{01}$};
+  \fill[gray!8] (0,0) circle (2);
+  \draw[gray!70, line width=1.2pt] (0,0) circle (2);
+  \fill[blue!25] (-0.95,0) ellipse (0.75 and 1.15);
+  \fill[orange!35] (0.95,0) ellipse (0.75 and 1.15);
+  \node at (-0.95,0.8) {$+$};
+  \node at (0.95,0.8) {$-$};
+  \draw[red!70!black, <->, thick] (-0.85,0) -- (0.85,0);
+  \fill[black] (0,0) circle (0.07);
+  \node[font=\scriptsize] at (0,0.3) {$\ket{g_p}$};
+  \draw[->, gray] (2.15,-1.25) -- (0.85,-0.05);
+  \node[font=\scriptsize, align=left, anchor=west] at (2.1,-1.35) {$\ket{D}=\cos\theta\ket{g_p}$\\$\phantom{\ket{D}=}-\sin\theta\ket{g_c}$};
+  \node[font=\scriptsize, align=center] at (0,-2.45) {node on the trap axis; $\ket{D(x)}$ rotates on the scale $a$};
+\end{scope}
+% ======================= (b) Sisyphus cycle =======================
+\begin{scope}[shift={(7.8,-1.9)}]
+  \node[font=\bfseries\normalsize] at (-3.2,4.65) {b};
+  \draw[->] (-2.8,0) -- (2.9,0) node[below] {$x$};
+  \draw[->] (0,-0.1) -- (0,4.5) node[left] {energy};
+  \draw[thick, blue!70!black, domain=-2.6:2.6, smooth, variable=\x] plot (\x, {0.3*\x*\x});
+  \draw[thick, orange!80!black, domain=-2.25:2.25, smooth, variable=\x] plot (\x, {0.6+0.72*\x*\x});
+  \node[blue!70!black, anchor=east] at (-2.62,2.03) {$\ket{D(x)}$};
+  \node[orange!80!black, anchor=east] at (-2.27,4.25) {$\ket{B(x)}$};
+  % cycle
+  \fill[red!70!black] (0,0) circle (0.08);
+  \draw[->, red!70!black, thick] (0.08,0.06) -- (0.08,0.56);
+  \node[stp] at (-0.3,0.33) {1};
+  \draw[->, red!70!black, thick, domain=0.12:1.55, smooth, variable=\x] plot (\x, {0.62+0.72*\x*\x});
+  \node[stp] at (0.55,1.45) {2};
+  \draw[->, decorate, decoration={snake, amplitude=0.6mm, segment length=2.2mm, post length=1.6mm},
+        violet, thick] (1.6,2.42) -- (1.6,0.8);
+  \node[stp] at (1.25,1.65) {3};
+  \draw[gray, densely dotted] (1.65,0.77) -- (3.05,0.77);
+  \draw[gray, densely dotted] (1.65,2.43) -- (3.05,2.43);
+  \draw[<->, gray] (3.0,0.77) -- (3.0,2.43);
+  \node[anchor=west, font=\scriptsize, align=left] at (3.05,1.6) {$\Delta E\approx\hbar\nur\tan^2\theta(x_t)$\\$\propto n$};
+  \draw[gray, dashed] (1.6,0) -- (1.6,0.77);
+  \node[below, font=\scriptsize] at (1.6,0) {$x_t$};
+\end{scope}
+% ======================= (c) regimes along the Fock ladder =======================
+\begin{scope}[shift={(-2.4,-6.6)}]
+  \node[font=\bfseries\normalsize] at (-0.5,3.1) {c};
+  \fill[blue!8] (0.6,0) rectangle (5.2,1.55);
+  \fill[gray!12] (5.2,0) rectangle (10.4,1.55);
+  \fill[orange!12] (10.4,0) rectangle (15.0,1.55);
+  \draw[->] (0.6,0) -- (15.2,0) node[below left, font=\scriptsize] {$\log n$};
+  \fill[black] (0.6,0) circle (0.06);
+  \node[below, font=\scriptsize] at (0.6,0) {$n=0$};
+  \node[below, font=\scriptsize] at (5.2,0) {$n=1/s$};
+  \node[below, font=\scriptsize] at (10.4,0) {$n\simeq2(\nur/\Gamma_n)^2/s$};
+  \node[font=\scriptsize, align=center] at (2.9,1.15) {I: resolved EIT};
+  \node[font=\scriptsize, align=center] at (2.9,0.55) {$-1$ quantum per cycle,\\rate $\propto n$};
+  \node[font=\scriptsize, align=center] at (7.8,1.15) {II: saturated plateau};
+  \node[font=\scriptsize, align=center] at (7.8,0.55) {$-1$ quantum per cycle, constant rate;\\recoil kicks $\pm\sqrt n$ quanta};
+  \node[font=\scriptsize, align=center] at (12.7,1.15) {III: Sisyphus-like};
+  \node[font=\scriptsize, align=center] at (12.7,0.55) {$-\Delta E\propto n$ per cycle,\\rate $\propto n$};
+  % log P(n) sketch above the ladder
+  \draw[->] (0.6,1.75) -- (0.6,3.0) node[right, font=\scriptsize] {$\log P$};
+  \draw[thick, red!70!black, smooth] plot coordinates {(0.65,2.95) (1.5,2.6) (3.0,2.25) (5.2,1.95)
+        (7.8,1.9) (10.4,1.83) (11.2,1.79) (12.0,1.76)};
+  \node[font=\scriptsize, red!70!black] at (7.8,2.25) {power law $n^{-1/h}$};
+  \node[font=\scriptsize, red!70!black] at (12.9,2.15) {cut off};
+  \node[font=\scriptsize, anchor=west] at (0.75,1.72) {dark ground state (node)};
+\end{scope}
+\end{tikzpicture}}
+\caption{Mechanism, schematically. \textbf{a}, the LP$_{11}$ probe has a node on the trap axis, so the motional ground state does not scatter. Off axis the dark state $\ket{D(x)}$ acquires a $\gc$ component; it rotates on the scale of the core radius. \textbf{b}, regime III (Sisyphus-like): \textcircled{\scriptsize 1}~an atom following $\ket{D(x)}$ is coupled to the bright state by its motion ($\propto\dot x\,\partial_x\theta$), mostly near the axis where it is fastest; \textcircled{\scriptsize 2}~it climbs the bright-state light-shift hill $\delta_B(x)\propto x^2$ (blue detuning); \textcircled{\scriptsize 3}~optical pumping returns it to $\ket D$, the photon carrying away $\Delta E\approx\hbar\nur\tan^2\theta(x_t)\propto n$. \textbf{c}, the regimes along the Fock ladder: each cycle removes one quantum in I and II, at a rate $\propto n$ (I) or constant (II); recoil kicks of $\pm\sqrt n$ quanta make the tail of $P(n)$ a power law in II; the Sisyphus channel removes $\propto n$ quanta per cycle in III and cuts the tail off. In panel c the vertical scale of $\log P$ is schematic.}
+\label{fig:mechanism}
+\end{figure}
 
 %=====================================================================
 \section{Energy-resolved model and the power-law tail}
