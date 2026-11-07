@@ -198,7 +198,53 @@ def tail_mechanism():
     plt.close(fig)
 
 
+
+def regimes():
+    """Three cooling regimes across n and s (case A): resolved EIT cooling (removal rate
+    proportional to n) for s n < 1, a saturated plateau, and a fast Sisyphus-like channel
+    once the Raman coupling Omega_R sqrt(n) exceeds nu_r, i.e. s n > 2 (nu_r / Gamma_n)^2."""
+    import sys
+    sys.path.insert(0, str(OUT.parents[1]))
+    import eitsim as E
+    snc = 2 / E.params(E.paper_cases()['A'], s=1.0)['Gn']**2      # s n at loss of resolution
+    d = load('rates_vs_n.dat')
+    cols = {0.01: CG, 0.1: CL, 1.0: CA}
+    fig, ax = plt.subplots(1, 2, figsize=(WDOUBLE, 68 * MM), constrained_layout=True)
+    ymin, ymax = 20, 2e5
+    for lo, hi, shade, lab in ((1e-3, 1, '#EAF2FA', 'resolved EIT\n' + r'$R\propto n$'),
+                               (1, snc, '#F4F4F4', 'saturated\nplateau'),
+                               (snc, 1e4, '#FDF0E6', 'Sisyphus-like\n(dark-state following)')):
+        ax[0].axvspan(lo, hi, color=shade, lw=0)
+        ax[0].text(np.sqrt(max(lo, 3e-3) * min(hi, 300)), 1.1e5, lab, ha='center', va='top')
+    for s, col in cols.items():
+        r = d[d['s'] == s]
+        ax[0].loglog(s * r['n0'], -r['drift'], 'o-', color=col, ms=3, label='$s=%g$' % s)
+        ax[1].loglog(r['n0'], -r['drift'], 'o-', color=col, ms=3, label='$s=%g$' % s)
+        for x, ls in ((1 / s, ':'), (snc / s, '--')):
+            if x < 300:
+                ax[1].axvline(x, color=col, lw=0.7, ls=ls)
+    ax[0].axvline(1, color=CG, lw=0.6, ls=':')
+    ax[0].axvline(snc, color=CG, lw=0.6, ls='--')
+    ax[0].set_xlim(3e-3, 300)
+    ax[1].set_xlim(0.8, 300)
+    for a_ in ax:
+        a_.set_ylim(ymin, ymax)
+        a_.set_ylabel(r'cooling drift $-d\langle n\rangle/dt$ (s$^{-1}$), case A')
+    ax[0].set_xlabel(r'$s\,n_0$ (saturation of the $n_0\to n_0-1$ sideband)')
+    ax[1].set_xlabel(r'initial Fock state $n_0$')
+    ax[0].legend(loc='lower right')
+    ax[1].text(0.03, 0.97, 'dotted: $n=1/s$ (saturation)\n'
+               'dashed: $n=2(\\nu_r/\\Gamma_n)^2/s\\approx%.0f/s$\n(Raman splitting $>\\nu_r$)' % snc,
+               transform=ax[1].transAxes, va='top')
+    letter(ax[0], 'a')
+    letter(ax[1], 'b')
+    for ext in ('pdf', 'png'):
+        fig.savefig(OUT / f'regimes.{ext}')
+    plt.close(fig)
+
+
 if __name__ == '__main__':
     main()
     discarded()
     tail_mechanism()
+    regimes()

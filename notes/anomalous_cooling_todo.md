@@ -92,6 +92,46 @@ Banded eliminated ME, case A (h = κα η_sp² = 0.40), drift and diffusion from
   not (1−h)/h = 1.48; the large discrete recoil jumps matter. The tail exponent nevertheless is
   close to −1/h.
 
+## The fast high-n channel: Sisyphus-like (gray-molasses) cooling? (7 Nov 2026)
+
+Figure: `results/convergence/regimes.png` (from `rates_vs_n.dat`). Plotted against s·n₀ the drift
+curves **collapse**: s = 0.01 and 0.1 coincide in the resolved and plateau regions; s = 0.1 and 1
+coincide at the onset of the fast channel, at s·n ≈ 2(ν_r/Γ_n)² = 18.0 (Γ_n/ν_r = 0.333 for
+Δ = 3Γ). Three regimes of one trapped atom:
+
+| regime | condition | removal rate | limited by |
+|---|---|---|---|
+| resolved EIT (quantum, sideband) | s·n < 1 | R ∝ n | narrow line, unsaturated |
+| saturated plateau (power-law tail lives here) | 1 < s·n < 2(ν_r/Γ_n)² | R ≈ const ≈ 2×10³ s⁻¹ | narrow line Γ_n |
+| fast, Sisyphus-like | s·n > 2(ν_r/Γ_n)², i.e. Ω_R√n > ν_r | R ∝ n, far above Γ_n bound | optical pumping / light shift |
+
+**Intuitive picture (hypothesis).** When the Raman coupling at level n exceeds the trap frequency
+(Ω_R√n > ν_r) the internal state evolves faster than the motion: the atom follows the local dark
+state |D(x)⟩ ∝ Ω_c|g_p⟩ − Ω̄_p f_p(x)|g_c⟩, whose mixing angle θ(x) ≈ Ω̄_p G x/(aΩ_c) varies along
+the LP₁₁ gradient. Motion couples it non-adiabatically (∝ velocity) to the bright state, which for
+blue detuning (Δ > 0) is light-shifted up: the atom climbs a potential hill before optical pumping
+returns it to the dark state. That is dark-state Sisyphus / gray-molasses cooling (friction ∝ v², so
+energy removal ∝ E ∝ n). It also explains why the GRM (c_sat calibrated for n ≤ 15) underestimates
+the ME drift at n₀ = 20–30 in case A (GRM/ME = 0.42 at n₀ = 30, s = 1).
+
+**Literature (verified on Crossref/arXiv; full texts not yet read).** Known separately:
+- gray molasses: Grynberg & Courtois, EPL 27, 41 (1994); Weidemüller et al., EPL 27, 109 (1994);
+- unified theory of cooling of a trapped atom (resolved/unresolved sideband, gray molasses,
+  Λ-enhanced gray molasses): Phatak et al., PRA 110, 043116 (2024), arXiv:2406.19153;
+- EIT sub-Doppler friction for free atoms: He, Tengdin, Anderson & Rey, PRA 95, 053403 (2017);
+- high-energy breakdown / capture range of EIT cooling for ions: Bartolotta et al., arXiv:2411.18818;
+- Λ-enhanced gray molasses in tweezers: Janse van Rensburg et al., PRA 113, 033123 (2026).
+Not found: the crossover resolved EIT → plateau → Sisyphus within one trapped atom vs n and s, in a
+gradient-only (node) geometry. To check in full texts before claiming novelty.
+
+**Fibre-specific aspects.** The mechanism is general Λ physics; the regime is set by the fibre:
+(i) the Sisyphus "lattice" is the transverse mode profile (scale a ≈ 15 µm), not λ/2 — a smooth hill
+over the whole radial excursion, large capture range, no corrugation; (ii) the soft trap puts the
+crossover inside the thermal population (n̄ ≈ 30 at 10 µK): hot atoms are captured in the
+Sisyphus regime and finished in the EIT regime (in tight tweezers/ion traps the crossover is at much
+larger n); (iii) the node keeps the low-n regime carrier-free. Consequence: hot-atom capture may be
+much faster than the GRM-based capture times of the paper.
+
 ## To do
 
 - [x] Analyse the running diagnostics (`studies/convergence.py rates tailshape`) — see above:
@@ -104,13 +144,24 @@ Banded eliminated ME, case A (h = κα η_sp² = 0.40), drift and diffusion from
       (e.g. master equation for P(n) with the exact recoil kernel).
 - [ ] Scan h via ν_r/ω_rec and b_p with the banded solver (reduced cases, branch `universal`):
       tail exponents, finite-size-scaling exponents, collapse in h, thresholds h = 1/2 and h = 1.
-- [ ] Understand the fast high-n cooling channel beyond s·n ≈ 2(Δ/Γ)² (vary Δ/Γ: does the onset
-      follow 2(Δ/Γ)²/s?); it truncates the tail and sets where convergence is reached.
+- [ ] Fast channel — test the Sisyphus picture:
+  - [ ] map R(n, s) on a 2D grid (n ≈ 1–300, s = 0.01–10; banded drift, ~6 min per s); collapse vs
+        s·n and vs Ω_R√n/ν_r;
+  - [ ] vary Δ/Γ: onset should move as 2(ν_r/Γ_n)²/s ≈ 2(Δ/Γ)²/s;
+  - [ ] flip the sign of Δ: gray molasses needs blue detuning, so red detuning should turn the
+        high-n regime into heating while the resolved regime survives;
+  - [ ] scaling of the high-n rate with Ω_c, Δ, Γ (Sisyphus friction, not Γ_n); bright-state
+        population and dark-state following at high n;
+  - [ ] semiclassical friction/diffusion of an atom moving through the LP₁₁ gradient (linear
+        response of the optical Bloch equations) vs ME drift at high n;
+  - [ ] consequence: capture from thermal states with banded time evolution (n̄ ≈ 30, N ≈ 400)
+        instead of the GRM — true capture time from 10 µK including this channel.
 - [ ] Optional: Liouvillian gap vs N near threshold; time-domain relaxation from hot states
       (power-law vs exponential).
 - [ ] Role of the cut-offs: include anharmonicity / trap depth / Bessel non-linearity and see how
       they round the transition; dependence on Δ/Γ and core size.
 - [ ] Literature check (Crossref): Lévy statistics in subrecoil cooling, Kesten processes,
-      dissipative phase transitions in open quantum systems, high-intensity EIT cooling breakdown.
+      dissipative phase transitions in open quantum systems, high-intensity EIT cooling breakdown;
+      full texts of Phatak 2024, Bartolotta 2024, He 2017 for the EIT/gray-molasses crossover.
 - [ ] Decide: section of the fibre paper, or a separate paper on anomalous Fock statistics in
       laser cooling with soft traps.
