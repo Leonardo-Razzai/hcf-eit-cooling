@@ -10,9 +10,8 @@
 # truncation N and the band are chosen by the FIRST rule whose ranges contain
 # the actual eta_sp (recoil Lamb-Dicke parameter; eta_sp^2 = omega_rec/nu_r)
 # and the saturation parameter s. Ranges: eta_sp <= eta_sp_max,
-# status: validated (< 0.1 %), approximate (stated accuracy), provisional (unchecked).
-#
 # s_min <= s < s_max. No match -> error: run a convergence check first.
+# Status: validated (< 0.1 %), approximate (stated accuracy), provisional (unchecked).
 #
 # Evidence (results/convergence/, case A eta_sp = 0.71, case B 0.34, Delta = 3 Gamma):
 #   - band 6: error < 1e-5 for s <= 1, < 2e-3 (W) at s = 5; band 4: < 1e-8 at s = 0.1
