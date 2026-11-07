@@ -1,0 +1,321 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs,tabularx}
+\usepackage{graphicx}
+\usepackage{upgreek}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\graphicspath{{figures/}}
+
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\gp}{\ket{g_p}}
+\newcommand{\gc}{\ket{g_c}}
+\newcommand{\Om}{\Omega}
+\newcommand{\etap}{\eta_\perp}
+\newcommand{\etasp}{\eta_{\rm sp}}
+\newcommand{\nur}{\nu_r}
+\newcommand{\micro}{\upmu}
+\newcommand{\SI}[2]{\ensuremath{#1\,\mathrm{#2}}}
+
+\title{Anomalous Fock statistics and a Sisyphus channel\\in radial EIT cooling at an LP$_{11}$ node\\[3pt]
+\large Theory notes --- working draft}
+\author{}
+\date{7 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Radial EIT cooling with the probe in the LP$_{11}$ mode of a hollow-core fibre and the coupling beam in LP$_{01}$ has, in a soft trap, three regimes of energy removal from a trapped atom. They are separated by the saturation of the $n\to n-1$ sideband, at $s\,n=1$, and by the point where the Raman coupling exceeds the trap frequency, at $s\,n=2(\nur/\Gamma_n)^2$. Between the two, the removal rate is constant while recoil spreads the energy by $\propto\sqrt n$ quanta per photon. The steady state then develops a power-law tail $P(n)\propto n^{-\mu}$, whose exponent is set by $h$, the recoil energy per removed phonon: a minimal model gives $\mu\simeq1/h$. Above the second crossover the atom follows the position-dependent dark state of the LP$_{11}$ profile, and a Sisyphus-like channel removes energy at a rate that grows with $n$. We show why each ingredient is a consequence of the node geometry, give the scales and thresholds, and list the tests still needed. Master-equation diagnostics support the regime structure and the power-law tail. The thresholds and the mechanism of the fast channel are hypotheses at this stage.
+\end{abstract}
+
+\tableofcontents
+
+%=====================================================================
+\section{Status and motivation}
+%=====================================================================
+This note grew out of a numerical problem. For case A of the fibre paper (core radius $a=\SI{15}{\micro m}$, $\nur=7.15$\,kHz, $\etasp=0.71$), the master-equation steady state needs very large Fock truncations $N$. Case B ($a=3.5\,\mu$m, $\etasp=0.34$) is converged at $N=20$. The convergence is worst at intermediate saturation, $s\approx0.1$, where $n_{\rm ss}$ still grows by 0.7\% between $N=300$ and 400. It is better at both smaller and larger $s$. All numbers below are for case A, $^{87}$Rb D1, $\Delta=3\Gamma$, unless stated otherwise. They were obtained with the eliminated, banded master equation of the fibre project (\texttt{simulation/results/convergence/}).
+
+The status of each statement is marked:
+\begin{itemize}
+\item \textbf{[numerics]} --- computed with the master equation and checked for convergence;
+\item \textbf{[model]} --- derived from the minimal model of Sec.~\ref{sec:model};
+\item \textbf{[hypothesis]} --- a proposed explanation that still needs a dedicated test.
+\end{itemize}
+
+%=====================================================================
+\section{Setting}
+\label{sec:setting}
+%=====================================================================
+The probe, in LP$_{11}$, couples $\gp$ to the excited state with a field that vanishes on the axis and grows linearly near it, $f_p(\hat x)\simeq G_{11}\hat x/a$. The coupling beam, in LP$_{01}$, couples $\gc$ with an almost flat profile. With the EIT condition $\Om_c^2=4\nur(\Delta+\nur)$, the light-shifted $\gc$ forms a narrow resonance at the red sideband, $\delta_+=\nur$, with width
+\begin{equation}
+  \Gamma_n\simeq\Gamma\frac{\Om_c^2}{4\Delta^2}\simeq\frac{\Gamma}{\Delta}\,\nur\qquad(\Gamma_n/\nur=0.333\ \text{for}\ \Delta=3\Gamma).
+\end{equation}
+The adiabatic elimination of the excited state is accurate here (Ref.~\cite{reiter2012}; $<0.5\%$ against the full master equation). It turns the problem into a Raman problem on $\{\gp,\gc\}\otimes$ motion. The relevant parameters are collected in Table~\ref{tab:params}.
+
+\begin{table}[h]
+\centering\small
+\caption{Parameters. Case A values for $^{87}$Rb D1, $\Delta=3\Gamma$, $b_p=1/2$.}
+\label{tab:params}
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+Symbol & Case A & Meaning\\
+\midrule
+$\etap=G_{11}x_0/a$ & 0.021 & Lamb--Dicke parameter of the drive (scale $a$)\\
+$\etasp=kx_0$ & 0.71 & Lamb--Dicke parameter of a spontaneous photon (scale $\lambda$); $\etasp^2=\omega_{\rm rec}/\nur$\\
+$s=2\Om_\perp^2/\Gamma\Gamma_n$ & --- & saturation of the $1\to0$ sideband, $\Om_\perp=\etap\bar\Om_p$\\
+$\Om_R=\Om_c\Om_\perp/2\Delta$ & $\Om_R^2=s\Gamma_n^2/2$ & Raman coupling $\ket{g_p,n}\leftrightarrow\ket{g_c,n-1}$, per $\sqrt n$\\
+$\kappa=1/b_p$ & 2 & photons per cooling cycle\\
+$\alpha=\langle u_x^2\rangle$ & 0.40 & projection of the emission direction on $x$\\
+$h=\kappa\alpha\etasp^2$ & 0.40 & recoil quanta added per removed phonon\\
+$U_0/\hbar\nur$ & 1552 & trap depth in radial quanta\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+%=====================================================================
+\section{Why the LP$_{11}$ node is special}
+\label{sec:special}
+%=====================================================================
+Five properties of the fibre geometry combine. Each is unusual on its own, and together they are what makes the statistics anomalous.
+
+\paragraph{(i) The motional ground state is dark.} At the node the carrier vanishes, so the probe drives only sidebands. From $\ket{g_p,0}$ the only allowed process is the blue sideband, suppressed by $(\Gamma/4\Delta)^2$~\cite{morigi2000}. The atom in the ground state therefore hardly scatters. This is the fibre analogue of an ion at a standing-wave node~\cite{cirac1992}, a dark state in Fock space at the bottom of the ladder.
+
+\paragraph{(ii) The coupling grows with $n$.} The sideband matrix element is $\langle n-1|\hat x|n\rangle=x_0\sqrt n$, so level $n$ sees the effective saturation
+\begin{equation}
+  s_n=s\,n .
+  \label{eq:sn}
+\end{equation}
+In a carrier-present scheme the carrier dominates and its scattering does not depend on $n$. At the node all scattering is sideband scattering, so cold atoms scatter little and hot atoms a lot: the scattering is \emph{energy-selective}.
+
+\paragraph{(iii) The drive and the recoil live on separate length scales.} The drive varies on the mode scale $a$, the photon recoil on the optical scale $\lambda$:
+\begin{equation}
+  \frac{\etap}{\etasp}=\frac{G_{11}}{ka}\approx0.03 .
+\end{equation}
+Each absorption therefore removes exactly one quantum ($\etap\ll1$, deep Lamb--Dicke regime). Each emission, instead, kicks the atom far outside the Lamb--Dicke regime. For the displacement $e^{i\etasp u(\hat b+\hat b^\dagger)}$ acting on $\ket n$ the jump statistics are exact:
+\begin{equation}
+  \langle\Delta n\rangle=\etasp^2u^2,\qquad {\rm Var}(\Delta n)=\etasp^2u^2(2n+1).
+  \label{eq:kick}
+\end{equation}
+The spread grows as $\sqrt n$ while the mean stays fixed (Fig.~\ref{fig:recoil}). This is multiplicative noise: a hot atom is kicked by many quanta in a random direction, while the cooling step is always one quantum. In ion-trap EIT cooling both Lamb--Dicke parameters are of order 0.1 and this separation does not occur.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{recoil.pdf}
+\caption{Recoil statistics of one spontaneous photon (case A). \textbf{a}, exact distribution of the jump $n\to n'$, averaged over the emission pattern, for $n=1$, 10, 100; the cooling step is a single quantum (dashed). \textbf{b}, spread and mean of the jump against $n$: the spread grows as $\etasp\sqrt{\alpha(2n+1)}$, Eq.~\eqref{eq:kick}, while the mean is fixed at $\alpha\etasp^2$.}
+\label{fig:recoil}
+\end{figure}
+
+\paragraph{(iv) The trap is soft on the recoil scale.} The radial confinement comes from the LP$_{01}$ waist $w\approx0.67a\gg\lambda$, so $\nur\propto1/a$ is comparable to the recoil frequency of the cooling photon:
+\begin{equation}
+  h=\kappa\alpha\etasp^2=\frac{\kappa\alpha\,\omega_{\rm rec}}{\nur}\approx0.4\quad\text{(case A)}.
+\end{equation}
+Each removed phonon therefore costs almost half a phonon of recoil. This is the parameter that controls the tail (Sec.~\ref{sec:model}).
+
+\paragraph{(v) The dark state rotates along the mode profile.} With the excited state eliminated, the ground manifold has a dark state and a bright state,
+\begin{equation}
+  \ket{D(x)}=\cos\theta\,\gp-\sin\theta\,\gc,\qquad \tan\theta(x)=\frac{\bar\Om_pf_p(x)}{\Om_c}\simeq\frac{\Gamma_n}{\nur}\sqrt{\frac s8}\,\frac{x}{x_0},
+  \label{eq:theta}
+\end{equation}
+where the last form uses the near-axis profile and the EIT condition. The bright state is light-shifted upwards for blue detuning, by
+\begin{equation}
+  \delta_B(x)=\frac{\Om_c^2+\bar\Om_p^2f_p(x)^2}{4\Delta},\qquad \delta_B(x)-\delta_B(0)\simeq\hbar\nur\Big(\frac{\Gamma_n}{\nur}\Big)^2\frac{s}{8}\Big(\frac{x}{x_0}\Big)^2 .
+  \label{eq:dB}
+\end{equation}
+The hill grows as $x^2$, like the trap, and extends smoothly over the whole core (Fig.~\ref{fig:geometry}). In free-space gray molasses the light shift is modulated on the scale $\lambda/2$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{geometry.pdf}
+\caption{The LP$_{11}$ node. \textbf{a}, LP$_{01}$ and LP$_{11}$ profiles at equal power and the dark-state angle $\theta(x)$, Eq.~\eqref{eq:theta}, for $s=0.1$ and 1. Shaded: radial excursion of $n=200$. \textbf{b}, bright-state light-shift hill, Eq.~\eqref{eq:dB}, for $s=0.1$, 1 and 5. Dots mark $\theta=\pi/4$; dotted lines are the turning points $x_t=2x_0\sqrt n$ of $n=1$, 18 and 180. The dot of each $s$ falls on the turning point of $n=18/s$, the onset of regime III (Sec.~\ref{sec:sisyphus}).}
+\label{fig:geometry}
+\end{figure}
+
+\begin{table}[h]
+\centering\small
+\caption{EIT cooling of a tightly trapped ion versus radial EIT cooling at an LP$_{11}$ node.}
+\label{tab:contrast}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+& tightly trapped ion & LP$_{11}$ node in a fibre\\
+\midrule
+carrier & present (suppressed at the dark resonance) & absent (node): dark ground state\\
+scattering & dominated by the $n$-independent carrier & sideband only, grows with $n$\\
+drive / recoil scales & both $\sim\lambda$, $\eta\sim0.1$ & $a$ vs $\lambda$: $\etap\approx0.02$, $\etasp\approx0.7$\\
+recoil per phonon $h$ & $\ll1$ & $\approx0.4$ (soft trap)\\
+spatial structure of the dark state & on the scale $\lambda$ (if any) & on the scale $a$, commensurate with the trap\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+%=====================================================================
+\section{Energy-resolved model and the power-law tail}
+\label{sec:model}
+%=====================================================================
+\paragraph{Removal rate per level [model, numerics].} Treating each pair $\ket{g_p,n}\leftrightarrow\ket{+,n-1}$ as a saturable two-level transition with saturation $s_n=sn$ gives the removal rate
+\begin{equation}
+  R(n)=R_{\rm sat}\frac{c\,sn}{1+c\,sn},
+  \label{eq:Rn}
+\end{equation}
+with $R_{\rm sat}$ a fraction of $(1-h)\Gamma_n/2$, set by the photons per cycle. With $R_{\rm sat}=2\times10^3$\,s$^{-1}$ and the constant $c=2.25$, already fitted independently in the rate model of the fibre paper, Eq.~\eqref{eq:Rn} reproduces the master-equation drift from Fock states in regimes I and II (Fig.~\ref{fig:regimes}).
+
+\paragraph{Drift and diffusion [model].} One cooling cycle removes one quantum and emits $\kappa$ photons. With Eq.~\eqref{eq:kick} averaged over the emission pattern, each cycle changes $n$ by
+\begin{equation}
+  \langle\Delta n\rangle_{\rm cycle}=-(1-h),\qquad {\rm Var}(\Delta n)_{\rm cycle}\simeq h\,(2n+1).
+\end{equation}
+In continuous time this gives the drift and diffusion coefficients
+\begin{equation}
+  v(n)=-(1-h)R(n),\qquad D(n)=h\big(n+\tfrac12\big)R(n).
+\end{equation}
+
+\paragraph{Stationary tail [model].} In a second-order (Fokker--Planck) description the zero-flux stationary state is $P(n)\propto D(n)^{-1}\exp\!\int^n v/D\,dn'$. Since $v/D\simeq-(1-h)/(hn)$ for any $R(n)$,
+\begin{equation}
+  P(n)\propto\frac{n^{-(1-h)/h}}{n\,R(n)}=
+  \begin{cases}
+    n^{-1/h-1} & \text{regime I}\ (R\propto n),\\
+    n^{-1/h} & \text{regime II}\ (R={\rm const}).
+  \end{cases}
+  \label{eq:tail}
+\end{equation}
+The tail is a power law, not an exponential. In regime II, where it is heaviest, the exponent $\mu=1/h$ depends only on $h$. The mechanism is that of random multiplicative processes~\cite{kesten1973,sornette1998}: additive drift towards the bottom combined with noise that grows with $n$. It is related in spirit to the Lévy statistics of subrecoil laser cooling~\cite{bardou1994}. There the dark state lies in momentum space; here it is the motional ground state at the node.
+
+\paragraph{Comparison with the master equation [numerics].} At $s=0.1$, where regime II spans $n\approx10$--180, the master-equation tail is a clean power law over a decade (Fig.~\ref{fig:tail}a). The fitted exponent, $n^{-2.34}$ for $30\le n\le200$, is close to the prediction $n^{-1/h}=n^{-2.48}$; the log--linear slope varies by $4\times$ over the same range, which excludes an exponential. The drift and diffusion measured separately, however, do not match the model one by one: the local ratio $-v\,n/D$ is 0.5--1.2 on the plateau, against $(1-h)/h=1.48$. The large, discrete recoil jumps and the decays through $\gc$ go beyond a second-order description. Why the exponent nevertheless comes out close to $1/h$ is an open question.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{tail.pdf}
+\caption{\textbf{a}, master-equation steady state at $s=0.1$ (case A, $N=400$): power-law fit over $30\le n\le200$ and the model $n^{-1/h}$. Vertical lines: $n=1/s$ and $n=2(\nur/\Gamma_n)^2/s$, the limits of regime II. \textbf{b}, tail exponent $\mu=1/h$ of Eq.~\eqref{eq:tail} and the moment thresholds, with case A ($b_p=1/2$ and $5/6$, i.e.\ D1 $F'=1$ with the probe on $F=2$) and case B.}
+\label{fig:tail}
+\end{figure}
+
+\paragraph{Moments and thresholds [model, hypothesis].} If regime II extended to infinity, $\langle n^k\rangle$ would be finite only for $\mu>k+1$:
+\begin{itemize}
+\item $h<1/3$: mean and variance finite;
+\item $1/3\le h<1/2$: ${\rm Var}(n)=\infty$; case A ($h=0.40$) lies here;
+\item $1/2\le h<1$: normalisable with finite $P_0$, but $\langle n\rangle=\infty$ ("anomalous cooling");
+\item $h\ge1$: no steady state, runaway heating.
+\end{itemize}
+The mean-energy threshold $h=1/2$ is twice as strict as the naive condition $h<1$ that every cycle removes energy. In reality the tail is cut off (Sec.~\ref{sec:scales}), so the divergences are rounded into a strong sensitivity of $n_{\rm ss}$ to the cut-offs. The truncation $N$ acts as a system size: the missing part of $\langle n\rangle$ scales as $N^{2-1/h}$, so a convergence study measures $h$. This explains the slow convergence of case A, and the fast convergence of case B, where $h\approx0.09$ and the tail falls as $n^{-11}$.
+
+\paragraph{Consequences [model].} The cooling rate $W$ is measured from $n=1$ and is insensitive to the tail. The steady occupation is
+\begin{equation}
+  n_{\rm ss}=\underbrace{\Big(\frac{\Gamma}{4\Delta}\Big)^2\frac{1+h}{1-h}(1+s)}_{\text{core~\cite{morigi2000}}}+\;n_{\rm tail}(h,s,\text{cut-offs}),
+\end{equation}
+so that near $h\to1/2$ the tail term dominates. The ground-state population $P_0$ is the robust figure of merit.
+
+%=====================================================================
+\section{The fast high-$n$ channel}
+\label{sec:sisyphus}
+%=====================================================================
+\paragraph{Observation [numerics].} Beyond $s\,n\approx18$ the removal rate grows again, roughly $\propto n$, far above the narrow-line bound: 4.6$\times10^3$\,s$^{-1}$ at $n=30$ and 4.4$\times10^4$\,s$^{-1}$ at $n=200$ for $s=1$, against a plateau of $2\times10^3$\,s$^{-1}$. Plotted against $s\,n$ the drift curves collapse, and the onset sits at $s\,n=2(\nur/\Gamma_n)^2=18.0$ (Fig.~\ref{fig:regimes}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{regimes.pdf}
+\caption{Master-equation removal rate from Fock states, case A, against $s\,n_0$ for $s=0.01$, 0.1, 1 (data from \texttt{rates\_vs\_n.dat}). Solid: Eq.~\eqref{eq:Rn} with the calibrated $c=2.25$. Dashed: growth $\propto sn$ in regime III. Shaded: regimes I (resolved, $R\propto n$), II (saturated plateau) and III (Sisyphus-like).}
+\label{fig:regimes}
+\end{figure}
+
+\paragraph{Three equivalent conditions [model].} Using $\Om_R^2=s\Gamma_n^2/2$, Eq.~\eqref{eq:theta} and Eq.~\eqref{eq:dB} at the classical turning point $x_t=2x_0\sqrt n$, the onset can be written in three equivalent forms:
+\begin{equation}
+\begin{aligned}
+  &\underbrace{\Om_R\sqrt n=\nur}_{\text{Raman splitting}=\text{trap frequency}}
+  \;\Longleftrightarrow\;
+  \underbrace{\tan\theta(x_t)=1}_{\text{dark state rotated by }\pi/4}\\[2pt]
+  \Longleftrightarrow\;
+  &\underbrace{\delta_B(x_t)-\delta_B(0)=\hbar\nur}_{\text{hill}=\text{one quantum}}
+  \;\Longleftrightarrow\;
+  s\,n=2\Big(\frac{\nur}{\Gamma_n}\Big)^2 .
+\end{aligned}
+  \label{eq:onset}
+\end{equation}
+More generally, $\delta_B(x_t)-\delta_B(0)=\hbar\nur\tan^2\theta(x_t)=\hbar\nur\,sn\,(\Gamma_n/\nur)^2/2$. The geometric content is visible in Fig.~\ref{fig:geometry}b: the point where $\theta=\pi/4$ falls on the turning point of $n=18/s$.
+
+\paragraph{Mechanism [hypothesis].} For $\Om_R\sqrt n\gg\nur$ the internal state evolves faster than the atom moves, and the atom follows $\ket{D(x)}$ adiabatically. The motion couples it to the bright state non-adiabatically, with a matrix element $\propto\dot x\,\partial_x\theta$, largest near the axis where the atom is fastest. For blue detuning the bright state is shifted upwards and its shift grows with $|x|$, Eq.~\eqref{eq:dB}. The atom therefore climbs the hill while in $\ket B$, losing kinetic energy, and optical pumping at rate $\sim\Gamma_n$ returns it to $\ket D$, carrying away the potential energy. This is dark-state Sisyphus cooling, the mechanism of gray molasses~\cite{grynberg1994,weidemuller1994}. By Eq.~\eqref{eq:onset} the energy removed per cycle is of order $\hbar\nur\tan^2\theta(x_t)\propto n$. That gives $R\propto n$, unlike the one quantum per cycle of regimes I--II. At $s=1$, $n=200$ the hill is about $11\,\hbar\nur$, against the measured $\approx22$ times the plateau rate: order-of-magnitude agreement, with a missing factor that probably comes from the larger cycle rate at high $n$.
+
+\paragraph{Relation to known physics.} The two limits are known separately. Resolved EIT cooling is the theory of Ref.~\cite{morigi2000}. Gray molasses and $\Lambda$-enhanced gray molasses~\cite{grynberg1994,weidemuller1994} have been described for trapped atoms in a unified formalism that covers resolved and unresolved sideband cooling~\cite{phatak2024}. EIT-induced friction for free atoms was proposed in Ref.~\cite{he2017}, and the high-energy breakdown and capture range of EIT cooling of ions were analysed semiclassically in Ref.~\cite{bartolotta2024}. We have not found the crossover resolved EIT $\to$ plateau $\to$ Sisyphus within one trapped atom, as a function of $n$ and $s$, in a gradient-only (node) geometry. The full texts still have to be checked before any novelty claim.
+
+\paragraph{What is LP$_{11}$-specific.}
+\begin{itemize}
+\item The Sisyphus potential is the probe intensity profile, $\propto x^2$ near the node, commensurate with the harmonic trap over the whole core: one smooth hill rather than a $\lambda/2$ corrugation.
+\item The crossover lies inside the thermal population. At \SI{10}{\micro K}, $\bar n\approx30$, so hot atoms are captured in regime III and finished in regime I. In tight tweezers and ion traps the crossover sits at much larger $n$.
+\item The node keeps the low-$n$ regime carrier-free, so the same pair of beams provides both clean resolved cooling and Sisyphus capture.
+\end{itemize}
+
+%=====================================================================
+\section{Hierarchy of scales}
+\label{sec:scales}
+%=====================================================================
+The regimes and the physical cut-offs define a hierarchy of $n$-scales (Fig.~\ref{fig:scales}). Regime II, where the power-law tail lives, is the window $1/s<n<2(\nur/\Gamma_n)^2/s$. Its upper end is lowered by regime III. Beyond lie the cut-offs that the harmonic, single-axis model does not contain or treats only approximately:
+\begin{itemize}
+\item the non-linearity of the Bessel profile, at $u_{11}\,2x_0\sqrt n/a=1$, i.e.\ $n\approx470$ (case A);
+\item the anharmonic frequency shift reaching $\Gamma_n$, $\tfrac38(n\hbar\nur/U_0)\nur=\Gamma_n$, i.e.\ $n\approx1380$;
+\item the trap depth, $n=U_0/\hbar\nur=1552$.
+\end{itemize}
+The window explains the non-monotonic convergence. At $s=1$ it spans only $n\approx1$--18, so the tail is cut early and convergence is fast. At $s=0.1$ it spans $n\approx10$--180, inside the computed range, so convergence is slowest. At $s=0.01$ it lies at $n\approx100$--1800, where the population is already tiny.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{scales.pdf}
+\caption{Hierarchy of Fock-state scales for case A against $s$. Shaded: regime II between $n^*=1/s$ and $n_{\rm res}=2(\nur/\Gamma_n)^2/s$. Horizontal lines: Bessel non-linearity, anharmonic shift equal to $\Gamma_n$, trap depth. Dotted vertical line: $s=0.1$.}
+\label{fig:scales}
+\end{figure}
+
+%=====================================================================
+\section{Design map in $(\nur/\omega_{\rm rec},\,b_p)$}
+%=====================================================================
+Since $h=\alpha\,\omega_{\rm rec}/(b_p\nur)$, the thresholds of Sec.~\ref{sec:model} are curves in the plane of trap stiffness and branching ratio (Fig.~\ref{fig:phase}). For $^{87}$Rb D1 at $\nu_z=300$\,kHz the trap stiffness maps onto the core radius:
+\begin{itemize}
+\item with $b_p=1/2$, $h=1/2$ is reached at $a\approx19\,\mu$m and $h=1$ at $a\approx37\,\mu$m;
+\item with $b_p=5/6$ (D1, $F'=1$, probe on $F=2$) the same thresholds move to $a\approx31\,\mu$m and $62\,\mu$m.
+\end{itemize}
+Case A ($a=15\,\mu$m, $h=0.40$) lies between $h=1/3$ and $1/2$; the $b_p=5/6$ configuration moves it to $h=0.24$, below $1/3$; case B lies at $h=0.09$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{phase.pdf}
+\caption{Regions of the model tail in the plane of trap stiffness $\nur/\omega_{\rm rec}$ and branching ratio $b_p$, with $h=\alpha\omega_{\rm rec}/(b_p\nur)$. Lines: $h=1/3$, $1/2$, 1. The narrow band between the $h=1/3$ and $h=1/2$ lines is where only the variance diverges. Points: case A with $b_p=1/2$ and $5/6$, case B. Top axis: core radius for $^{87}$Rb D1 with $\nu_z=300$\,kHz.}
+\label{fig:phase}
+\end{figure}
+
+%=====================================================================
+\section{Predictions and tests}
+%=====================================================================
+\begin{enumerate}
+\item \textbf{Universality of the tail.} Tails for different $(\nur/\omega_{\rm rec},b_p,s)$ at equal $h$ should collapse. Fit the exponent against $h$ by scanning the reduced parameter $\nur/\omega_{\rm rec}$ with the banded solver.
+\item \textbf{Finite-size scaling.} The missing part of $n_{\rm ss}$ should scale as $N^{2-1/h}$, and the scaling exponent should agree with the tail exponent.
+\item \textbf{Thresholds.} Check whether the mean-energy threshold sits at $h=1/2$ and the steady state disappears at $h=1$, and how the physical cut-offs round them.
+\item \textbf{Sisyphus channel.}
+\begin{itemize}
+\item The onset should move as $2(\nur/\Gamma_n)^2/s\simeq2(\Delta/\Gamma)^2/s$ when $\Delta/\Gamma$ is varied.
+\item Red detuning should turn regime III into heating while regimes I--II survive.
+\item The high-$n$ rate should scale like a Sisyphus friction, with $\Om_c$, $\Delta$ and $\Gamma$, not with $\Gamma_n$.
+\item The bright-state population should rise at high $n$, as the atom follows the dark state only adiabatically.
+\end{itemize}
+\item \textbf{Semiclassical model.} Compute the friction and momentum diffusion of an atom moving through the LP$_{11}$ gradient from linear response of the optical Bloch equations, and compare with the master-equation drift in regime III.
+\item \textbf{Capture.} Banded time evolution from thermal states ($\bar n\approx30$, $N\approx400$) should give the true capture time from \SI{10}{\micro K}, which may be much shorter than the rate-model estimate because of regime III.
+\item \textbf{Beyond the minimal model.} Treat the recoil with its exact Franck--Condon kernel in a master equation for $P(n)$ in place of the Fokker--Planck form, to explain why the exponent matches $1/h$ while $v$ and $D$ separately do not.
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{morigi2000} G.~Morigi, J.~Eschner and C.~H.~Keitel, Ground state laser cooling using electromagnetically induced transparency, Phys.\ Rev.\ Lett.\ \textbf{85}, 4458 (2000).
+\bibitem{cirac1992} J.~I.~Cirac, R.~Blatt, P.~Zoller and W.~D.~Phillips, Laser cooling of trapped ions in a standing wave, Phys.\ Rev.\ A \textbf{46}, 2668 (1992).
+\bibitem{reiter2012} F.~Reiter and A.~S.~S{\o}rensen, Effective operator formalism for open quantum systems, Phys.\ Rev.\ A \textbf{85}, 032111 (2012).
+\bibitem{kesten1973} H.~Kesten, Random difference equations and renewal theory for products of random matrices, Acta Math.\ \textbf{131}, 207 (1973).
+\bibitem{sornette1998} D.~Sornette, Multiplicative processes and power laws, Phys.\ Rev.\ E \textbf{57}, 4811 (1998).
+\bibitem{bardou1994} F.~Bardou, J.-P.~Bouchaud, O.~Emile \emph{et al.}, Subrecoil laser cooling and Lévy flights, Phys.\ Rev.\ Lett.\ \textbf{72}, 203 (1994).
+\bibitem{grynberg1994} G.~Grynberg and J.-Y.~Courtois, Proposal for a magneto-optical lattice for trapping atoms in nearly-dark states, Europhys.\ Lett.\ \textbf{27}, 41 (1994).
+\bibitem{weidemuller1994} M.~Weidemüller, T.~Esslinger, M.~A.~Ol'shanii \emph{et al.}, A novel scheme for efficient cooling below the photon recoil limit, Europhys.\ Lett.\ \textbf{27}, 109 (1994).
+\bibitem{phatak2024} S.~S.~Phatak, K.~N.~Blodgett, D.~Peana, M.~R.~Chen \emph{et al.}, A generalized theory for optical cooling of a trapped atom with spin, Phys.\ Rev.\ A \textbf{110}, 043116 (2024).
+\bibitem{he2017} P.~He, P.~M.~Tengdin, D.~Z.~Anderson and A.~M.~Rey, Sub-Doppler laser cooling using electromagnetically induced transparency, Phys.\ Rev.\ A \textbf{95}, 053403 (2017).
+\bibitem{bartolotta2024} J.~P.~Bartolotta, B.~Estey, M.~Foss-Feig, D.~Hayes \emph{et al.}, Laser cooling trapped-ion crystal modes beyond the Lamb--Dicke regime, arXiv:2411.18818 (2024).
+\end{thebibliography}
+
+\end{document}

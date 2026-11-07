@@ -1,6 +1,7 @@
 # Anomalous (scale-free) Fock statistics in radial EIT cooling — research to-do
 
-Possible separate paper. Status: **hypothesis**, from the case-A convergence problem
+Possible separate paper. **Theory note: `anomalous_cooling.tex`** (figures from `make_plots.py`,
+run from this folder). Status: **hypothesis**, from the case-A convergence problem
 (branch `fix-truncation`, November 2026). Nothing here is established yet.
 
 ## Observation that started it
@@ -52,8 +53,8 @@ Features that would characterise it:
    |---|---|---|---|
    | saturation | s n = 1 | n ≈ 10 | s |
    | loss of sideband resolution (blue sideband resonant; high-intensity EIT breakdown) | s n ≈ 2(ν_r/Γ_n)² ≈ 2(Δ/Γ)² | n ≈ 180 | Δ/Γ |
-   | Bessel non-linearity (capture range) | u₁₁x₀√(2n)/a ≈ 1 | n ≈ 700–900 | x₀/a (core size) |
-   | trap anharmonicity shift ~ Γ_n | (3/8)(n ħν_r/U₀)ν_r ≈ Γ_n | n ≈ 600–700 | U₀/ħν_r (lattice depth) |
+   | Bessel non-linearity (capture range) | u₁₁·2x₀√n/a ≈ 1 | n ≈ 470 | x₀/a (core size) |
+   | trap anharmonicity shift ~ Γ_n | (3/8)(n ħν_r/U₀)ν_r ≈ Γ_n | n ≈ 1380 | U₀/ħν_r (lattice depth) |
    | trap depth (loss) | n ħν_r = U₀ | n ≈ 1550 | U₀ |
 
 Consequences: W insensitive to the tail; n_ss = core (Γ/4Δ)²(1+h)/(1−h)(1+s) + tail term set by h
@@ -104,6 +105,13 @@ coincide at the onset of the fast channel, at s·n ≈ 2(ν_r/Γ_n)² = 18.0 (Γ
 | resolved EIT (quantum, sideband) | s·n < 1 | R ∝ n | narrow line, unsaturated |
 | saturated plateau (power-law tail lives here) | 1 < s·n < 2(ν_r/Γ_n)² | R ≈ const ≈ 2×10³ s⁻¹ | narrow line Γ_n |
 | fast, Sisyphus-like | s·n > 2(ν_r/Γ_n)², i.e. Ω_R√n > ν_r | R ∝ n, far above Γ_n bound | optical pumping / light shift |
+
+**Onset, three equivalent forms (derived in the note, Eq. onset).** With tan θ(x) =
+(Γ_n/ν_r)√(s/8)·x/x₀ along the LP₁₁ profile and the turning point x_t = 2x₀√n:
+Ω_R√n = ν_r ⇔ tan θ(x_t) = 1 (dark state rotated by π/4 over the orbit) ⇔ bright-state light-shift
+hill δ_B(x_t) − δ_B(0) = ħν_r ⇔ s·n = 2(ν_r/Γ_n)². In general the hill is ħν_r tan²θ(x_t) ∝ n, so
+regime III removes ∝ n quanta per cycle (s = 1, n = 200: ~11 ħν_r vs measured ~22× plateau rate).
+The rate model with the calibrated c = 2.25 reproduces regimes I and II of the measured drift.
 
 **Intuitive picture (hypothesis).** When the Raman coupling at level n exceeds the trap frequency
 (Ω_R√n > ν_r) the internal state evolves faster than the motion: the atom follows the local dark

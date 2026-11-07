@@ -98,7 +98,7 @@ presentation/            18-slide talk for an atomic-physics audience
                          writes the theme colours into the .pptx
   assets/                generated PNGs (300 dpi)
   radial_eit_cooling_talk.pptx
-notes/                   research to-do files (e.g. anomalous_cooling_todo.md)
+notes/                   research notes; anomalous-cooling/ (theory note + to-do)
 Makefile                 make test | results | figures | paper | report | slides | clean
 ```
 
@@ -270,7 +270,7 @@ Conventions and gotchas:
   s·n = 1 is a crossover (tail onset n* ≈ 1/s), a genuine transition only in h as N → ∞ (thresholds
   h = 1/2 for ⟨n⟩, h = 1 for a steady state), rounded by physical cut-offs (sideband resolution,
   Bessel non-linearity, anharmonicity, trap depth). Full plan, evidence and to-do list:
-  **`notes/anomalous_cooling_todo.md`**. Nothing there is established yet.
+  **`notes/anomalous-cooling/`** (theory note `anomalous_cooling.tex`, to-do `anomalous_cooling_todo.md`). Nothing there is established yet.
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
   F=2→F′=1, interference signs, tensor light shift of 5P₃/₂, leakage increases κ) and both
