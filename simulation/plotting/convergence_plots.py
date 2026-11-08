@@ -3,7 +3,8 @@
 Reads results/convergence/*.dat and writes results/convergence/convergence.{pdf,png}
 (convergence checks) and discarded.{pdf,png} (the elements removed by the band
 cutoff |n - m| <= B and by the 1e-11 sparsity threshold of operators.function_of_x).
-Usage: python convergence_plots.py
+Also: rates_W_vs_W0, cutoffs_vs_parameters, tail_moments, validity_checks.
+Usage: python convergence_plots.py [understanding]   (understanding: only those four)
 """
 from pathlib import Path
 
@@ -243,8 +244,282 @@ def regimes():
     plt.close(fig)
 
 
+def _ticks(axis, ticks):
+    """Plain-number ticks on a log axis."""
+    axis.set_ticks(ticks, [('%g' % x) for x in ticks])
+    axis.set_minor_locator(plt.NullLocator())
+
+
+def _save(fig, name):
+    for ext in ('pdf', 'png'):
+        fig.savefig(OUT / f'{name}.{ext}')
+    plt.close(fig)
+
+
+def _split_at_sign_change(x, y):
+    """Insert a gap where y changes sign, so that no line crosses a pole."""
+    xo, yo = [x[0]], [y[0]]
+    for i in range(1, len(x)):
+        if y[i] * y[i - 1] < 0:
+            xo.append(np.nan)
+            yo.append(np.nan)
+        xo.append(x[i])
+        yo.append(y[i])
+    return np.array(xo), np.array(yo)
+
+
+def rates_w_vs_w0():
+    """Why W is not a safe rate in a heavy recoil tail, and W0 is."""
+    d = load('rate_p0.dat')
+    d2n = load('lines_nconv_d2.dat')
+    scan = load('lines_d2scan.dat')
+    B = load('rate_p0_B.dat')
+    fig, ax = plt.subplots(2, 2, figsize=(WDOUBLE, 112 * MM), constrained_layout=True)
+    ax = ax.ravel()
+
+    a = (d['set'] == 0) & (d['s'] == 1.0)
+    ax[0].plot(d['N'][a], d['W0'][a], 'o-', color=CA, label=r'$W_0$, case A, $s=1$')
+    ax[0].plot(d['N'][a], d['W'][a], 's--', color=CA, mfc='white', label=r'$W$, case A, $s=1$')
+    b = (d['set'] == 3) & (d['DeltaG'] == 12)
+    ax[0].plot(d['N'][b], d['W0'][b], 'o-', color=CB, label=r"$W_0$, D2 $F'=2$, $12\Gamma$")
+    r = d2n[(d2n['line'] == 2) & (d2n['gp'] == 2) & (d2n['DeltaG'] == 12)]
+    ax[0].plot(r['N'], r['W'], 's--', color=CB, mfc='white', label=r"$W$, D2 $F'=2$, $12\Gamma$")
+    ax[0].set_xscale('log')
+    ax[0].set_yscale('log')
+    _ticks(ax[0].xaxis, [20, 40, 80, 160, 400])
+    _ticks(ax[0].yaxis, [200, 500, 1000, 2000, 5000])
+    ax[0].set_xlabel('Fock truncation $N$')
+    ax[0].set_ylabel(r'Rate (s$^{-1}$)')
+    ax[0].set_ylim(150, 8000)
+    ax[0].legend(loc='upper center', ncol=2, fontsize=5.5)
+    letter(ax[0], 'a')
+
+    s2 = scan[(scan['line'] == 2) & (scan['gp'] == 2) & (scan['DeltaG'] == 3)]
+    x, y = _split_at_sign_change(s2['d2'], s2['W'])
+    ax[1].plot(x, y, 's--', color=CA, mfc='white', label='$W$')
+    p = d[d['set'] == 4]
+    ax[1].plot(p['d2'], p['W0'], 'o-', color=CB, label='$W_0$')
+    ax[1].axhline(0, color=CG, lw=0.5)
+    ax[1].set_xlim(-0.1, 0.45)
+    ax[1].set_ylim(-3000, 6000)
+    ax[1].set_xlabel(r'Two-photon detuning $\delta_{\rm e}/\nu_r$')
+    ax[1].set_ylabel(r'Rate (s$^{-1}$)')
+    ax[1].legend(loc='upper right')
+    ax[1].text(0.0, 1.02, r"   D2 $F'=2$, $g_p=2$, $3\Gamma$, $s=1$, $N=80$", transform=ax[1].transAxes, va='bottom')
+    letter(ax[1], 'b')
+
+    ax[2].plot(s2['d2'], s2['n'], 'o-', color=CG)
+    ax[2].axhline(0.2, color='k', lw=0.6, ls=':')
+    ax[2].set_xlim(-0.1, 0.45)
+    ax[2].set_ylim(0, 0.6)
+    ax[2].set_xlabel(r'Two-photon detuning $\delta_{\rm e}/\nu_r$')
+    ax[2].set_ylabel(r'$n_{\rm ss}$')
+    ax[2].text(0.97, 0.93, r'dotted: $n_{\rm ss}=0.2$, near the pole of $W$',
+               transform=ax[2].transAxes, ha='right', va='top')
+    letter(ax[2], 'c')
+
+    rows = (('Case A, $b_p=1/2$', d[(d['set'] == 0)], CA, 'o-'),
+            ('Case A, $b_p=5/6$', d[(d['set'] == 1)], CL, 's-'))
+    for lab, r, col, mk in rows:
+        best = {}
+        for row in r:
+            best[row['s']] = row                # the largest N comes last
+        s = np.array(sorted(best))
+        ax[3].plot(s, [best[x]['W0'] / best[x]['W'] for x in s], mk, color=col, label=lab)
+    ax[3].plot(B['s'], B['W0'] / B['W'], '^-', color=CB, label='Case B, $b_p=1/2$')
+    ax[3].axhline(1, color=CG, lw=0.5, ls=':')
+    ax[3].set_xscale('log')
+    ax[3].set_ylim(0.9, 1.6)
+    ax[3].set_xlabel('Saturation parameter $s$')
+    ax[3].set_ylabel(r'$W_0/W$')
+    ax[3].legend(loc='upper left')
+    letter(ax[3], 'd')
+    _save(fig, 'rates_W_vs_W0')
+
+
+def cutoffs_vs_parameters():
+    """The Fock truncation needed depends on s, bp and Delta, and on the effective h."""
+    fig, ax = plt.subplots(2, 2, figsize=(WDOUBLE, 112 * MM), constrained_layout=True)
+    ax = ax.ravel()
+
+    w = load('nconv_weak.dat')
+    c = load('nconv.dat')
+    c = c[(c['case'] == 0) & (c['method'] == 1)]
+    for s, col, r in ((0.01, CL, w[w['s'] == 0.01]), (0.1, CA, w[w['s'] == 0.1]), (0.3, CO, w[w['s'] == 0.3]),
+                      (1.0, CB, c[c['s'] == 1.0]), (5.0, CG, c[c['s'] == 5.0])):
+        ax[0].plot(r['N'], r['n'] / r['n'][-1], 'o-', color=col, label='$s=%g$' % s)
+    ax[0].axhline(1, color=CG, lw=0.5, ls=':')
+    ax[0].set_xscale('log')
+    ax[0].set_ylim(0.8, 1.02)
+    _ticks(ax[0].xaxis, [20, 40, 80, 160, 300])
+    ax[0].set_xlabel('Fock truncation $N$')
+    ax[0].set_ylabel(r'$n_{\rm ss}/n_{\rm ss}(N_{\rm max})$')
+    ax[0].legend(loc='lower right', ncol=2)
+    ax[0].text(0.0, 1.02, r'   Dependence on $s$ ($b_p=1/2$, $3\Gamma$)', transform=ax[0].transAxes, va='bottom')
+    letter(ax[0], 'a')
+
+    n = load('lines_nconv.dat')
+    for bp, col, lab, mk in ((1 / 6, CB, r'$b_p=1/6$, $h=1.21$', 's-'), (5 / 6, CL, r'$b_p=5/6$, $h=0.24$', '^-')):
+        r = n[np.isclose(n['bp'], bp) & (n['s'] == 0.1)]
+        ax[1].plot(r['N'], r['n'], mk, color=col, label=lab)
+    r = w[w['s'] == 0.1]
+    ax[1].plot(r['N'], r['n'], 'o-', color=CA, label=r'$b_p=1/2$, $h=0.40$')
+    ax[1].set_xscale('log')
+    ax[1].set_yscale('log')
+    ax[1].set_ylim(5e-3, 50)
+    _ticks(ax[1].xaxis, [60, 120, 250])
+    ax[1].set_xlabel('Fock truncation $N$')
+    ax[1].set_ylabel(r'$n_{\rm ss}$')
+    ax[1].legend(loc='upper left', ncol=3, fontsize=5.5)
+    ax[1].text(0.0, 1.02, r'   Dependence on $b_p$ ($s=0.1$, $3\Gamma$)', transform=ax[1].transAxes, va='bottom')
+    letter(ax[1], 'b')
+
+    dl = load('lines_nconv_delta.dat')
+    for DG, col in ((2.0, CG), (5.0, CL), (8.0, CA), (12.0, CB)):
+        r = dl[np.isclose(dl['bp'], 0.5) & (dl['DeltaG'] == DG)]
+        ax[2].plot(r['N'], r['n'] / r['n'][-1], 'o-', color=col, label=r'$b_p=1/2$, $%g\Gamma$' % DG)
+    r = dl[np.isclose(dl['bp'], 5 / 6) & (dl['DeltaG'] == 12)]
+    ax[2].plot(r['N'], r['n'] / r['n'][-1], '^--', color=CB, mfc='white', label=r'$b_p=5/6$, $12\Gamma$')
+    ax[2].axhline(1, color=CG, lw=0.5, ls=':')
+    ax[2].set_xscale('log')
+    ax[2].set_ylim(0.8, 1.02)
+    _ticks(ax[2].xaxis, [60, 120, 250, 400])
+    ax[2].set_xlabel('Fock truncation $N$')
+    ax[2].set_ylabel(r'$n_{\rm ss}/n_{\rm ss}(N_{\rm max})$')
+    ax[2].legend(loc='lower right', ncol=2, fontsize=5.5)
+    ax[2].text(0.0, 1.02, r'   Dependence on $\Delta$ ($s=1$, three levels)', transform=ax[2].transAxes, va='bottom')
+    letter(ax[2], 'c')
+
+    d2 = load('lines_nconv_d2.dat')
+    for (line, gp, DG), col, mk in (((1, 2, 12.0), CA, 'o-'), ((2, 2, 8.0), CL, '^-'), ((2, 2, 12.0), CO, 'D-'),
+                                    ((2, 1, 12.0), CB, 's-')):
+        r = d2[(d2['line'] == line) & (d2['gp'] == gp) & (d2['DeltaG'] == DG)]
+        ax[3].plot(r['N'], r['n'], mk, color=col, label=r"D%d $F'=2$, $g_p=%d$, $%g\Gamma$: $b_{\rm eff}=%.2f$"
+                   % (line, gp, DG, r['beff'][0]))
+    ax[3].set_xscale('log')
+    ax[3].set_yscale('log')
+    ax[3].set_ylim(5e-3, 0.4)
+    _ticks(ax[3].xaxis, [80, 160, 250, 400, 550])
+    ax[3].set_xlabel('Fock truncation $N$')
+    ax[3].set_ylabel(r'$n_{\rm ss}$')
+    ax[3].legend(loc='upper left', fontsize=5.5, ncol=2)
+    ax[3].text(0.0, 1.02, r'   Neighbouring levels lower $b_{\rm eff}$, which raises $h$', transform=ax[3].transAxes, va='bottom')
+    letter(ax[3], 'd')
+    _save(fig, 'cutoffs_vs_parameters')
+
+
+def tail_moments():
+    """Which states carry 1 - P0, <n> and <n^2>; why n_ss and Var converge slowly and P0 does not."""
+    t1, t2 = load('tail.dat'), load('tail_s0p1.dat')
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 60 * MM), constrained_layout=True)
+    for i, (P, title) in enumerate(((t2['P_N400'], r'   $s=0.1$, $N=400$'), (t1['P_A_s1'], r'   $s=1$, $N=160$'))):
+        P = P / P.sum()
+        n = np.arange(P.size)
+        weights = ((P * (n > 0), r'$1-P_0$', CA, '-'), (P * n, r'$\langle n\rangle$', CB, '-'),
+                   (P * n**2, r'$\langle n^2\rangle$', CO, '-'))
+        for w, lab, col, ls in weights:
+            ax[i].plot(n[1:], np.cumsum(w)[1:] / w.sum(), ls, color=col, label=lab)
+        ax[i].axhline(1, color=CG, lw=0.5, ls=':')
+        ax[i].set_xscale('log')
+        ax[i].set_xlim(1, 400)
+        ax[i].set_ylim(0, 1.2)
+        ax[i].set_yticks([0, 0.5, 1])
+        ax[i].set_xlabel('States kept up to $n$')
+        ax[i].set_ylabel('Fraction carried')
+        ax[i].text(0.0, 1.02, title, transform=ax[i].transAxes, va='bottom')
+        ax[i].legend(loc='upper left', ncol=3, fontsize=5.5)
+        letter(ax[i], 'ab'[i])
+    Ns, P0, m, V = [], [], [], []
+    for N, P in ((160, t1['P_A_s0p1']), (300, t2['P_N300']), (400, t2['P_N400'])):
+        P = np.nan_to_num(P)
+        P = P / P.sum()
+        n = np.arange(P.size)
+        Ns.append(N)
+        P0.append(P[0])
+        m.append(P @ n)
+        V.append(P @ n**2 - (P @ n)**2)
+    Ns = np.array(Ns, float)
+    for y, lab, col, mk in ((P0, r'$P_0$', CA, 'o-'), (m, r'$\langle n\rangle$', CB, 's-'),
+                            (V, r'Var$(n)$', CO, '^-')):
+        y = np.array(y)
+        ax[2].plot(Ns, y / y[0], mk, color=col, label=lab)
+    ax[2].plot(Ns, (Ns / 160)**0.5, '--', color='k', lw=0.7, label=r'$N^{3-1/h}=N^{0.5}$')
+    ax[2].set_xscale('log')
+    ax[2].set_yscale('log')
+    ax[2].set_xticks([160, 250, 400], ['160', '250', '400'])
+    ax[2].set_yticks([1, 1.2, 1.4, 1.6, 1.8], ['1', '1.2', '1.4', '1.6', '1.8'])
+    ax[2].minorticks_off()
+    ax[2].set_ylim(0.95, 2.0)
+    ax[2].set_xlabel('Fock truncation $N$')
+    ax[2].set_ylabel('Value relative to $N=160$')
+    ax[2].legend(loc='upper left', fontsize=5.5)
+    ax[2].text(0.0, 1.02, r'   $s=0.1$', transform=ax[2].transAxes, va='bottom')
+    letter(ax[2], 'c')
+    _save(fig, 'tail_moments')
+
+
+def validity_checks():
+    """Time evolution and elimination for the new solver."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 60 * MM), constrained_layout=True)
+    e = load('evolution_check.dat')
+    ax[0].plot(e['t'], e['full'], '-', color=CG, lw=2.2, label='Full ME')
+    ax[0].plot(e['t'], e['band4_h025'], '--', color=CA, label='Banded, $B=4$')
+    ax[0].set_yscale('log')
+    _ticks(ax[0].yaxis, [0.2, 0.5, 1, 2])
+    ax[0].set_xlabel(r'Time ($1/\nu_r$)')
+    ax[0].set_ylabel(r'$\langle n\rangle$')
+    ax[0].legend(loc='upper right')
+    ax[0].text(0.0, 1.02, r'   Case A, $s=0.2$, $N=20$', transform=ax[0].transAxes, va='bottom')
+    letter(ax[0], 'a')
+    names = [x for x in e.dtype.names if x.startswith('band')]
+    labs = {0: ('$B=20$, $h=0.25$', CG, '-'), 1: ('$B=4$, $h=0.25$', CA, '--'), 2: ('$B=4$, $h=0.125$', CB, ':'),
+            3: ('$B=4$, $h=0.0625$', CO, '-.')}
+    for i, nm in enumerate(names):
+        lab, col, ls = labs[i]
+        ax[1].plot(e['t'][1:], np.abs(e[nm][1:] / e['full'][1:] - 1), ls, color=col, label=lab)
+    ax[1].set_yscale('log')
+    ax[1].set_ylim(1e-5, 3e-2)
+    ax[1].set_xlabel(r'Time ($1/\nu_r$)')
+    ax[1].set_ylabel('Relative deviation from full ME')
+    ax[1].legend(loc='upper left', ncol=2, fontsize=5.5)
+    letter(ax[1], 'b')
+    d = load('lines_elim.dat')
+    d = d[d['K'] > 1]
+    dn = np.abs(d['nelim'] / d['nfull'] - 1)
+    dW = np.abs(d['Welim'] / d['Wfull'] - 1)
+    x = {1.0: 0, 3.0: 1, 12.0: 2}
+    pos = np.array([x[v] for v in d['DeltaG']], float)
+    cold = d['nfull'] < 0.2
+    offs = np.tile(np.linspace(-0.13, 0.13, 6), 3)[np.argsort(np.argsort(d['DeltaG'], kind='stable'))]
+    ax[2].plot(pos[cold] + offs[cold] - 0.04, dW[cold], 'o', color=CA, ms=3, label=r'$W$, $n_{\rm ss}<0.2$')
+    ax[2].plot(pos[~cold] + offs[~cold] - 0.04, dW[~cold], 'o', color=CA, mfc='white', ms=3, label=r'$W$, $n_{\rm ss}>0.2$')
+    ax[2].plot(pos + offs + 0.04, dn, 's', color=CB, ms=2.5, label=r'$n_{\rm ss}$')
+    ax[2].set_yscale('log')
+    ax[2].set_ylim(1e-4, 1)
+    ax[2].set_xticks([0, 1, 2], [r'$\Gamma$', r'$3\Gamma$', r'$12\Gamma$'])
+    ax[2].set_xlim(-0.4, 2.4)
+    ax[2].set_xlabel(r'Detuning $\Delta$')
+    ax[2].set_ylabel('Eliminated vs full ME, relative error')
+    ax[2].legend(loc='upper right')
+    ax[2].text(0.0, 1.02, '   D1/D2 with all excited levels', transform=ax[2].transAxes, va='bottom')
+    letter(ax[2], 'c')
+    _save(fig, 'validity_checks')
+
+
+def understanding():
+    rates_w_vs_w0()
+    cutoffs_vs_parameters()
+    tail_moments()
+    validity_checks()
+
+
 if __name__ == '__main__':
+    import sys
+    if sys.argv[1:] == ['understanding']:
+        understanding()
+        raise SystemExit
     main()
     discarded()
     tail_mechanism()
     regimes()
+    understanding()
