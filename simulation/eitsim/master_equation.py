@@ -190,25 +190,26 @@ def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):
     """Time evolution of <n> in the banded eliminated master equation from the
     state sum_n pops[n] |g_p,n><g_p,n| (pops of length <= N). Fixed-step BDF2,
     (3 - 2hM) y_k+1 = 4 y_k - y_k-1, with one dense in-place LU (memory: one
-    S x S matrix); the first step uses y_-1 = y_0 (local error O(h^2)).
+    S x S matrix); the start y_-1 = y_0 - h M y_0 keeps second order overall
+    (y_-1 = y_0 would add a constant time lag, a global first-order error).
     h in units of 1/nu_r: BDF2 is L-stable, the fast internal rate is only
     Gamma_n ~ nu_r/3 after the elimination. Returns times and <n>(t)."""
     from scipy.linalg import lu_factor, lu_solve
     M, r, c, n_of = banded_generator(p, B)
     S = r.size
-    M *= -2 * h
-    M[np.diag_indices(S)] += 3.0
-    lu = lu_factor(M, overwrite_a=True, check_finite=False)
     diag = np.nonzero(r == c)[0]
     nvec = np.zeros(S)
     nvec[diag] = n_of[r[diag]]
     y = np.zeros(S, complex)
     for n, pn in enumerate(pops):
         y[int(np.nonzero((r == n) & (c == n))[0][0])] = pn
+    ym = y - h * (M @ y)
+    M *= -2 * h
+    M[np.diag_indices(S)] += 3.0
+    lu = lu_factor(M, overwrite_a=True, check_finite=False)
     nsteps = int(np.ceil(tmax / h))
     every = max(1, nsteps // n_out)
     ts, vals = [0.0], [float(np.real(nvec @ y))]
-    ym = y.copy()
     for k in range(1, nsteps + 1):
         ym, y = y, lu_solve(lu, 4 * y - ym)
         if k % every == 0:
@@ -248,16 +249,21 @@ def banded_fock_drift(p, n0s, B=4, h=0.05, t1=100, t2=400):
     return np.array(out)
 
 
-def steady(fc, s, rate=True, **kw):
+def steady(fc, s, rate=True, cut=None, **kw):
     """Converged steady state for the fibre case fc at saturation s: builds
     params(fc, s, **kw), takes the Fock truncation N and the band from the
     first matching rule of numerics.toml (config.me_cutoffs, using the actual
-    eta_sp) and calls solve_banded. Returns its dict plus N, band, status."""
+    eta_sp, bp and Delta) and calls solve_banded. cut=(N, band) overrides the
+    rule (e.g. a cheap search before the final converged solve). Returns the
+    solve_banded dict plus N, band, status."""
     p = params(fc, s=s, **kw)
-    cut = me_cutoffs(p['eta_sp'], s)
-    p['N'] = cut['N']
-    out = solve_banded(p, B=cut['band'], rate=rate)
-    out.update(N=cut['N'], band=cut['band'], status=cut['status'])
+    if cut is None:
+        rule = me_cutoffs(p['eta_sp'], s, p['bp'], kw.get('Delta_G', 3.0))
+    else:
+        rule = dict(N=cut[0], band=cut[1], status='override')
+    p['N'] = rule['N']
+    out = solve_banded(p, B=rule['band'], rate=rate)
+    out.update(N=rule['N'], band=rule['band'], status=rule['status'])
     return out
 
 

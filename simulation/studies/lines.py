@@ -1,5 +1,9 @@
 """D1 versus D2: effective-Lambda comparison (stage 1).
 
+Case A only: E.steady (eliminated, banded, cut-offs from numerics.toml). The
+case-B files come from the full master equation at N = 20, which is converged
+there (results/convergence/nconv.dat), and are not rewritten.
+
   effective  every closed Lambda of 87Rb (line D1/D2, excited level F' = 1, 2,
              probe on ground level F = gp = 1, 2) as a three-level system:
              the line sets Gamma and eta_sp, the hyperfine structure sets the
@@ -13,18 +17,18 @@
              atoms.neighbour_shift (stage 2 treats them exactly).
                                         -> results/lines_{A,B}.dat (summary)
                                            results/lines_scan_{A,B}.dat (W, n vs s)
-                                           (~7 min)
+                                           (~2 h, one process)
 
   multilevel every Lambda with all excited hyperfine levels in the master
              equation (stage 2), at Delta = 3 Gamma, s = 1, for both signs of
              the Raman interference through the other levels: lasers as in
              the three-level design, and with the two-photon detuning d2
              re-optimised (simple-model optimum refined with the ME).
-                                        -> results/lines_ml_{A,B}.dat (~30 min, 4 workers)
+                                        -> results/lines_ml_{A,B}.dat (~1 h, 4 workers)
   delta      the four cooling configurations (bp >= 1/2) versus Delta/Gamma,
              multi-level ME with re-optimised d2, sign +1; W is reliable only
              where nopt < N_RATE (column 'ok')
-                                        -> results/lines_delta_{A,B}.dat (~40 min, 4 workers)
+                                        -> results/lines_delta_{A,B}.dat (~1.5 h, 2 workers)
 
 Usage: python lines.py [effective] [multilevel] [delta]   (default: all)
 """
@@ -36,12 +40,15 @@ from scipy.optimize import minimize_scalar
 
 from _common import E, NME, save, log
 
+KEYS = 'A'
+
 S_GRID = np.concatenate([[0.01], np.logspace(-1, 1, 9)])   # contains s = 1
 N_COLD = 0.5
 # W (relax_rate, from |g_p, 1>) is well defined only if n_ss << 1; the stage-2
 # optimisation of the two-photon detuning selects among n_ss < N_RATE.
 N_RATE = 0.2
 DELTA_G = 3.0
+N_SEARCH = 120
 
 
 def configs():
@@ -55,14 +62,13 @@ def configs():
 
 
 def effective():
-    for key in 'AB':
+    for key in KEYS:
         rows, scans = [], []
         for ic, cfg in enumerate(configs()):
             fc = E.paper_cases(cfg['line'])[key]
             om = fc['om']
 
-            res = [E.solve_me(E.params(fc, s=s, N=NME, Delta_G=DELTA_G, bp=cfg['bp']))
-                   for s in S_GRID]
+            res = [E.steady(fc, s, Delta_G=DELTA_G, bp=cfg['bp']) for s in S_GRID]
             scans += [[ic, s, r['W'] * om, r['n']] for s, r in zip(S_GRID, res)]
             weak, one = res[0], res[int(np.argmin(abs(S_GRID - 1)))]
             cold = [(r['W'], s, r['n']) for s, r in zip(S_GRID, res) if r['n'] < N_COLD]
@@ -101,6 +107,14 @@ def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=0.15):
 
     def par(d2):
         return E.params(fc, s=s, N=NME, Delta_G=Delta_G, d2=d2, levels=lv, sign=sign)
+
+    kw = dict(Delta_G=Delta_G, levels=lv, sign=sign)
+    rule = E.me_cutoffs(fc['eta_sp'], s, cfg['bp'], Delta_G)
+    # W is flat near its maximum: search at N <= N_SEARCH, final solve converged
+    search = (N_SEARCH, 6) if rule['N'] > N_SEARCH and cfg['bp'] > 0.25 else None
+
+    def solve(d2):
+        return E.steady(fc, s, d2=d2, cut=search, **kw)
     grid = np.linspace(-10, 10, 801)
     A = E.absorption(par(0.0), 1.0 + grid)
     # the narrow resonance is the strongest interior local maximum; when the
@@ -109,19 +123,21 @@ def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=0.15):
     g0 = grid[max(peaks, key=lambda i: A[i])] if peaks else 0.0
     d2sm = minimize_scalar(lambda g: -E.absorption(par(0.0), 1.0 + g),
                            bounds=(g0 - 0.05, g0 + 0.05), method='bounded').x
-    pts = {g: E.solve_me(par(g)) for g in (d2sm - step, d2sm, d2sm + step)}
+    pts = {g: solve(g) for g in (d2sm - step, d2sm, d2sm + step)}
     xs = np.array(sorted(pts))
     ys = np.array([pts[g]['W'] for g in xs])
     c2, c1, _ = np.polyfit(xs, ys, 2)
     if c2 < 0 and xs[0] <= -c1 / (2 * c2) <= xs[-1]:
         g = -c1 / (2 * c2)
-        pts[g] = E.solve_me(par(g))
+        pts[g] = solve(g)
     cold = [(r['W'], g) for g, r in pts.items() if r['n'] < N_RATE]
     g = max(cold)[1] if cold else d2sm
-    return g, pts[g], d2sm
+    final = pts[g] if search is None else E.steady(fc, s, d2=g, **kw)
+    return g, final, d2sm
 
 
-WORKERS = 4        # parallel ME solves (SuperLU is single-threaded; ~1 GB each)
+WORKERS = 4        # parallel solves of one study (set OPENBLAS_NUM_THREADS=2; ~1.5 GB each)
+WORKERS_DELTA = 2  # the N = 400 solves take ~5 GB each
 
 
 def _multilevel_task(args):
@@ -129,8 +145,8 @@ def _multilevel_task(args):
     fc = E.paper_cases(cfg['line'])[key]
     om = fc['om']
     lv = E.excited_manifold(cfg['line'], cfg['Fe'], cfg['gp'])
-    three = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, bp=cfg['bp']))
-    raw = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, levels=lv, sign=sign))
+    three = E.steady(fc, 1.0, Delta_G=DELTA_G, bp=cfg['bp'])
+    raw = E.steady(fc, 1.0, Delta_G=DELTA_G, levels=lv, sign=sign)
     d2, opt, d2sm = optimise_d2(fc, cfg, sign=sign)
     popt = E.params(fc, s=1.0, N=NME, Delta_G=DELTA_G, d2=d2, levels=lv, sign=sign)
     beff = float(np.dot(E.excited_weights(popt, 1.0 + d2), [l[3] for l in popt['levels']]))
@@ -145,10 +161,10 @@ def _multilevel_task(args):
 
 
 def multilevel():
-    tasks = [(key, cfg, sign) for key in 'AB' for cfg in configs() for sign in (1.0, -1.0)]
+    tasks = [(key, cfg, sign) for key in KEYS for cfg in configs() for sign in (1.0, -1.0)]
     with ProcessPoolExecutor(WORKERS) as ex:
         res = list(ex.map(_multilevel_task, tasks))
-    for key in 'AB':
+    for key in KEYS:
         save(f'lines_ml_{key}.dat',
              ['line', 'Fe', 'gp', 'sign', 'K', 'W3', 'n3', 'Wraw', 'nraw', 'd2sm', 'd2opt',
               'Wopt', 'nopt', 'WSMopt', 'nSMopt', 'beff'], [r for k, r in res if k == key])
@@ -161,7 +177,7 @@ def _delta_task(args):
     key, ic, cfg, DG = args
     fc = E.paper_cases(cfg['line'])[key]
     om = fc['om']
-    three = E.solve_me(E.params(fc, s=1.0, N=NME, Delta_G=DG, bp=cfg['bp']))
+    three = E.steady(fc, 1.0, Delta_G=DG, bp=cfg['bp'])
     d2, opt, _ = optimise_d2(fc, cfg, Delta_G=DG)
     row = [ic, int(cfg['line'][1]), cfg['Fe'], cfg['gp'], DG,
            three['W'] * om, three['n'], d2, opt['W'] * om, opt['n'],
@@ -173,10 +189,10 @@ def _delta_task(args):
 
 def delta():
     cool = [c for c in configs() if c['bp'] >= 0.5]
-    tasks = [(key, ic, cfg, DG) for key in 'AB' for ic, cfg in enumerate(cool) for DG in DELTAS]
-    with ProcessPoolExecutor(WORKERS) as ex:
+    tasks = [(key, ic, cfg, DG) for key in KEYS for ic, cfg in enumerate(cool) for DG in DELTAS]
+    with ProcessPoolExecutor(WORKERS_DELTA) as ex:
         res = list(ex.map(_delta_task, tasks))
-    for key in 'AB':
+    for key in KEYS:
         save(f'lines_delta_{key}.dat',
              ['config', 'line', 'Fe', 'gp', 'DeltaG', 'W3', 'n3', 'd2opt', 'Wopt', 'nopt',
               'ok3', 'okopt'],

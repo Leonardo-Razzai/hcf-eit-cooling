@@ -282,3 +282,29 @@ if __name__ == '__main__':
         if name.startswith('test_'):
             f()
             print('ok', name)
+
+
+def test_banded_evolution_matches_full():
+    """Second order in h and agreement with the full BDF2 evolution (N = 10)."""
+    N = 10
+    p = E.params(E.paper_cases()['B'], s=0.2, N=N)
+    th = E.thermal(1.0, N)
+    L, d, b = E.liouvillian(p)
+    rho0 = np.zeros((d, d), complex)
+    rho0[np.arange(N), np.arange(N)] = th
+    t, full = E.evolve(L, rho0, 5.0, E.number_op(b), h=0.05, n_out=5)
+    _, n1 = E.banded_evolve(p, th, 5.0, B=N, h=0.0625, n_out=5)
+    _, n2 = E.banded_evolve(p, th, 5.0, B=N, h=0.03125, n_out=5)
+    _, n3 = E.banded_evolve(p, th, 5.0, B=N, h=0.015625, n_out=5)
+    assert np.max(abs(n1 / full - 1)) < 1e-3
+    assert abs(n1[-1] - n2[-1]) > 3 * abs(n2[-1] - n3[-1])     # second order: ratio -> 4
+
+
+def test_cutoff_rules_depend_on_branching():
+    eta = 0.71
+    assert E.me_cutoffs(eta, 1.0)['N'] == 120
+    assert E.me_cutoffs(eta, 0.1, 5 / 6)['N'] == 120
+    assert E.me_cutoffs(eta, 1.0, 1 / 6)['status'] == 'unconverged'
+    assert E.me_cutoffs(0.34, 1.0, 1 / 6)['status'] == 'validated'
+    assert E.me_cutoffs(eta, 1.0, 0.5, 8.0)['N'] == 400
+    assert E.me_cutoffs(eta, 1.0, 5 / 6, 8.0)['N'] == 120

@@ -30,7 +30,18 @@ plotting/convergence_plots.py into the same folder. One process, sequential.
   tailshape  P(n) for case A, s = 0.1 at N = 300 and 400 (band 4)
                                                  -> tail_s0p1.dat   (~5 min)
 
+  evolution  banded_evolve vs the full BDF2 evolve, case A, s = 0.2, thermal <n> = 2, N = 20
+                                                 -> evolution_check.dat  (~5 min)
+  lines_elim  eliminated vs full ME for the D1/D2 configurations (all excited levels),
+         Delta = 1, 3, 12 Gamma; three-level bp = 1/6, 5/6
+                                                 -> lines_elim.dat  (~15 min)
+  lines_nconv  N-convergence versus bp (5/6, 1/6), s = 0.1, 1, 5
+                                                 -> lines_nconv.dat (~10 min)
+  lines_nconv_delta  N-convergence versus Delta/Gamma, bp = 1/2, 5/6, s = 1
+                                                 -> lines_nconv_delta.dat
+
 Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices] [weak] [rates] [tailshape]
+       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta]
 """
 import sys
 
@@ -174,8 +185,92 @@ def tailshape():
         save('tail_s0p1.dat', cols, np.column_stack(data))
 
 
+def evolution():
+    """banded_evolve against the full BDF2 evolve (case A, s = 0.2, thermal <n> = 2,
+    N = 20, same time grid): band of the study and untruncated band, step sizes."""
+    fc = CASES['A']
+    s, N = 0.2, 20
+    p = E.params(fc, s=s, N=N)
+    tmax = 375.0
+    th = E.thermal(2.0, N)
+    L, d, b = E.liouvillian(p)
+    rho0 = np.zeros((d, d), complex)
+    rho0[np.arange(N), np.arange(N)] = th             # g_p is the first block
+    t, full = E.evolve(L, rho0, tmax, E.number_op(b), h=0.05, n_out=60)
+    cols, data = ['t', 'full'], [t, full]
+    for B, h in ((N, 0.25), (4, 0.25), (4, 0.125), (4, 0.0625)):
+        tb, nb = E.banded_evolve(p, th, tmax, B=B, h=h, n_out=60)
+        assert np.allclose(tb, t)
+        cols.append('band%d_h%g' % (B, h))
+        data.append(nb)
+        dev = abs(nb / full - 1)
+        log('evolution band', B, 'h', h, 'dev from full: max %.2e at t = %.1f, median %.2e'
+            % (dev.max(), t[dev.argmax()], np.median(dev)))
+    save('evolution_check.dat', cols, np.column_stack(data))
+
+
+def lines_elim():
+    """Eliminated against full ME for the D1/D2 configurations, N = 20, s = 1:
+    multi-level at the optimised two-photon detuning of the stored stage-2 scan
+    (Delta = 1, 3, 12 Gamma), and three-level with bp = 1/6, 5/6."""
+    from lines import configs
+    cool = [c for c in configs() if c['bp'] >= 0.5]
+    dl = np.genfromtxt(RESULTS / 'lines_delta_A.dat', names=True)
+    rows = []
+    for ic, cfg in enumerate(cool):
+        fc = E.paper_cases(cfg['line'])['A']
+        lv = E.excited_manifold(cfg['line'], cfg['Fe'], cfg['gp'])
+        for DG in (1.0, 3.0, 12.0):
+            m = (dl['config'] == ic) & (dl['DeltaG'] == DG)
+            p = E.params(fc, s=1.0, N=20, Delta_G=DG, d2=float(dl['d2opt'][m][0]), levels=lv)
+            a, b_ = E.solve_me(p), E.solve_me(p, eliminate=True)
+            rows.append([int(cfg['line'][1]), cfg['Fe'], cfg['gp'], cfg['bp'], DG, len(lv),
+                         a['W'], b_['W'], a['n'], b_['n']])
+            log('lines_elim', cfg['line'], "F'=%d gp=%d D=%g K=%d" % (cfg['Fe'], cfg['gp'], DG, len(lv)),
+                'W %.5f elim %+.2f%%  n %.4f elim %+.2f%%'
+                % (a['W'], 100 * (b_['W'] / a['W'] - 1), a['n'], 100 * (b_['n'] / a['n'] - 1)))
+    fc = CASES['A']
+    for bp in (1 / 6, 5 / 6):
+        p = E.params(fc, s=1.0, N=20, bp=bp)
+        a, b_ = E.solve_me(p), E.solve_me(p, eliminate=True)
+        rows.append([1, 0, 0, bp, 3.0, 1, a['W'], b_['W'], a['n'], b_['n']])
+        log('lines_elim 3-level bp %.3f' % bp, 'W %+.2f%% n %+.2f%%'
+            % (100 * (b_['W'] / a['W'] - 1), 100 * (b_['n'] / a['n'] - 1)))
+    save('lines_elim.dat', ['line', 'Fe', 'gp', 'bp', 'DeltaG', 'K', 'Wfull', 'Welim', 'nfull', 'nelim'], rows)
+
+
+def lines_nconv():
+    """N-convergence of the steady state versus the branching ratio (three-level,
+    case A), band 4: does the rule tuned at bp = 1/2 hold for bp = 5/6 and 1/6?"""
+    fc = CASES['A']
+    rows = []
+    for bp in (5 / 6, 1 / 6):
+        for s in (0.1, 1.0, 5.0):
+            for N in (60, 120, 250):
+                r = E.solve_banded(E.params(fc, s=s, N=N, bp=bp), B=4)
+                rows.append([bp, s, N, r['n'], r['W']])
+                log('lines_nconv bp %.3f s %g N %d' % (bp, s, N), 'n %.5f W %.5f' % (r['n'], r['W']))
+    save('lines_nconv.dat', ['bp', 's', 'N', 'n', 'W'], rows)
+
+
+def lines_nconv_delta():
+    """N-convergence at s = 1 away from Delta = 3 Gamma (three-level, case A, bp = 1/2, 5/6):
+    is the rule tuned at 3 Gamma valid for the Delta scan of lines.py? Band 6."""
+    fc = CASES['A']
+    rows = []
+    for bp in (1 / 2, 5 / 6):
+        for DG in (1.0, 2.0, 5.0, 8.0, 12.0):
+            for N in (60, 120, 250) + ((400,) if (bp == 1 / 2 and DG > 4) else ()):
+                r = E.solve_banded(E.params(fc, s=1.0, N=N, bp=bp, Delta_G=DG), B=6 if N < 400 else 4)
+                rows.append([bp, DG, N, r['n'], r['W']])
+                log('lines_nconv_delta bp %.3f D %g N %d' % (bp, DG, N), 'n %.5f W %.5f' % (r['n'], r['W']))
+    save('lines_nconv_delta.dat', ['bp', 'DeltaG', 'N', 'n', 'W'], rows)
+
+
 STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices,
-           'weak': weak, 'rates': rates, 'tailshape': tailshape}
+           'weak': weak, 'rates': rates, 'tailshape': tailshape, 'evolution': evolution,
+           'lines_elim': lines_elim, 'lines_nconv': lines_nconv,
+           'lines_nconv_delta': lines_nconv_delta}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

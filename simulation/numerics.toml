@@ -11,6 +11,10 @@
 # the actual eta_sp (recoil Lamb-Dicke parameter; eta_sp^2 = omega_rec/nu_r)
 # and the saturation parameter s. Ranges: eta_sp <= eta_sp_max,
 # s_min <= s < s_max. No match -> error: run a convergence check first.
+# Rules may also restrict the branching ratio (optional bp_min <= bp <= bp_max) and
+# the detuning (optional delta_min <= Delta/Gamma): the recoil tail is set by
+# h = alpha eta_sp^2 / bp, and reaches further at large Delta. Evidence:
+# lines_nconv.dat, lines_nconv_delta.dat. All other evidence is at Delta = 3 Gamma.
 # Status: validated (< 0.1 %), approximate (stated accuracy), provisional (unchecked).
 #
 # Evidence (results/convergence/, case A eta_sp = 0.71, case B 0.34, Delta = 3 Gamma):
@@ -32,6 +36,38 @@ s_max = 1e9
 N = 40
 band = 6
 status = "validated"                  # N = 20 converged for case B, s = 1; margin x2
+
+[[steady_state.rule]]
+name = "soft trap, leaky Lambda (bp <= 1/4: h = alpha eta_sp^2 / bp > 1 in case A)"
+eta_sp_max = 1.0
+s_min = 0.0
+s_max = 1e9
+bp_max = 0.25
+N = 250
+band = 4
+status = "unconverged"                # bp = 1/6: s = 0.1 runaway, n_ss = 0.83, 1.88, 4.18 at N = 60, 120,
+                                      # 250; s >= 1 converged by N = 120, but W is ill-defined (n_ss > 1)
+
+[[steady_state.rule]]
+name = "soft trap, strong repumping (bp >= 0.7, e.g. bp = 5/6: h = 0.24)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 1e9
+bp_min = 0.7
+N = 120
+band = 6
+status = "validated"                  # bp = 5/6, s = 0.1, 1, 5: N = 60 already within 1e-3 of N = 250
+
+[[steady_state.rule]]
+name = "soft trap, far detuned (bp ~ 1/2, Delta >= 4 Gamma)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 1e9
+delta_min = 4.0
+N = 400
+band = 4
+status = "approximate"                # the recoil tail grows with Delta (lines_nconv_delta.dat): bp = 1/2,
+                                      # s = 1, N = 120 -> 250 changes n_ss, W by ~5 % at 8 Gamma
 
 [[steady_state.rule]]
 name = "soft trap, saturated probe (case A, s >= 1)"
