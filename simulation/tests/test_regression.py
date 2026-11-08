@@ -33,12 +33,13 @@ def test_fibre_cases():
 
 
 def test_master_equation_matches_saturation_results():
-    d = load('sat_A.dat')
+    d = load('sat_A.dat')                                  # converged solver (numerics.toml)
     fc = E.paper_cases()['A']
-    i = int(np.argmin(np.abs(d['s'] - 0.1)))
-    r = E.solve_me(E.params(fc, s=d['s'][i], N=20))
-    assert np.isclose(r['n'], d['nME'][i], rtol=1e-6)
-    assert np.isclose(r['W'] * fc['om'], d['WME'][i], rtol=1e-6)
+    i = int(np.argmin(np.abs(d['s'] - 1.0)))
+    r = E.steady(fc, d['s'][i])
+    assert r['N'] == d['N'][i] and r['band'] == d['band'][i]
+    assert np.isclose(r['n'], d['nME'][i], rtol=1e-8)
+    assert np.isclose(r['W'] * fc['om'], d['WME'][i], rtol=1e-8)
 
 
 def test_simple_model_matches_saturation_results():
@@ -264,7 +265,7 @@ def test_numerics_config_rules():
     assert E.me_cutoffs(c['A']['eta_sp'], 0.5)['N'] == 250
     assert E.me_cutoffs(c['B']['eta_sp'], 0.1)['N'] == 40
     with pytest.raises(ValueError):
-        E.me_cutoffs(1.0, 1.0)                           # no validated rule: must fail
+        E.me_cutoffs(1.2, 1.0)                           # no rule covers it: must fail
     assert E.CSAT == E.CFG['grm']['csat'] and len(E.NODES) == E.CFG['emission']['nodes']
 
 

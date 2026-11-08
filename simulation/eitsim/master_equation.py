@@ -186,6 +186,37 @@ def solve_banded(p, B=6, rate=True):
     return dict(n=nss, W=W, pgc=float(np.real(np.trace(rho[N:, N:]))), P=P, dim=S, rho=rho)
 
 
+def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):
+    """Time evolution of <n> in the banded eliminated master equation from the
+    state sum_n pops[n] |g_p,n><g_p,n| (pops of length <= N). Fixed-step BDF2,
+    (3 - 2hM) y_k+1 = 4 y_k - y_k-1, with one dense in-place LU (memory: one
+    S x S matrix); the first step uses y_-1 = y_0 (local error O(h^2)).
+    h in units of 1/nu_r: BDF2 is L-stable, the fast internal rate is only
+    Gamma_n ~ nu_r/3 after the elimination. Returns times and <n>(t)."""
+    from scipy.linalg import lu_factor, lu_solve
+    M, r, c, n_of = banded_generator(p, B)
+    S = r.size
+    M *= -2 * h
+    M[np.diag_indices(S)] += 3.0
+    lu = lu_factor(M, overwrite_a=True, check_finite=False)
+    diag = np.nonzero(r == c)[0]
+    nvec = np.zeros(S)
+    nvec[diag] = n_of[r[diag]]
+    y = np.zeros(S, complex)
+    for n, pn in enumerate(pops):
+        y[int(np.nonzero((r == n) & (c == n))[0][0])] = pn
+    nsteps = int(np.ceil(tmax / h))
+    every = max(1, nsteps // n_out)
+    ts, vals = [0.0], [float(np.real(nvec @ y))]
+    ym = y.copy()
+    for k in range(1, nsteps + 1):
+        ym, y = y, lu_solve(lu, 4 * y - ym)
+        if k % every == 0:
+            ts.append(k * h)
+            vals.append(float(np.real(nvec @ y)))
+    return np.array(ts), np.array(vals)
+
+
 def banded_fock_drift(p, n0s, B=4, h=0.05, t1=100, t2=400):
     """Phonon drift d<n>/dt and energy diffusion d Var(n)/dt (per unit time
     1/nu_r) after preparing |g_p, n0>, from implicit-Euler steps of the banded

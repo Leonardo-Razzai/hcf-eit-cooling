@@ -62,6 +62,16 @@ status = "approximate"                # power-law recoil tail (P ~ n^-2.35 at s 
                                       # ~2 % (s = 0.1: +0.7 % from N = 300 to 400, extrapolated
                                       # 0.033), W within ~1 %; s = 0.01 within ~0.3 %
 
+[[steady_state.rule]]
+name = "very soft trap (eta_sp up to 1, e.g. trap-frequency mismatch nu_rel < 0.9 for case A)"
+eta_sp_max = 1.0
+s_min = 0.0
+s_max = 1e9
+N = 400
+band = 4
+status = "unconverged"                # h = kappa alpha eta_sp^2 up to ~0.8 > 1/2: the power-law
+                                      # recoil tail may make n_ss diverge with N; use W only
+
 # ---------------------------------------------------------------- full master equation
 [full_me]
 N_legacy = 20         # fixed truncation of the original studies (not converged for case A)

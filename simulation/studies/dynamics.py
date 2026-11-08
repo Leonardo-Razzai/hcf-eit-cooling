@@ -1,6 +1,6 @@
 """Cooling dynamics (paper Fig. 5).
 
-  relaxation  case A, s = 0.2, from <n> = 2: master equation (BDF2, ~6 min),
+  relaxation  case A, s = 0.2, from <n> = 2: converged banded master equation (BDF2, ~10 min),
               GRM (calibrated and c_sat = 1) and simple model -> results/dyn_A.dat
   capture     cooling from 10 uK with the calibrated GRM, four protocols
               (~2 min)                                       -> results/capture_{A,B}.dat
@@ -16,23 +16,28 @@ from _common import E, CASES, save, log
 
 
 def relaxation():
+    """Case A, s = 0.2, from a thermal state with <n> = 2: converged master
+    equation (banded, eliminated; N and band from numerics.toml), GRM with
+    calibrated and unit c_sat, simple model."""
     fc = CASES['A']
-    N = 30
-    p = E.params(fc, s=0.2, N=N)
-    L, d, b = E.liouvillian(p)
+    s = 0.2
+    cut = E.me_cutoffs(fc['eta_sp'], s)
+    N = cut['N']
+    p = E.params(fc, s=s, N=N)
     th = E.thermal(2.0, N)
-    rho0 = np.zeros((d, d), complex)
-    rho0[np.arange(N), np.arange(N)] = th            # |g_p> x thermal(2)
     sm = E.simple(p, 2)
-    t, nME = E.evolve(L, rho0, 6 / sm['W'], E.number_op(b), h=0.02, n_out=60)
+    t, nME = E.banded_evolve(p, th, 6 / sm['W'], B=cut['band'], h=0.25, n_out=60)
+    NG = 200
+    thg = E.thermal(2.0, NG)
     out = {}
     for lab, c in (('nGRM', E.CSAT), ('nGRM1', 1.0)):
-        Q = E.grm_matrix(p, N=N, csat=c)
-        out[lab] = [np.arange(N) @ (expm(Q * x) @ th) for x in t]
+        Q = E.grm_matrix(E.params(fc, s=s, N=NG), N=NG, csat=c)
+        out[lab] = [np.arange(NG) @ (expm(Q * x) @ thg) for x in t]
     nS = sm['n'] + (th @ np.arange(N) - sm['n']) * np.exp(-sm['W'] * t)
     save('dyn_A.dat', ['tms', 'nME', 'nGRM', 'nGRM1', 'nSM'],
          np.column_stack([t / fc['om'] * 1e3, nME, out['nGRM'], out['nGRM1'], nS]))
-    log('relaxation: final <n> ME', nME[-1], 'GRM', out['nGRM'][-1])
+    log('relaxation (N %d, band %d, %s): final <n> ME' % (N, cut['band'], cut['status']),
+        nME[-1], 'GRM', out['nGRM'][-1])
 
 
 # protocols: label -> list of stages (Delta/Gamma, s, m); the second stage
