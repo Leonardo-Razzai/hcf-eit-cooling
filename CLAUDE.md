@@ -24,13 +24,12 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 
 ### Key results (keep the text consistent with these)
 
-Case A is from the converged solver (branch `fix-truncation`); `paper/manuscript/main.tex` still has the
-N = 20 values until the author approves the changes.
+Case A is from the converged solver.
 
 | Quantity | Case A | Case B |
 |---|---|---|
 | W at s = 1 (s⁻¹) | 1.6×10³ | 1.2×10⁴ |
-| Ground-state rate W₀ at s = 1 (s⁻¹) | 2.2×10³ | not computed |
+| Ground-state rate W₀ at s = 1 (s⁻¹) | 2.2×10³ | 1.4×10⁴ |
 | n_ss at s = 1 | 0.15 | 0.04 |
 | Weak-probe floor n_ss | 0.018 | 0.009 |
 | Maximum W at s ≈ 5 (s⁻¹; n_ss = 0.41 in A, above the 0.2 flag) | 3.3×10³ | 1.8×10⁴ |
@@ -41,9 +40,9 @@ N = 20 values until the author approves the changes.
 
 - **Simple model:**
   - It is valid at weak probe only if it counts κ = 1/b_p ≈ 2 photons per cycle.
-  - At s ~ 1 it overestimates W by up to 38% (A; 43% in B at s = 10) and underestimates n_ss by up to 5×.
+  - At s ~ 1 it overestimates W by up to 40% (38% in A at s ≈ 0.6; 43% in B at s = 10) and underestimates n_ss by up to 5×.
     The cause is Raman splitting of the narrow line, since s = 2(Ω_R/Γ_n)², and the recoil tail.
-- **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.3 η⊥. The simple model's threshold,
+- **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.3 η⊥ ≈ 0.03 (linear interpolation between ε = 0.02 and 0.04; 1.2 η⊥ in log-log). The simple model's threshold,
   2.8 η⊥, is about 2× too optimistic. A trap offset x_s is equivalent to ε_eff = η⊥ x_s/x₀.
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
@@ -256,7 +255,7 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
-- **Case-A convergence fix in progress (branch `fix-truncation`, from `main`).** The case-A
+- **Case-A convergence fix (done).** The case-A
   master-equation results at N = 20 (key results table, Figs 3, 4, 5a, GRM calibration) are not
   converged (see Truncation). Brute force is too slow (one N = 90 solve > 1 h, 7 GB). Plan:
   **adiabatic elimination of the excited state** (effective-operator formalism, Reiter & Sørensen,
@@ -275,8 +274,8 @@ Conventions and gotchas:
   Converged case A, s = 1: n_ss = 0.1545, W = 1614 s⁻¹ (paper N = 20: 0.133, 1319). Checks and plots:
   `studies/convergence.py` → `results/convergence/`, `plotting/convergence_plots.py`.
   Then: time evolution validated, Fig. 5a data, D1/D2 rerun, figures, code guide done. W0 added (Rates, above).
-  **Pending:** author's approval of the merge and of the paper numbers; decide W or W0 in the paper; rerun
-  `universal` with converged cut-offs; talk (slide 12 and result plots) still has the old case-A numbers.
+  Merged into `main`, with the paper numbers updated. **Pending:** rerun `universal` with converged cut-offs;
+  talk (slide 12 and result plots) still has the old case-A numbers.
 
 - **Possible separate paper: anomalous (scale-free) Fock statistics** — hypothesis from the case-A
   convergence problem: recoil diffusion with h = κα·η_sp² may give a power-law tail P(n) ∝ n^(−1/h);

@@ -47,7 +47,7 @@ plotting/convergence_plots.py into the same folder. One process, sequential.
          runs away or has a pole                  -> rate_p0.dat (~30 min)
 
 Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices] [weak] [rates] [tailshape]
-       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta] [lines_nconv_d2] [lines_d2scan] [rate0]
+       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta] [lines_nconv_d2] [lines_d2scan] [rate0] [rate0_b]
 """
 import sys
 
@@ -358,11 +358,22 @@ def rate0():
     save('rate_p0.dat', ['set', 's', 'DeltaG', 'bp', 'd2', 'N', 'band', 'n', 'P0', 'W', 'W0'], rows)
 
 
+def rate0_b():
+    """W and W0 for case B, for the paper's comparison with case A."""
+    fc = CASES['B']
+    rows = []
+    for s in (0.01, 0.1, 1.0, 5.0):
+        r = E.steady(fc, s)
+        rows.append([s, r['N'], r['band'], r['n'], r['P0'], r['W'] * fc['om'], r['W0'] * fc['om']])
+        log('rate0_b s %g' % s, 'n %.4f P0 %.4f W %.0f W0 %.0f' % tuple(rows[-1][3:]))
+    save('rate_p0_B.dat', ['s', 'N', 'band', 'n', 'P0', 'W', 'W0'], rows)
+
+
 STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices,
            'weak': weak, 'rates': rates, 'tailshape': tailshape, 'evolution': evolution,
            'lines_elim': lines_elim, 'lines_nconv': lines_nconv,
            'lines_nconv_delta': lines_nconv_delta, 'lines_nconv_d2': lines_nconv_d2,
-           'lines_d2scan': lines_d2scan, 'rate0': rate0}
+           'lines_d2scan': lines_d2scan, 'rate0': rate0, 'rate0_b': rate0_b}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
