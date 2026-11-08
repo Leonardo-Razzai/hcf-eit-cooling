@@ -195,7 +195,7 @@ def fig_phase():
     cs = ax.contourf(X, Y, Hm, levels=[0, 1 / 3, 1 / 2, 1, 100],
                      colors=['#EAF2FA', '#D6E6F5', '#FDF0E6', '#F6D5C8'])
     ax.contour(X, Y, Hm, levels=[1 / 3, 1 / 2, 1], colors='k', linewidths=0.6)
-    for xt, yt, lab in ((30, 0.55, '$h<1/3$\nmean and\nvariance finite'), (0.75, 0.5, '$1/2<h<1$\n$\\langle n\\rangle=\\infty$'), (0.42, 0.2, '$h>1$\nno steady\nstate')):
+    for xt, yt, lab in ((30, 0.55, '$h<1/3$\nmean and\nvariance finite'), (0.75, 0.5, '$1/2<h<1$\n$\\langle n\\rangle=\\infty$'), (0.42, 0.2, '$h>1$\nno cold\nstate')):
         ax.text(xt, yt, lab, ha='center', va='center', fontsize=6)
     cases = E.paper_cases()
     for xv, yv, lab in ((cases['A']['eta_sp']**-2, 0.5, 'A'), (cases['A']['eta_sp']**-2, 5 / 6, r'A, D1 $F^\prime=1$'),
@@ -239,10 +239,78 @@ def fig_scales():
     return nlin, nanh, ndep
 
 
+def fp_from_measured(s):
+    """Fokker-Planck stationary P(n) built only from the measured drift v and
+    D = (1/2) dVar/dt: P = D^-1 exp(int v/D dn). Returns n0, r = -v n/D, n grid, P."""
+    d = load('rates_vs_n.dat')
+    d = d[d['s'] == s]
+    n0, v, D = d['n0'], d['drift'], 0.5 * d['diffusion']
+    r = -v * n0 / D
+    n = np.arange(1, int(n0[-1]) + 1)
+    rn = np.interp(np.log(n), np.log(n0), r)
+    Dn = np.exp(np.interp(np.log(n), np.log(n0), np.log(D)))
+    integ = np.concatenate([[0], np.cumsum(0.5 * (rn[1:] + rn[:-1]) * np.diff(np.log(n)))])
+    return n0, r, n, np.exp(-integ) / Dn
+
+
+def fig_fom():
+    """Stored data against the theory of Sec. theory: P(n) from the measured v and D;
+    local exponent r(n) against s n; coherence of a memory against storage time."""
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 58 * MM), constrained_layout=True)
+    t1, t2 = load('tail.dat'), load('tail_s0p1.dat')
+    cases = ((0.1, t2['P_N400'], CA, 12), (1.0, t1['P_A_s1'], CB, 5))
+    for s, P, col, n_ref in cases:
+        n = np.arange(P.size)
+        ax[0].loglog(n[1:], P[1:], color=col, label=r'ME, $s=%g$' % s)
+        _, _, nf, Pf = fp_from_measured(s)
+        k = nf >= 3
+        ax[0].loglog(nf[k], Pf[k] * P[n_ref] / Pf[n_ref - 1], '--', color='k', lw=0.7)
+        fit = (nf >= 30) & (nf <= 200)
+        print('s %g: FP slope 30-200 %.2f, ME slope %.2f' % (
+            s, np.polyfit(np.log(nf[fit]), np.log(Pf[fit]), 1)[0],
+            np.polyfit(np.log(n[30:161]), np.log(P[30:161]), 1)[0]))
+    ax[0].plot([], [], '--', color='k', lw=0.7, label=r'from measured $v$, $D$')
+    ax[0].set_xlim(1, 400)
+    ax[0].set_ylim(1e-9, 1e-1)
+    ax[0].set_xlabel('Fock state $n$')
+    ax[0].set_ylabel('$P(n)$, case A')
+    ax[0].legend(loc='lower left', fontsize=5.5)
+    letter(ax[0], 'a')
+    for s, col in ((0.01, CL), (0.1, CA), (1.0, CB)):
+        n0, r, _, _ = fp_from_measured(s)
+        ax[1].loglog(s * n0, r, 'o-', color=col, ms=2, label=r'$s=%g$' % s)
+    ax[1].axhline((1 - H_A) / H_A, color='k', lw=0.7, ls='--')
+    ax[1].axvline(SNC, color=CG, lw=0.5, ls=':')
+    ax[1].text(0.02, 0.97, r'dashed: $(1-h)/h$; dotted: $sn=2(\nu_r/\Gamma_n)^2$',
+               transform=ax[1].transAxes, va='top', fontsize=5.5)
+    ax[1].set_ylim(0.5, 60)
+    ax[1].set_xlabel(r'$s\,n_0$')
+    ax[1].set_ylabel(r'$r(n)=-v\,n/D$')
+    ax[1].legend(loc='center left', fontsize=5.5)
+    letter(ax[1], 'b')
+    eps = 800.0 / (2 * 1552.0)                 # Hz per quantum per axis, case A
+    T = np.logspace(-3, 0.5, 300)              # up to T < 1 / eps: no revival shown
+    for lab, P, col in ((r'$s=0.1$', t2['P_N400'], CA), (r'$s=1$', t1['P_A_s1'], CB),
+                        (r'$s=5$', t1['P_A_s5'], CO)):
+        P = np.nan_to_num(P)
+        P = P / P.sum()
+        n = np.arange(P.size)
+        C = np.array([abs(np.sum(P * np.exp(2j * np.pi * eps * x * n)))**2 for x in T])
+        ax[2].semilogx(T, C, color=col, label=lab)
+        ax[2].axhline(P[0]**2, color=col, lw=0.5, ls='--')
+    ax[2].set_ylim(0.6, 1.02)
+    ax[2].set_xlabel('Storage time $T$ (s)')
+    ax[2].set_ylabel(r'Coherence $|\phi(T)|^2$, two axes')
+    ax[2].legend(loc='lower left', fontsize=5.5)
+    letter(ax[2], 'c')
+    save(fig, 'fom.pdf')
+
+
 if __name__ == '__main__':
     fig_geometry()
     fig_recoil()
     fig_regimes()
     fig_tail()
     fig_phase()
+    fig_fom()
     print('scales n_lin %.0f n_anh %.0f n_depth %.0f; h_A %.3f, s n_res %.1f' % (fig_scales() + (H_A, SNC)))

@@ -286,7 +286,7 @@ In continuous time this gives the drift and diffusion coefficients
 \end{equation}
 The tail is a power law, not an exponential. In regime II, where it is heaviest, the exponent $\mu=1/h$ depends only on $h$. The mechanism is that of random multiplicative processes~\cite{kesten1973,sornette1998}: additive drift towards the bottom combined with noise that grows with $n$. It is related in spirit to the Lévy statistics of subrecoil laser cooling~\cite{bardou1994}. There the dark state lies in momentum space; here it is the motional ground state at the node.
 
-\paragraph{Comparison with the master equation [numerics].} At $s=0.1$, where regime II spans $n\approx10$--180, the master-equation tail is a clean power law over a decade (Fig.~\ref{fig:tail}a). The fitted exponent, $n^{-2.34}$ for $30\le n\le200$, is close to the prediction $n^{-1/h}=n^{-2.48}$; the log--linear slope varies by $4\times$ over the same range, which excludes an exponential. The drift and diffusion measured separately, however, do not match the model one by one: the local ratio $-v\,n/D$ is 0.5--1.2 on the plateau, against $(1-h)/h=1.48$. The large, discrete recoil jumps and the decays through $\gc$ go beyond a second-order description. Why the exponent nevertheless comes out close to $1/h$ is an open question.
+\paragraph{Comparison with the master equation [numerics].} At $s=0.1$, where regime II spans $n\approx10$--180, the master-equation tail is a clean power law over a decade (Fig.~\ref{fig:tail}a). The fitted exponent, $n^{-2.34}$ for $30\le n\le200$, is close to the prediction $n^{-1/h}=n^{-2.48}$; the log--linear slope varies by $4\times$ over the same range, which excludes an exponential. The drift and diffusion measured separately also agree with the model, provided $D=\tfrac12\,d{\rm Var}(n)/dt$ as defined above (an earlier version of this note compared with $d{\rm Var}(n)/dt$ itself). The local ratio $r(n)=-v\,n/D$ is 1.0--1.9 on the plateau, around $(1-h)/h=1.48$ (Fig.~\ref{fig:fom}b), and the Fokker--Planck form built from the measured $v$ and $D$ reproduces the tail (Sec.~\ref{sec:theory}).
 
 \begin{figure}[t]
 \centering
@@ -300,15 +300,15 @@ The tail is a power law, not an exponential. In regime II, where it is heaviest,
 \item $h<1/3$: mean and variance finite;
 \item $1/3\le h<1/2$: ${\rm Var}(n)=\infty$; case A ($h=0.40$) lies here;
 \item $1/2\le h<1$: normalisable with finite $P_0$, but $\langle n\rangle=\infty$ ("anomalous cooling");
-\item $h\ge1$: no steady state, runaway heating.
+\item $h\ge1$: no steady state, runaway heating (without regime III; with it, a hot steady state, Sec.~\ref{sec:theory}).
 \end{itemize}
 The mean-energy threshold $h=1/2$ is twice as strict as the naive condition $h<1$ that every cycle removes energy. In reality the tail is cut off (Sec.~\ref{sec:scales}), so the divergences are rounded into a strong sensitivity of $n_{\rm ss}$ to the cut-offs. The truncation $N$ acts as a system size: the missing part of $\langle n\rangle$ scales as $N^{2-1/h}$, so a convergence study measures $h$. This explains the slow convergence of case A, and the fast convergence of case B, where $h\approx0.09$ and the tail falls as $n^{-11}$.
 
-\paragraph{Consequences [model].} The cooling rate $W$ is measured from $n=1$ and is insensitive to the tail. The steady occupation is
+\paragraph{Consequences [model].} The steady occupation is
 \begin{equation}
   n_{\rm ss}=\underbrace{\Big(\frac{\Gamma}{4\Delta}\Big)^2\frac{1+h}{1-h}(1+s)}_{\text{core~\cite{morigi2000}}}+\;n_{\rm tail}(h,s,\text{cut-offs}),
 \end{equation}
-so that near $h\to1/2$ the tail term dominates. The ground-state population $P_0$ is the robust figure of merit.
+so that near $h\to1/2$ the tail term dominates. The ground-state population $P_0$ is the robust figure of merit, and the rate $W$ is less robust than it looks (Sec.~\ref{sec:theory}).
 
 %=====================================================================
 \section{The fast high-$n$ channel}
@@ -386,12 +386,135 @@ Case A ($a=15\,\mu$m, $h=0.40$) lies between $h=1/3$ and $1/2$; the $b_p=5/6$ co
 \end{figure}
 
 %=====================================================================
+\section{Theory of the $h$ regimes and figures of merit}
+\label{sec:theory}
+%=====================================================================
+Nothing in this section requires a new simulation; the tests use stored data (Fig.~\ref{fig:fom}). The thresholds of Sec.~\ref{sec:model} are three values of $h$ ($\tfrac13$, $\tfrac12$, 1), which separate four windows.
+
+\paragraph{Closed form with the fast channel [model].} In regime III the measured diffusion stays close to the plateau law while the drift grows: from $n=20$ to 200 at $s=1$ the diffusion follows $n$ within a factor 2, while the drift grows by a factor 17, and $r(n)$ rises roughly linearly (Fig.~\ref{fig:fom}b). So the photon rate is nearly unchanged and each cycle removes more energy, which is what the light-shift hill predicts [numerics]. Adding this to the drift,
+\begin{equation}
+  v(n)=-R\Big(1-h+\frac{n}{n_c}\Big),\quad D(n)=h\,n\,R,\quad n_c=\frac{2(\nur/\Gamma_n)^2}{s}\simeq\frac{2(\Delta/\Gamma)^2}{s},
+\end{equation}
+gives, for $n\gg1$ and $n\gg1/s$,
+\begin{equation}
+  P(n)\propto n^{-1/h}\,e^{-n/n_x},\qquad n_x=h\,n_c .
+  \label{eq:gamma}
+\end{equation}
+This holds for all $h$, also above 1. Compared with the data, the form is right but the scale is about twice too small: fits give $n_x\approx16$ at $s=1$ against $h\,n_c=7$, and at $s=0.1$ the tail steepens only above $n\approx200$. The linear law also misses the sharp onset near $n_c$ seen in Fig.~\ref{fig:fom}b. Treat $n_x$ as $\simeq2h\,n_c$, to be derived from the semiclassical friction.
+
+\paragraph{The tail is a Fokker--Planck tail [numerics].} Using only the measured $v$ and $D$ in $P\propto D^{-1}\exp\int v/D$, with no fit other than the normalisation, reproduces the master-equation tail for $n\gtrsim5$ (Fig.~\ref{fig:fom}a). This removes the earlier open question of why the exponent is close to $1/h$. Below $n\approx5$ the description fails, as a single jump, $\sqrt{2hn}$, is then comparable with $n$: the predicted slope $-1-1/h=-3.5$ for $n<1/s$ is not seen (measured $-2.4$ for $2\le n\le6$ at $s=0.1$).
+
+\paragraph{Moments as functions of $h$ [model].} Since the power law continues from low $n$ in practice, $P(n)\simeq P_1\,n^{-\mu}e^{-n/n_x}$ with $\mu=1/h$ gives
+\begin{equation}
+  1-P_0\simeq P_1\,\zeta(\mu),\qquad
+  \langle n\rangle\simeq P_1\sum_n n^{1-\mu}e^{-n/n_x},\qquad
+  \langle n^2\rangle\simeq P_1\sum_n n^{2-\mu}e^{-n/n_x}.
+\end{equation}
+The ratio $\langle n\rangle/(1-P_0)$ is 1 for a two-level population and grows with the tail, so it is a single-number diagnostic. Measured for case A, it is 2.5 at $s=0.1$ and 3.3 at $s=1$. As a check on the variance window: the variance at $s=0.1$ grows from 0.41 ($N=160$) to 0.67 ($N=400$), i.e.\ as $N^{0.54}$, against the predicted $N^{3-1/h}=N^{0.5}$. So the variance of case A is indeed set by the cut-off, while the mean only drifts (0.0316 to 0.0327).
+
+\paragraph{The thresholds are crossovers, with a width set by $\Delta$ [model].} The window between the saturation scale $1/s$ and $n_c$ spans a factor $\rho=2(\Delta/\Gamma)^2$, independent of $s$. A moment changes behaviour when $|k+1-\mu|\ln\rho\sim1$, so each threshold has the width
+\begin{equation}
+  \delta h\simeq\frac{h^2}{\ln\rho} ,
+  \label{eq:width}
+\end{equation}
+that is $\delta h=0.09$ at $h=\tfrac12$ for $\Delta=3\Gamma$ ($\rho=18$) and 0.04 for $\Delta=12\Gamma$ ($\rho=288$). Case A ($h=0.40$) therefore lies at the edge of the $h=\tfrac12$ crossover at $\Delta=3\Gamma$. A sharp test of a threshold needs large $\Delta$ with $N\gg n_c$, which is why the convergence worsens with $\Delta$. At large $\Delta$, neighbouring excited levels also change the branching ratio, so $h$ must be computed with the effective value: D2 $F'=2$, probe on $F=1$, at $12\Gamma$ has $b_{\rm eff}=0.37$, hence $h\approx0.57$, in the window where $\langle n\rangle$ is set by the cut-off, and indeed $n_{\rm ss}=0.038$, 0.050, 0.059, 0.069 at $N=80$, 160, 250, 400 (\texttt{lines\_nconv\_d2.dat}).
+
+\paragraph{The four windows [model].} Using $h\simeq0.0134\,(a/\micro{\rm m})/b_p$ for $^{87}$Rb D1 at $\nu_z=300$\,kHz:
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}llllX@{}}
+\toprule
+Window & Statistics & $a$ ($\micro$m), $b_p=\tfrac12$ & $b_p=\tfrac56$ & Examples\\
+\midrule
+$h<\tfrac13$ & mean, variance finite & $<12$ & $<21$ & B ($h=0.09$); A with $b_p=\tfrac56$ ($0.24$)\\
+$\tfrac13<h<\tfrac12$ & variance set by cut-off & 12--19 & 21--31 & A with $b_p=\tfrac12$ ($0.40$)\\
+$\tfrac12<h<1$ & mean set by cut-off, $P_0$ finite & 19--37 & 31--62 & D2 $F'=2$ at $12\Gamma$ ($0.57$)\\
+$h>1$ & no cold state, hot steady state & $>37$ & $>62$ & A with $b_p=\tfrac16$ ($1.21$)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Above $h=1$ there is no runaway [model, partly tested].} The drift vanishes at $n=(h-1)n_c$, and Eq.~\eqref{eq:gamma} is integrable at low $n$ for $h>1$, with
+\begin{equation}
+  \langle n\rangle=n_x\frac{\Gamma(2-1/h)}{\Gamma(1-1/h)}=(h-1)\,n_c ,
+  \label{eq:hot}
+\end{equation}
+the same value. So $h=1$ does not end the steady state: it ends ground-state cooling, and the atoms settle at a temperature set by the balance of recoil and Sisyphus cooling. For $b_p=\tfrac16$ in case A ($h=1.21$), Eq.~\eqref{eq:hot} gives 3.8 at $s=1$ against the converged $n_{\rm ss}=2.69$, the right order. However, it predicts $0.76$ at $s=5$ against 1.44, so the expected $1/s$ scaling is not confirmed where $n_c$ approaches $1/s$; and at $s=0.1$ it predicts $\approx38$, while $n_{\rm ss}$ is still rising at $N=250$ (4.18). The naive threshold ``no steady state at $h\ge1$'' of Sec.~\ref{sec:model} applies only in the absence of regime III.
+
+\paragraph{Why $W$ fails in a heavy tail [model, supported by data].} From $\ket{g_p,1}$, $\langle n\rangle$ falls quickly to the core value and then \emph{rises} slowly to $n_{\rm ss}$ as recoil fills the tail. With $n_{\rm ss}=n_{\rm core}+n_{\rm tail}$,
+\begin{equation}
+  \frac{1-n_{\rm ss}}{W}=\int_0^\infty\big(\langle n\rangle-n_{\rm ss}\big)dt\simeq\frac{1-n_{\rm core}}{W_c}-\frac{n_{\rm tail}}{\lambda},
+\end{equation}
+with $W_c$ the true decay rate of the core and $\lambda$ the slow filling rate. The negative term makes $W>W_c$, and $W\to\infty$ and then $W<0$ when $n_{\rm tail}/\lambda$ reaches $1/W_c$. This explains three observations: the pole and sign change of $W$ versus $\delta_{\rm e}$ near $n_{\rm ss}\approx0.2$ (\texttt{lines\_d2scan.dat}), the negative $W$ at $\Delta=\Gamma$, and the runaway $W=206$, 207, 237, 399, 1254\,s$^{-1}$ at $N=80$, 160, 250, 400, 550 for D2 $F'=2$ at $12\Gamma$ while $n_{\rm ss}$ changes by only 56\%. There, $\Delta(1/W)/\Delta n_{\rm ss}$ gives $1/\lambda\approx0.5$\,s, of the order of the time to reach $n\sim300$ at the plateau rate.
+
+This also concerns the headline result of the fibre paper. In case A at $s=1$ the rise from $W=1319$ ($N=20$) to 1614\,s$^{-1}$ (converged) gives $1/\lambda\approx6$\,ms, also of the order of the filling time ($n\sim20$ at $2\times10^3$\,s$^{-1}$). So this rise may reflect the tail rather than faster cooling. The stored drift from $n_0=1$, a proxy for $W_c$, is 1199\,s$^{-1}$ at $s=1$, 26\% below $W$; at $s=0.1$ and 0.01, where the tail is lighter at low $n$, the drift is 386 and 43\,s$^{-1}$ against $W=338$ and 42\,s$^{-1}$. A well-behaved rate is that of the ground-state population, with $P_0(0)=0$ from $\ket{g_p,1}$:
+\begin{equation}
+  W_0^{-1}=\frac{1}{P_0^{\rm ss}}\int_0^\infty\big(P_0^{\rm ss}-P_0(t)\big)dt ,
+  \label{eq:W0}
+\end{equation}
+in which the tail enters through its weight ($10^{-3}$) instead of its energy. It needs one extra triangular solve with the existing factorisation. Not yet computed.
+
+\paragraph{Figures of merit from applications [model].} The hyperfine coherence of an atom in $\ket n$ acquires a phase at the differential light shift, $2\pi\epsilon nT$, with $\epsilon=\delta_{\rm diff}\hbar\nur/2U_0=0.26$\,Hz per quantum per axis for case A and $\delta_{\rm diff}=800$\,Hz (the paper's value; 1.1\,Hz for case B). An ensemble then has the coherence $|\phi(T)|^2$ for two equal axes, with $\phi(T)=\sum_nP(n)e^{2\pi i\epsilon nT}$, the characteristic function of $P(n)$. All the statistics enter through this one function (Fig.~\ref{fig:fom}c):
+\begin{itemize}
+\item at short $T$, $1-|\phi|^2\simeq(2\pi\epsilon T)^2{\rm Var}(n)$, so the variance matters first;
+\item for $\epsilon T\gtrsim\tfrac12$ the excited atoms dephase while the ground-state atoms do not, so $|\phi|^2$ settles around $P_0^2$, with a modulation of order $2P_0P_1$, and does not decay further (Fig.~\ref{fig:fom}c: 0.97, 0.89, 0.67 at $T=1$\,s for $s=0.1$, 1, 5, with $P_0^2=0.974$, 0.909, 0.712).
+\end{itemize}
+So dephasing from a cold distribution is a loss of contrast, not a decay. Harmonic revivals at $T=1/\epsilon$ ($\approx3.9$\,s) would be washed out by anharmonicity, which is not included. A spin echo would remove this static part; heating during storage would not be removed.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+Application & What limits it & Figure of merit, threshold\\
+\midrule
+Spin-wave memory, long $T$ & fraction of atoms that keep their phase; retrieval efficiency $\propto|\phi|^4\to P_0^4$ for two axes & $P_0$; $h=1$ (and $1-P_0\propto P_1\zeta(\mu)$)\\
+Interferometer, clock & shot-to-shot noise of the sample mean, $\sigma_\varphi=2\pi\epsilon T\sqrt{2{\rm Var}(n)/N_a}$, against the quantum projection noise $1/\sqrt{N_a}$; contrast $P_0^2$ & $\sigma_n$ at fixed $P_0$; $h=\tfrac13$\\
+Mean shifts, thermometry & systematic shift $\propto\langle n\rangle$ & $\langle n\rangle$; $h=\tfrac12$\\
+Waveguide QED, Rydberg & spread of coupling from the radial position, with hot atoms near the wall in the worst case & $P(n>n_{\rm cut})$\\
+Any repeated protocol & preparation time, scattered photons & $t_{\rm prep}$, $N_{\rm ph}$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+For the interferometer, $\sigma_\varphi$ reaches the projection noise at $T_{\rm QPN}=[2\pi\epsilon\sqrt{2{\rm Var}(n)}]^{-1}$, independent of $N_a$: 0.53\,s at $s=0.1$ and 0.36\,s at $s=1$ for case A (the first still falling with $N$), without echo. This is the practical meaning of the variance window, and it is only relevant for such long $T$. The numbers depend on $\delta_{\rm diff}$, which is much smaller in a magic-like configuration.
+
+The recommended single measure is $t_{\rm prep}(P_0^\ast)$, the time to reach a target $P_0^\ast$ per axis from the pre-trap distribution, with $\sigma_n$ reported where metrology matters. $\langle n\rangle$ alone is misleading: in case A at $s=0.1$, $3\times10^{-4}$ of the atoms ($n>10$) carry 27\% of $\langle n\rangle$ and 89\% of $\langle n^2\rangle$. $W$ alone is also misleading, as shown above.
+
+\paragraph{Best configuration [model].} With the core infidelity $\varepsilon=(\Gamma/4\Delta)^2\frac{1+h}{1-h}(1+s)$ of Sec.~\ref{sec:model}, a rate $\propto(1-h)b_p\Gamma_n\frac{s}{1+s}$ and $\Gamma_n=\Gamma\nur/\Delta$, the rate at a given target infidelity is
+\begin{equation}
+  W(\varepsilon)\propto\nur\sqrt\varepsilon\;\underbrace{b_p\frac{(1-h)^{3/2}}{(1+h)^{1/2}}}_{Q}\;\frac{s}{(1+s)^{3/2}} .
+\end{equation}
+\begin{itemize}
+\item $s$: the factor peaks at $s=2$ with the core alone. The tail, ignored here, raises $1-P_0$ at large $s$ (the master equation gives $P_0=0.844$ at $s=5$), so the practical optimum is lower, $s\sim1$ in the last stage.
+\item $b_p$: at fixed trap, $Q$ favours large $b_p$ twice, directly and through $h$. Case A: $Q=0.20$ for $b_p=\tfrac12$, $0.50$ for $b_p=\tfrac56$, a factor 2.5; the master equation gives 1.8 in $W$, but that $W$ is inflated for $b_p=\tfrac12$ (see above), so the true factor is probably closer to the estimate.
+\item $\nur$: the rate grows with $\nur$ and $h$ falls, so a stiffer trap always helps; the limit is the fibre (loading, wall effects), not the cooling.
+\item $\Delta$: set by the target, $\Delta/\Gamma\simeq\frac14\sqrt{\frac{1+h}{1-h}\frac{1+s}{\varepsilon}}$. For $h=0.24$, $s=1$: $4.5\Gamma$ for $\varepsilon=0.01$ and $14\Gamma$ for $\varepsilon=10^{-3}$. Stored three-level values give $n_{\rm ss}=0.013$ and 0.005 at $5\Gamma$ and $8\Gamma$, about 1.6 times the core estimate.
+\end{itemize}
+The candidate in $^{87}$Rb is therefore \textbf{D1, $F'=1$, probe on $F=2$} ($b_p=\tfrac56$, $h=0.24$ in case A, below all the thresholds up to $a\approx21\,\micro$m), with $\Delta\approx5$--$8\Gamma$, $s\sim1$ as the last stage. It is limited by the Zeeman dark states of $F=2\to F'=1$, which the model does not contain; this is the main open risk.
+
+For hot atoms the theory suggests a ramp [hypothesis]: at large $s\,n$ the fast channel removes energy efficiently, so one can begin with large $s$ and small $\Delta$, and reduce $s$ as $\langle n\rangle$ falls, ending at the settings above. This is the staged protocol of the fibre paper extended by regime III. Lowering the trap depth to spill the tail could also remove the atoms that carry the variance at a small cost in atom number, as they are a fraction $<10^{-3}$. Neither has been simulated.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fom.pdf}
+\caption{Stored case-A data against the theory. \textbf{a}, master-equation $P(n)$ and the Fokker--Planck form built from the measured drift and diffusion, normalised at $n=12$ ($s=0.1$) and $n=5$ ($s=1$); no fit parameters otherwise. \textbf{b}, local exponent $r=-v\,n/D$ with $D=\tfrac12d{\rm Var}/dt$: near $(1-h)/h$ on the plateau, rising in regime III. \textbf{c}, coherence for two equal axes from the steady $P(n)$, $\epsilon=0.26$\,Hz; dashed: $P_0^2$.}
+\label{fig:fom}
+\end{figure}
+
+\paragraph{How to study the windows numerically, when simulations resume.} In order of cost:
+\begin{enumerate}
+\item One extra solve per point: $W_0$ of Eq.~\eqref{eq:W0} and $\langle n\rangle/(1-P_0)$ next to $W$, $n_{\rm ss}$, at case A $s=0.1$, 1, 5. It decides whether the paper's rate has to change.
+\item A chain for $P(n)$ with the exact recoil kernel and measured $R(n)$ ($N$ up to several thousand, cheap), with regime III on and off: thresholds without cut-off, then their rounding. This is the only way to test the sharp thresholds, since the master equation stops at $N\approx550$ with 11\,GB.
+\item Master equation at $h=0.1$, 0.25, 0.33, 0.4, 0.5, 0.6, 0.8, 1, 1.2, reached in two ways, by $\nur/\omega_{\rm rec}$ at $b_p=\tfrac12$ and by $b_p$ at fixed trap, at $s=1$, $\Delta=8\Gamma$ ($\rho=128$, $N=400$). Equal tails at equal $h$ test universality. The band $B$ must be rechecked in regime III, where $\Om_R\sqrt n>\nur$ may widen the coherences.
+\item Banded time evolution for $t_{\rm prep}(P_0^\ast)$ from thermal states, with $P_0(t)$ added to the output: about 4\,min per point at $N=400$, for $(\Delta,s,b_p)$ and for ramps.
+\end{enumerate}
+
+%=====================================================================
 \section{Predictions and tests}
 %=====================================================================
 \begin{enumerate}
 \item \textbf{Universality of the tail.} Tails for different $(\nur/\omega_{\rm rec},b_p,s)$ at equal $h$ should collapse. Fit the exponent against $h$ by scanning the reduced parameter $\nur/\omega_{\rm rec}$ with the banded solver.
 \item \textbf{Finite-size scaling.} The missing part of $n_{\rm ss}$ should scale as $N^{2-1/h}$, and the scaling exponent should agree with the tail exponent.
-\item \textbf{Thresholds.} Check whether the mean-energy threshold sits at $h=1/2$ and the steady state disappears at $h=1$, and how the physical cut-offs round them.
+\item \textbf{Thresholds.} Check the rounding of Eq.~\eqref{eq:width} and, above $h=1$, the hot steady state of Eq.~\eqref{eq:hot} instead of a runaway.
 \item \textbf{Sisyphus channel.}
 \begin{itemize}
 \item The onset should move as $2(\nur/\Gamma_n)^2/s\simeq2(\Delta/\Gamma)^2/s$ when $\Delta/\Gamma$ is varied.
@@ -401,7 +524,8 @@ Case A ($a=15\,\mu$m, $h=0.40$) lies between $h=1/3$ and $1/2$; the $b_p=5/6$ co
 \end{itemize}
 \item \textbf{Semiclassical model.} Compute the friction and momentum diffusion of an atom moving through the LP$_{11}$ gradient from linear response of the optical Bloch equations, and compare with the master-equation drift in regime III.
 \item \textbf{Capture.} Banded time evolution from thermal states ($\bar n\approx30$, $N\approx400$) should give the true capture time from \SI{10}{\micro K}, which may be much shorter than the rate-model estimate because of regime III.
-\item \textbf{Beyond the minimal model.} Treat the recoil with its exact Franck--Condon kernel in a master equation for $P(n)$ in place of the Fokker--Planck form, to explain why the exponent matches $1/h$ while $v$ and $D$ separately do not.
+\item \textbf{Beyond the minimal model.} Treat the recoil with its exact Franck--Condon kernel in a master equation for $P(n)$ in place of the Fokker--Planck form, which fails at $n\lesssim5$ where single jumps are comparable with $n$.
+\item \textbf{Rate definitions.} Compare $W$ with the rate $W_0$ of Eq.~\eqref{eq:W0} and with the direct decay from $n=1$.
 \end{enumerate}
 
 \begin{thebibliography}{99}

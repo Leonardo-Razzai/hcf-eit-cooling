@@ -173,3 +173,57 @@ much faster than the GRM-based capture times of the paper.
       full texts of Phatak 2024, Bartolotta 2024, He 2017 for the EIT/gray-molasses crossover.
 - [ ] Decide: section of the fibre paper, or a separate paper on anomalous Fock statistics in
       laser cooling with soft traps.
+
+## Observations from the D1/D2 convergence checks (November 2026, to follow up)
+
+Three-level case A, `results/convergence/lines_nconv.dat`, `lines_nconv_delta.dat`.
+
+- **h > 1 does not always mean a runaway.** At b_p = 1/6 (h = 1.21) n_ss runs away with N at s = 0.1
+  (0.83, 1.88, 4.18 at N = 60, 120, 250), but it converges at s = 1 (2.69) and s = 5 (1.44) by N = 120.
+  Possible reading, not yet tested: the fast channel above s n = 2 (nu_r / Gamma_n)^2 (n = 18 at s = 1,
+  180 at s = 0.1) cuts off the tail, so the thresholds in h would hold only where this channel is out of
+  reach. To do: extend the s = 0.1 scan beyond N = 250, and compare the N where n_ss saturates with 18/s.
+- **The tail reaches further at large Delta.** b_p = 1/2, s = 1: n_ss and W are converged by N = 120 at
+  Delta <= 3 Gamma, but N = 250 -> 400 still changes W by 1.3 % and 2 %, n_ss by 0.7 % and 3 %, at 8 and
+  12 Gamma. Consistent with the same cut-off moving out as Delta^2 (n = 288 at 12 Gamma, s = 1). To do:
+  test this scaling in the Delta/Gamma scan of the onset.
+
+## Theory of the h windows and figures of merit (8 Nov 2026)
+
+Written up in `anomalous_cooling.tex`, Sec. "Theory of the h regimes and figures of merit", figure
+`figures/fom.pdf`. No new simulations: tests use stored data. Three thresholds, four windows.
+
+Findings:
+- **Correction.** The earlier "-v n/D = 0.5-1.2, Fokker-Planck only qualitative" used D = dVar/dt.
+  With the model's D = (1/2) dVar/dt the ratio is 1.0-1.9 on the plateau, around (1-h)/h = 1.48, and the
+  Fokker-Planck form built from the measured v and D reproduces the tail for n >~ 5 (slope 30 <= n <= 200:
+  -2.17 vs ME -2.33 at s = 0.1). It fails below n ~ 5, where a single jump is comparable with n.
+- **Regime III: more energy per photon, not more photons.** s = 1, n = 20 -> 200: drift x17, D/n only x1.8.
+  Model: P(n) ~ n^(-1/h) exp(-n/n_x), n_x = h n_c. Right form, scale about 2x too small
+  (n_x ~ 16 at s = 1, against 7). Sharp onset near n_c not captured. To be derived semiclassically.
+- **Thresholds are crossovers,** width dh ~ h^2 / ln(2 (Delta/Gamma)^2): 0.09 at h = 1/2, 3 Gamma; 0.04 at
+  12 Gamma. Variance check: Var ~ N^0.54 at s = 0.1, predicted N^0.5.
+- **h > 1: hot steady state, not a runaway (hypothesis).** <n> = (h-1) n_c. bp = 1/6: 3.8 vs 2.69 at s = 1,
+  but 0.76 vs 1.44 at s = 5; s = 0.1 predicts ~38 (unconverged 4.18 at N = 250). Scaling not confirmed.
+- **Effective h.** Neighbouring levels change bp: D2 F'=2, gp = 1, 12 Gamma has beff = 0.37, h ~ 0.57.
+- **W fails in a heavy tail.** From n = 1, <n> undershoots and rises as the tail fills, so
+  1/W ~ 1/W_c - n_tail/lambda: W > W_c, pole, then W < 0. Explains the pole vs delta_e, W < 0 at Gamma, and
+  W = 206 -> 1254 /s with N at D2 F'=2, 12 Gamma. **Concerns the paper:** the rise 1319 -> 1614 /s may be this
+  effect; direct drift from n0 = 1 at s = 1 is 1199 /s. Proposed: W_0 from P_0(t), one extra solve.
+- **Figure of merit.** Coherence |phi(T)|^2, phi = characteristic function of P(n). Long T: ~ P_0^2, stays.
+  Memory: P_0 (threshold h = 1). Interferometer/clock: sigma_n at fixed P_0 (h = 1/3), T_QPN = 0.53 s (s = 0.1),
+  0.36 s (s = 1) for case A, delta_diff = 800 Hz, no echo. Mean shifts: <n> (h = 1/2). Overall:
+  t_prep(P_0*). <n> or W alone mislead.
+- **Best configuration (model).** W(eps) ~ nu_r sqrt(eps) bp (1-h)^1.5 (1+h)^-0.5 s (1+s)^-1.5. Candidate:
+  D1 F'=1, probe on F=2 (bp = 5/6, h = 0.24), Delta ~ 5-8 Gamma, s ~ 1 in the last stage. Main risk: Zeeman
+  dark states of F=2 -> F'=1, not in the model. Ramps of s and a spill of the tail are untested ideas.
+
+Next, when simulations resume (cost order):
+- [ ] W_0 and <n>/(1-P_0) at case A, s = 0.1, 1, 5 (decides whether the paper's rate changes).
+- [ ] Chain for P(n) with the exact recoil kernel and measured R(n), N up to several thousand, regime III
+      on and off: sharp thresholds, then their rounding.
+- [ ] ME at h = 0.1-1.2 by two routes (nu_r/omega_rec; bp), s = 1, Delta = 8 Gamma, N = 400: universality.
+      Recheck the band in regime III.
+- [ ] Banded evolution for t_prep(P_0*) with P_0(t) output: (Delta, s, bp) and ramps.
+- [ ] Derive n_x semiclassically.
+
