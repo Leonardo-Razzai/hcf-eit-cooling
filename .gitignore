@@ -18,6 +18,7 @@ venv/
 paper/manuscript/main.pdf
 paper/background_report/report.pdf
 simulation/docs/code_guide.pdf
+notes/anomalous-cooling/anomalous_cooling.pdf
 
 # editors / OS
 .vscode/

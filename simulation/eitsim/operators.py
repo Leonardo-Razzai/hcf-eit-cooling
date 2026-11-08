@@ -8,6 +8,7 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.special import jv
 
+from .config import CFG
 from .fibre import U01, U1, amp_ratio
 
 
@@ -18,7 +19,7 @@ def oscillator(N):
     return b, w, V
 
 
-def function_of_x(vals, V, tol=1e-11):
+def function_of_x(vals, V, tol=CFG['operators']['function_of_x_tol']):
     """Sparse matrix of f(x) given f at the eigenvalues of b + b^dagger."""
     M = (V * vals) @ V.conj().T
     M[np.abs(M) < tol * np.abs(M).max()] = 0

@@ -242,7 +242,7 @@ This is the standard Lindblad form for a driven atom with recoil~\cite{cirac1992
   H&\supset-\sum_k(\Delta-\epsilon_k)\ket{e_k}\bra{e_k}+\sum_k\Big[\tfrac{\bar\Om_pc_{p,k}}2\ket{e_k}\bra{g_p}f_p(\hat x)+\tfrac{\Om_cc_{c,k}}2\ket{e_k}\bra{g_c}f_c(\hat x)+{\rm h.c.}\Big],\\
   C_{jkl}&=\sqrt{\Gamma b_{kj}w_l}\,\ket{g_j}\bra{e_k}\otimes D_l .
 \end{align}
-Decays of different excited levels are independent: their cross terms oscillate at the hyperfine splittings ($\ge12\Gamma$) and are dropped (secular approximation). For $K=1$ the code performs the same operations as the three-level version and reproduces it to $10^{-13}$. The cost is set by the LU fill: $1.7\times10^7$ non-zeros and $\approx20$\,s for $K=4$, $N=20$ (all three SuperLU orderings tried; \code{MMD\_AT\_PLUS\_A} remains best). Studies with many solves therefore run configurations in parallel processes (\code{WORKERS}$=4$, memory-limited at $\sim1$\,GB per factorisation).
+Decays of different excited levels are independent: their cross terms oscillate at the hyperfine splittings ($\ge12\Gamma$) and are dropped (secular approximation). For $K=1$ the code performs the same operations as the three-level version and reproduces it to $10^{-13}$. The cost is set by the LU fill: $1.7\times10^7$ non-zeros and $\approx20$\,s for $K=4$, $N=20$ (all three SuperLU orderings tried; \code{MMD\_AT\_PLUS\_A} remains best). Case-A studies now use the eliminated, banded solver of Sec.~\ref{sec:banded}, whose cost does not depend on $K$. Studies with many solves run configurations in worker processes within one job (\code{WORKERS}$=4$; 2 where the $N=400$ solves need $\sim5$\,GB each), with \code{OPENBLAS\_NUM\_THREADS} set to share the cores.
 
 \paragraph{Vectorisation.} $\rho$ is stacked column-wise, so ${\rm vec}(A\rho B)=(B^{\rm T}\otimes A)\,{\rm vec}(\rho)$. Then
 \begin{equation}
@@ -263,9 +263,60 @@ Because ${\rm Tr}(\rho_0-\rho_{\rm ss})=0$, the right-hand side lies in the rang
 \begin{equation}
   (3-2h\mathcal L)\,y_{n+1}=4y_n-y_{n-1}.
 \end{equation}
-BDF2 is A- and L-stable~\cite{hairer1996}. The fast optical transients are damped rather than resolved, which is equivalent to adiabatically following the internal state, while the motional dynamics are integrated to second order. With $h=0.02/\nu_r$ one LU factorisation serves the whole run, and the ME relaxation of Fig.~5a (case A, $N=30$) takes about 6\,min.
+BDF2 is A- and L-stable~\cite{hairer1996}. The fast optical transients are damped rather than resolved, which is equivalent to adiabatically following the internal state, while the motional dynamics are integrated to second order. With $h=0.02/\nu_r$ one LU factorisation serves the whole run. Converged case-A dynamics use \code{banded\_evolve} (Sec.~\ref{sec:banded}): the ME relaxation of Fig.~5a ($N=400$, $B=4$) takes about 4\,min.
 
 \paragraph{Phonon drift from a Fock state.} \code{fock\_drift} prepares $\ket{g_p,n_0}$, propagates with implicit Euler ($h=0.05$), and measures $d\langle n\rangle/dt$ between $t=5$ and $20/\nu_r$, after the internal transient ($\sim1/\Gamma_n$) has settled. This is the observable used to calibrate and test the GRM. A truncation $N\approx2n_0$ suffices: for $n_0=20$, $N=45$ and $N=60$ differ by 0.3\%.
+
+\subsection{Converged steady states: elimination and banded density matrix}
+\label{sec:banded}
+\paragraph{Why it is needed.} The recoil Lamb--Dicke parameter of case A is large ($\eta_{\rm sp}\approx0.71$, $\eta_{\rm sp}^2=\omega_{\rm rec}/\nu_r$). Each photon therefore spreads the population over many Fock states, and a small tail reaches high $n$. At $N=20$ that tail is cut off: for $s=1$, $n_{\rm ss}=0.133$, 0.147, 0.152, 0.154 and $W=1319$, 1446, 1546, 1605\,s$^{-1}$ at $N=20$, 30, 40, 60. The full Liouvillian cannot reach convergence: $D_k$ is nearly dense, so $\mathcal L$ has $\propto N^4$ non-zeros and its LU factors fill in (one $N=90$ solve took more than 1\,h and 7\,GB). Two independent reductions solve this.
+
+\paragraph{Elimination of the excited manifold} (\code{effective\_ops}, \code{liouvillian\_eliminated}). In the effective-operator formalism~\cite{reiter2012}, with $c_k=[-(\Delta-\epsilon_k)-i\Gamma/2]^{-1}$ and the excitation operator $A_k=\tfrac12\bar\Om_pc_{p,k}f_p\bra{g_p}+\tfrac12\Om_cc_{c,k}f_c\bra{g_c}$,
+\begin{equation}
+  H_{\rm eff}=H_g-\sum_k{\rm Re}(c_k)\,A_k^\dagger A_k,\qquad C_{kjl}=\sqrt{\Gamma b_{kj}w_l}\;c_k\,\ket{g_j}D_lA_k .
+\end{equation}
+EIT is kept exactly: the jump operators and the light shift are built from the same bright combination, so a state annihilated by every $A_k$ stays dark. Valid for $|\Delta-\epsilon_k+i\Gamma/2|\gg\Om_c,\nu_r$ and the gradient coupling; the motional energy is neglected in the denominators (relative error $\sim\nu_r/\Delta$). On its own the elimination gives \emph{no} speed-up for a direct solve. It removes the stiffness and reduces the dimension from $(3N)^2$ to $(2N)^2$, but $\mathcal L$ becomes denser.
+
+\paragraph{Banded density matrix} (\code{banded\_generator}, \code{solve\_banded}). The steady state is almost diagonal in $n$, so only the coherences $\rho_{(a,n),(b,m)}$ with $|n-m|\le B$ are kept. Every term $X\rho Y$ restricted to the kept set is an element-wise product of $X$ and $Y^{\rm T}$, which gives a dense matrix of dimension $S\approx4N(2B+1)$, assembled in row blocks and solved by dense LU. $B\ge N$ is exact. $N=160$, $B=6$ takes $\approx35$\,s; $N=400$, $B=4$ needs 3.3\,GB and a few minutes. The cooling rate uses the same integrated definition as \code{relax\_rate}.
+
+\paragraph{Time evolution} (\code{banded\_evolve}). BDF2 on the banded generator with one in-place LU, $h=0.25/\nu_r$. The start is $y_{-1}=y_0-hMy_0$; the simpler $y_{-1}=y_0$ adds a constant time lag, a global first-order error ($1.5\%$ in the first check). \code{banded\_fock\_drift} is the Fock-state drift with the same generator, within 0.1\% of \code{fock\_drift}.
+
+\paragraph{Cut-off rules} (\code{numerics.toml}, \code{config.me\_cutoffs}, \code{steady}). Studies call \code{E.steady(fc, s, **kw)}, which takes $N$ and $B$ from the first rule matching the actual $\eta_{\rm sp}$, $s$, $b_p$ and $\Delta/\Gamma$ and raises an error if none applies. Each rule carries a status (Table~\ref{tab:rules}). The rules must depend on all four: the recoil tail is governed by $h=\alpha\eta_{\rm sp}^2/b_p$, grows at weak probe, and reaches further at large $\Delta$.
+
+\begin{table}[h]
+\centering\small
+\caption{Steady-state rules; the first match applies. The evidence is in \code{results/convergence/}.}
+\label{tab:rules}
+\begin{tabularx}{\textwidth}{@{}lllllX@{}}
+\toprule
+Condition & $N$ & $B$ & Status & & Evidence\\
+\midrule
+$\eta_{\rm sp}\le0.4$ & 40 & 6 & validated & & case B: $N=20$ converged at $s=1$\\
+$b_p\le\tfrac14$ & 250 & 4 & unconverged & & $b_p=\tfrac16$, $s=0.1$: $n_{\rm ss}=0.83$, 1.88, 4.18 at $N=60$, 120, 250\\
+$b_p\ge0.7$, $\eta_{\rm sp}\le0.75$ & 120 & 6 & validated & & $b_p=\tfrac56$: $N=60$ within $10^{-3}$ of $N=250$, $\Delta=1$--$12\Gamma$\\
+$\Delta\ge4\Gamma$, $\eta_{\rm sp}\le0.75$ & 400 & 4 & approximate & & $s=1$, $N=250\to400$: $W$ +0.1, 1.3, 2\%, $n_{\rm ss}$ +0.1, 0.7, 3\% at 5, 8, $12\Gamma$\\
+$s\ge1$, $\eta_{\rm sp}\le0.75$ & 120 & 6 & validated & & $n_{\rm ss}$, $W$ change $<10^{-4}$ from $N=120$ to 160\\
+$0.3\le s<1$, $\eta_{\rm sp}\le0.75$ & 250 & 4 & validated & & $s=0.3$: change $<10^{-3}$ from $N=250$ to 300\\
+$s<0.3$, $\eta_{\rm sp}\le0.75$ & 400 & 4 & approximate & & power-law tail; $s=0.1$: $+0.7\%$ from $N=300$ to 400; $n_{\rm ss}$ within $\sim2\%$, $W$ within $\sim1\%$\\
+$\eta_{\rm sp}\le1$ & 400 & 4 & unconverged & & $\nu_r$ mismatch below $0.9$: use $W$ only\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Validity evidence} (\code{studies/convergence.py}, plots from \code{plotting/convergence\_plots.py}).
+\begin{itemize}
+\item \emph{Elimination, three levels} ($N=20$): at $\Delta=3\Gamma$, $<0.5\%$ in $n_{\rm ss}$ and $W$ for all $s$. At $\Delta=\Gamma$, $n_{\rm ss}$ within 1.4\%; $W$ differs by up to 30\%, but only where $W$ is close to zero and $n_{\rm ss}\gtrsim0.5$, so that $W$ is ill-defined anyway. The study therefore flags rates with $n_{\rm ss}>0.2$.
+\item \emph{Elimination, D1/D2 with all excited levels} ($N=20$, $s=1$, optimised $\delta_{\rm e}$, \code{lines\_elim}): at $\Delta=3\Gamma$ and $12\Gamma$, $<0.12\%$ in $n_{\rm ss}$ and $<0.08\%$ in $W$. At $\Delta=\Gamma$, $n_{\rm ss}$ within 0.5\%; $W$ within 2.3\% for $b_p=\tfrac56$ and up to 8\% for $b_p=\tfrac12$, where $n_{\rm ss}\approx0.85$ and the rate is flagged.
+\item \emph{Band} ($N=40$, exact reference): $B=6$ gives $<10^{-5}$ for $s\le1$ and 0.1\% in $W$ at $s=5$; $B=4$ gives $<10^{-8}$ at $s=0.1$, $6\times10^{-4}$ in $n_{\rm ss}$ at $s=1$ and 0.8\% in $W$ at $s=5$. So $B=4$ is used only below $s=1$ or where the memory forces it.
+\item \emph{Fock truncation:} \code{nconv}, \code{nconv\_weak}, \code{lines\_nconv}, \code{lines\_nconv\_delta}, summarised in Table~\ref{tab:rules}. At large $N$ the tail converges slowly because it is a power law, $P(n)\propto n^{-2.34}$ at $s=0.1$, close to $n^{-1/h}$ with $1/h=2.48$ (\code{tailshape}, \code{rates}).
+\item \emph{Two-photon search} (\code{lines\_d2scan}, $N=80$): the optimum found by \code{optimise\_d2} lies on the peak of the fine scan for $\Delta\ge8\Gamma$ and for D1. For D2 $F'=2$ at $3\Gamma$, $W$ has a pole and the selection is set by the limit $n_{\rm ss}<0.2$.
+\item \emph{D2 $F'=2$ at large $\Delta$} (\code{lines\_nconv\_d2}): the rule of Table~\ref{tab:rules} is not sufficient. Neighbouring levels reduce the branching ratio ($b_{\rm eff}=0.37$ for $g_p=1$ at $12\Gamma$), which raises $h$ to $\approx0.57$, and $n_{\rm ss}$ keeps rising with $N$ (0.038, 0.050, 0.059, 0.069 at $N=80$--400).
+\item \emph{Time evolution} (\code{evolution}; case A, $s=0.2$, thermal $\langle n\rangle=2$, $N=20$): deviation from the full \code{evolve} at most $7.4\times10^{-4}$, the same for $B=20$ and $B=4$ and for $h=0.25$ to 0.0625. It is the small $n_{\rm ss}$ offset of the elimination. The error in $h$ is second order.
+\end{itemize}
+
+\paragraph{Two rates} (\code{solve\_banded}, \code{rate\_p0.dat}). Besides $W$, the solver returns the ground-state rate $W_0^{-1}=\int_0^\infty(P_0^{\rm ss}-P_0(t))\,dt/P_0^{\rm ss}$ from $\ket{g_p,1}$, with the same factorisation; a regression test checks both against direct integration. From $n=1$, $\langle n\rangle$ falls below $n_{\rm ss}$ and then rises slowly as recoil fills the tail. This negative contribution raises $W$, gives it a pole and a sign change near $n_{\rm ss}\approx0.2$, and makes it depend on $N$. $W_0$ sees the tail only through its weight, so it does not. Case A, $s=1$: $W=1319$, 1544, 1614\,s$^{-1}$ and $W_0=2188$, 2220, 2225\,s$^{-1}$ at $N=20$, 40, 120. D2 $F'=2$ at $12\Gamma$: $W=206$, 207, 237, 399, 1254\,s$^{-1}$ at $N=80$--550, $W_0=507$--511\,s$^{-1}$ ($N\le400$). The two differ by a factor $\approx1.2$ even at weak probe, and they measure different things (energy relaxation and arrival in $n=0$). The studies and figures still report $W$; $\delta_{\rm e}$ in \code{lines.py} is still selected on $W$ with $n_{\rm ss}<0.2$.
+
+\paragraph{Converged results, case A, $s=1$.} $n_{\rm ss}=0.1545$, $W=1614$\,s$^{-1}$ (0.133, 1319\,s$^{-1}$ at $N=20$). Case B is converged at $N=20$. Time evolution from $\langle n\rangle=2$ at $s=0.2$ uses $N=400$, $B=4$.
 
 %=====================================================================
 \section{Rate models (\code{rate\_models.py})}
@@ -317,7 +368,7 @@ The generator is $Q=TK-{\rm diag}\big(\sum_mK_{mn}\big)$ with $\dot{\bm p}=Q\bm 
 \section{Studies}
 \label{sec:studies}
 %=====================================================================
-Each script in \code{studies/} reproduces one group of results. Table~\ref{tab:studies} lists them; \code{run\_all.py} runs them all (about 55\,min). \code{\_common.py} holds the paths, the two cases and $N=20$ for ME steady states.
+Each script in \code{studies/} reproduces one group of results. Table~\ref{tab:studies} lists them; \code{run\_all.py} runs them all (about 55\,min). \code{\_common.py} holds the paths and the two cases; case-A master-equation studies take their cut-offs from \code{numerics.toml} through \code{E.steady}. Case-B files come from the full ME at $N=20$, which is converged there.
 
 \begin{table}[h]
 \centering\small
@@ -331,7 +382,7 @@ Script (sub-study) & What is varied, and why & Model & Output / paper item\\
 \code{robustness carrier} & $\epsilon$ and $x_s$ at the $s$ that maximises $W$: tolerance to mode impurity and offset & ME & \code{carrier\_A}, Fig.~4a\\
 \code{robustness twophoton} & $\delta_{\rm e}$ at $s=0.2$, with and without $\epsilon=0.05$: node versus carrier & ME, SM & \code{twophoton\_A}, Fig.~4b\\
 \code{robustness mismatch} & $\nu_r/\nu_r^{\rm design}=0.6$--1.6, lasers fixed: lattice-depth drift & ME, SM & \code{mismatch\_\{A,B\}}, Fig.~4c\\
-\code{calibration steady} & $n_{\rm ss}$ of GRM ($c_{\rm sat}=1$) versus ME & ME, GRM & \code{grmcheck}\\
+\code{calibration steady} & $n_{\rm ss}$ of GRM ($c_{\rm sat}=1$) versus ME (case A) & ME, GRM & \code{grmcheck}\\
 \code{calibration drift} & Fock-state drift, fit of $c_{\rm sat}$ & ME, GRM & \code{drift\_calib}, Tab.~3\\
 \code{dynamics relaxation} & from $\langle n\rangle=2$ (A, $s=0.2$): validates the GRM in time & ME, GRM, SM & \code{dyn\_A}, Fig.~5a\\
 \code{dynamics capture} & from \SI{10}{\upmu K}, four protocols (incl.\ staged $\Delta$, LP$_{12}$) & GRM & \code{capture\_\{A,B\}}, Fig.~5b,c\\
@@ -340,6 +391,7 @@ Script (sub-study) & What is varied, and why & Model & Output / paper item\\
 \code{lines effective} & every closed $\Lambda$ (D1/D2, $F'$, $g_p$), $s=0.01$--10: rate, $n_{\rm ss}$, powers, neighbour shift & ME, SM & \code{lines}, \code{lines\_scan}\\
 \code{lines multilevel} & every $\Lambda$ with all excited levels, $\Delta=3\Gamma$, $s=1$, both interference signs; lasers as designed and with $\delta_{\rm e}$ re-optimised & ME, SM & \code{lines\_ml}\\
 \code{lines delta} & cooling configurations ($b_p\ge1/2$) versus $\Delta/\Gamma=1$--12, $\delta_{\rm e}$ re-optimised & ME & \code{lines\_delta}\\
+\code{convergence} & elimination, band, $N$, time evolution, tail shape; evidence for \code{numerics.toml} (Sec.~\ref{sec:banded}) & ME & \code{results/convergence/}\\
 \code{report\_scaling} & analytic scaling for the background report (independent of \code{eitsim}) & analytic & \code{results/report/}\\
 \bottomrule
 \end{tabularx}
@@ -367,6 +419,7 @@ Three study-level choices deserve a comment.
 \item the atomic data: $S_{FF'}$ against Steck's Table~8, the sum rules for $S_{FF'}$, $b_{F'\to F}$ and the Zeeman couplings, the D2 cycling element, the allowed $\Lambda$ configurations;
 \item that the D1 fibre case is unchanged by the line parameter, and that the D1 rows of the line study reproduce \code{sat\_B};
 \item the stage-2 model: manifold amplitudes against $S_{FF'}$, the one-level and decoupled-level limits of \code{absorption}, far neighbours reproducing the three-level ME, and one recomputed point of \code{lines\_ml}.
+\item the eliminated and banded solvers: agreement with the full ME and exact limit $B\ge N$, the stored convergence results, the selection of the \code{numerics.toml} rules (including $b_p$ and $\Delta$), \code{banded\_evolve} against \code{evolve} and its second order in $h$.
 \end{itemize}
 Any change in the physics, the quadrature or the numerics shows up as a failure, which is then resolved by rerunning the affected study, never by editing results.
 
@@ -380,12 +433,12 @@ Any change in the physics, the quadrature or the numerics shows up as a failure,
 \toprule
 Parameter & Value & Check\\
 \midrule
-ME truncation, steady state & $N=20$ & unchanged with $N=30$, 40 for $\langle n\rangle\lesssim0.5$\\
-ME truncation, dynamics & $N=30$ from $\langle n\rangle=2$ & population at $n>25$ negligible\\
+ME truncation, steady state & rules of Table~\ref{tab:rules} (case A); $N=20$ (case B) & Sec.~\ref{sec:banded}\\
+ME truncation, dynamics & $N=400$, $B=4$ from $\langle n\rangle=2$ (case A) & Sec.~\ref{sec:banded}\\
 ME truncation, Fock drift & $N=45$ ($n_0=20$), 60 ($n_0=30$) & $N=60$ changes $n_0=20$ by 0.3\%\\
 GRM truncation & $N=1600$ (A), 400 (B) & trap depth (physical limit); $P_0$ stable to 0.3\%; $\langle n\rangle$ at late times changes by 20\% between $N=800$ and 1600\\
 Emission nodes & $K=10$ & $\langle u_x^2\rangle=0.397$ (exact 0.4)\\
-BDF2 step & $h=0.02/\nu_r$ & second order; L-stable for the optical modes\\
+BDF2 step & $h=0.02/\nu_r$ (full), $0.25/\nu_r$ (banded) & second order; L-stable for the optical modes; banded result independent of $h$ down to 0.0625\\
 Fock-drift window & $t=5$--$20/\nu_r$ & after the internal transient $\sim1/\Gamma_n$\\
 \bottomrule
 \end{tabularx}
@@ -396,7 +449,7 @@ Fock-drift window & $t=5$--$20/\nu_r$ & after the internal transient $\sim1/\Gam
 %=====================================================================
 The model is an ideal closed $\Lambda$ system with one radial axis. Each limitation below has a natural place in the code.
 \begin{itemize}
-\item \emph{Atomic structure.} The excited hyperfine manifold is included (stage 2), but without Zeeman structure: the relative sign of Raman paths through different $F'$ is bracketed, not computed. Zeeman sublevels, polarisation-resolved couplings (and the dark states they create), magnetic-field remixing and the excited-state light shift of the lattice (tensor part for $5P_{3/2}$) require the Zeeman-resolved model of the next stage; \code{zeeman\_coupling} already provides its couplings. For the full Zeeman problem, adiabatic elimination of the excited states (effective-operator formalism~\cite{reiter2012}) keeps the problem tractable.
+\item \emph{Atomic structure.} The excited hyperfine manifold is included (stage 2), but without Zeeman structure: the relative sign of Raman paths through different $F'$ is bracketed, not computed. Zeeman sublevels, polarisation-resolved couplings (and the dark states they create), magnetic-field remixing and the excited-state light shift of the lattice (tensor part for $5P_{3/2}$) require the Zeeman-resolved model of the next stage; \code{zeeman\_coupling} already provides its couplings. For the full Zeeman problem, the elimination of Sec.~\ref{sec:banded} keeps the excited manifold out of the state space, but the ground manifold still grows with the number of sublevels.
 \item \emph{Second radial axis.} The radial motion is separable in the harmonic approximation, but the LP$_{11}$ lobe addresses only $x$. Cooling of $y$ needs the orthogonal lobe or trap anisotropy; this means two oscillators, or alternating stages in the GRM.
 \item \emph{Anharmonic trap and loss.} Above $k_BT_r/U_0\approx0.1$, a Gaussian radial potential and an absorbing boundary at $U_0$ are needed. Both fit naturally into the GRM, through an energy-dependent $\omega_r(n)$ and an absorbing state.
 \item \emph{Collective effects} (reabsorption, probe depletion) are estimated analytically in the background report and not simulated.
