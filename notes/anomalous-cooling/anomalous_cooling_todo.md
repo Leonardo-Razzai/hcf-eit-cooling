@@ -224,7 +224,9 @@ Findings:
 
 Next, when simulations resume (cost order):
 - [x] W_0 at case A, s = 0.01-5, bp = 5/6, D2 points (`rate_p0.dat`).
-- [ ] Select delta_e on W_0 in the D1/D2 study, and report <n>/(1-P_0) in all scans.
+- [x] Select delta_e on W_0 in the D1/D2 study (`lines_ml_A`, `lines_delta_A`). P_0 = 0.99: D1 F'=1 at 5 Gamma,
+      W_0 = 1.9e3 /s; bp = 1/2 near 6 Gamma, ~1.0e3 /s. W_0 meaningful only for P_0 >~ 0.85.
+- [ ] Report <n>/(1-P_0) in all scans.
 - [ ] Chain for P(n) with the exact recoil kernel and measured R(n), N up to several thousand, regime III
       on and off: sharp thresholds, then their rounding.
 - [ ] ME at h = 0.1-1.2 by two routes (nu_r/omega_rec; bp), s = 1, Delta = 8 Gamma, N = 400: universality.

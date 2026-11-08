@@ -239,58 +239,57 @@ def _select(d, line, Fe, gp):
 
 
 def fig_lines():
-    """D1 versus D2 (stage 2): all excited hyperfine levels in the ME, two-photon
-    detuning re-optimised; three-level model for reference."""
+    """D1 versus D2, case A (stage 2): all excited hyperfine levels in the ME, two-photon
+    detuning re-optimised on the ground-state rate W0; three-level model for reference.
+    W0 is meaningful for cold states only (P0 >= P0_COLD)."""
+    P0_COLD = 0.85
     fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
     dl = load('lines_delta_A.dat')
     hs = []
     for cfg, col, lab in LINE_CFGS:
         r = _select(dl, *cfg)
-        ok, ok3 = r['okopt'] == 1, r['ok3'] == 1
-        for i, (y3, y) in enumerate(((r['W3'], r['Wopt']), (r['n3'], r['nopt']))):
-            # rates only where n_ss < 0.2 (gaps, no bridging); n_ss everywhere
-            show3 = ok3 if i == 0 else np.ones_like(ok3)
-            ax[i].plot(r['DeltaG'], np.where(show3, y3, np.nan), '--', color=col, lw=0.7)
-            h, = ax[i].plot(r['DeltaG'], np.where(ok, y, np.nan), 'o-', color=col, ms=3)
-            ax[i].plot(r['DeltaG'][~ok], y[~ok], 'o', mfc='white', color=col, ms=3)
+        cold = r['P0opt'] >= P0_COLD
+        ax[0].plot(r['DeltaG'], np.where(cold, r['W03'], np.nan), '--', color=col, lw=0.7)
+        h, = ax[0].plot(r['DeltaG'], np.where(cold, r['W0opt'], np.nan), 'o-', color=col, ms=3)
+        hot = ~cold & (r['W0opt'] > 0)
+        ax[0].plot(r['DeltaG'][hot], r['W0opt'][hot], 'o', mfc='white', color=col, ms=3)
+        ax[1].plot(r['DeltaG'], np.where(cold, 1 - r['P0opt'], np.nan), 'o-', color=col, ms=3)
+        ax[1].plot(r['DeltaG'][~cold], 1 - r['P0opt'][~cold], 'o', mfc='white', color=col, ms=3)
         hs.append(h)
     ax[0].set_yscale('log')
-    ax[0].set_ylim(80, 2e4)
-    ax[0].set_ylabel(r'Cooling rate $W$ (s$^{-1}$)')
+    ax[0].set_ylim(150, 2e4)
+    ax[0].set_ylabel(r'Ground-state rate $W_0$ (s$^{-1}$)')
     ax[1].set_yscale('log')
-    ax[1].set_ylim(1e-3, 20)
-    ax[1].axhline(0.2, color=CG, lw=0.5, ls=':')
-    ax[1].set_ylabel(r'$n_{\rm ss}$')
+    ax[1].set_ylim(1e-3, 1.5)
+    ax[1].set_ylabel(r'$1-P_0$')
     for i in (0, 1):
         ax[i].set_xscale('log')
         ax[i].set_xticks([1, 2, 3, 5, 8, 12], ['1', '2', '3', '5', '8', '12'])
         ax[i].minorticks_off()
         ax[i].set_xlabel(r'$\Delta/\Gamma$')
         letter(ax[i], 'ab'[i])
-        ax[i].text(0.0, 1.02, '   Case A, $s=1$', transform=ax[i].transAxes, va='bottom')
+        ax[i].text(0.0, 1.02, r'   Case A, $s=1$, sign $+1$', transform=ax[i].transAxes, va='bottom')
     # c: rate at Delta = 3 Gamma relative to the paper configuration (three-level)
-    for j, (key, mk) in enumerate((('A', 'o'), ('B', 's'))):
-        m = load(f'lines_ml_{key}.dat')
-        ref = _select(m, 1, 2, 1)['W3'][0]
-        for k, (cfg, col, _) in enumerate(LINE_CFGS):
-            r = _select(m, *cfg)
-            y = len(LINE_CFGS) - 1 - k + (0.15 if key == 'A' else -0.15)
-            ax[2].plot(sorted(r['Wopt'] / ref), [y, y], '-', color=col, lw=2.2, solid_capstyle='butt')
-            ax[2].plot(r['W3'][0] / ref, y, mk, mfc='white', color=col, ms=3.5)
+    m = load('lines_ml_A.dat')
+    ref = _select(m, 1, 2, 1)['W03'][0]
+    for k, (cfg, col, _) in enumerate(LINE_CFGS):
+        r = _select(m, *cfg)
+        y = len(LINE_CFGS) - 1 - k
+        ax[2].plot(sorted(r['W0opt'] / ref), [y, y], '-', color=col, lw=2.2, solid_capstyle='butt')
+        ax[2].plot(r['W03'][0] / ref, y, 'o', mfc='white', color=col, ms=3.5)
     ax[2].axvline(1, color=CG, lw=0.5, ls=':')
     ax[2].set_xlim(0, 2.6)
     ax[2].set_ylim(-0.6, len(LINE_CFGS) - 0.4)
     ax[2].set_yticks(range(len(LINE_CFGS)), [lab for _, _, lab in LINE_CFGS][::-1])
-    ax[2].set_xlabel(r'$W/W_{\rm paper}$ at $\Delta=3\Gamma$, $s=1$')
+    ax[2].set_xlabel(r'$W_0/W_{0,\rm paper}$ at $\Delta=3\Gamma$, $s=1$')
     letter(ax[2], 'c', x=-0.75)
-    ax[2].text(0.0, 1.02, '   Cases A (upper) and B (lower)', transform=ax[2].transAxes, va='bottom')
+    ax[2].text(0.0, 1.02, '   Case A', transform=ax[2].transAxes, va='bottom')
     extra = [Line2D([], [], color='k', ls='--', lw=0.7),
              Line2D([], [], marker='o', ls='', mfc='white', color='k', ms=3),
-             Line2D([], [], color='k', lw=2.2),
-             Line2D([], [], marker='s', ls='', mfc='white', color='k', ms=3.5)]
+             Line2D([], [], color='k', lw=2.2)]
     fig.legend(hs + extra, [lab for _, _, lab in LINE_CFGS]
-               + ['three-level (a, b)', r'$n_{\rm ss}>0.2$: rate ill-defined (a, b)',
-                  'multi-level, both signs (c)', 'three-level, A: circle, B: square (c)'],
+               + ['three-level (a); open circle (c)', r'$P_0<0.85$: $W_0$ not meaningful (a, b)',
+                  'multi-level, both signs (c)'],
                loc='outside upper center', ncol=4)
     save(fig, 'lines.pdf')
 

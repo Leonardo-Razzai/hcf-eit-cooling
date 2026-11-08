@@ -56,14 +56,13 @@ Case A is from the converged solver.
   are 1.2–2× higher.
 - **D1 vs D2, stage 2 (all excited hyperfine levels in the ME, Δ = 3Γ, s = 1, two-photon detuning
   re-optimised, both signs of the Raman interference through the other levels):**
-  D1 is robust: F′=2 (paper) changes by < 2.5% (retune ≤ 0.05 ν_r); F′=1 with probe on F=2 gives
-  W = 2.8–3.1×10³ s⁻¹, n_ss = 0.034–0.043 (A) and 1.6–1.8×10⁴ s⁻¹, 0.018–0.022 (B) after retuning
-  δ_e ≈ −0.1 ν_r, i.e. 1.7–1.9× the paper rate in A. D2 F′=2 (A, Δ = 3Γ): W = 1.3–1.8×10³ s⁻¹ (retune
-  −0.18 to +0.29 ν_r), limited by the selection n_ss < 0.2, since W has a pole there; W₀ at sign +1 is
-  2.2×10³ s⁻¹, within 1% of D1 F′=2. At Δ ≥ 8Γ its W is not converged in N (see Truncation).
-  D2 F′=1 (probe on F=1, b_p = 5/6) needs δ_e ≈ −1.3 ν_r, depends on the interference sign by a factor 2
-  (A: 1.7–3.3×10³ s⁻¹) and stops cooling for Δ ≥ 8Γ: unreliable without the Zeeman model. Rates with
-  n_ss > 0.2 are ill-defined (relaxation from |g_p,1⟩) and flagged.
+  Case A (branch `universal`), δ_e selected on W₀ (W₀, P₀ at Δ = 3Γ, both signs): D1 F′=2 (paper) W₀ = 2.2×10³ s⁻¹
+  within 1% of three levels, P₀ = 0.953–0.955; D1 F′=1 with probe on F=2: 3.2–3.6×10³ s⁻¹, P₀ = 0.974–0.979 (1.5–1.6×
+  the paper rate); D2 F′=2: 2.1–2.2×10³ s⁻¹ (within 3%), P₀ = 0.941–0.955; D2 F′=1 (probe on F=1, b_p = 5/6): needs
+  δ_e ≈ −1.3 ν_r, 2.0–4.2×10³ s⁻¹ by interference sign, stops cooling near Δ = 8Γ: unreliable without the Zeeman
+  model. For P₀ = 0.99 (sign +1): D1 F′=1 at 5Γ, W₀ ≈ 1.9×10³ s⁻¹; D1 F′=2 near 6Γ, ≈ 1.0×10³ s⁻¹. W₀ is meaningful
+  only for cold states (P₀ ≳ 0.85). W values in `main` come from selection on W; case-B values are unchanged:
+  D1 F′=1 W = 1.6–1.8×10⁴ s⁻¹, n_ss = 0.018–0.022 at δ_e ≈ −0.1 ν_r; D2 F′=2 within ±5% of three levels.
 - **Initial temperature:** above n̄₀ ≈ 3 the sideband saturates and the cooling time grows linearly
   with k_BT_r/U₀ (U₀/k_B = 530 µK). Recoil makes hot atoms diffuse in energy (≈ η_sp√n per photon),
   so ⟨n⟩ lags behind P₀. Beyond its calibration range (n ≤ 15) the GRM underestimates the
@@ -166,7 +165,7 @@ Study scripts (run from `simulation/studies/`):
 
 `plotting/make_figures.py [mechanism|saturation|robust|dynamics|temperature|lines]` writes
 `paper/manuscript/figures/{mechanism,saturation,robust,dynamics,temperature}.pdf` (paper Figs 1, 3, 4, 5, 6)
-and `lines.pdf` (D1 vs D2, stage 2; not yet in the paper).
+and `lines.pdf` (D1 vs D2, stage 2, W₀ and P₀; not yet in the paper).
 Fig. 2, the level scheme, is TikZ inside `main.tex`.
 
 ## Numerical settings: `simulation/numerics.toml`
