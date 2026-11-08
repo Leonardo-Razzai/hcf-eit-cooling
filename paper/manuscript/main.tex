@@ -20,7 +20,7 @@
 \vspace{12pt}
 \begin{minipage}{0.86\textwidth}
 \bfseries\normalsize
-Guided light in a hollow-core fibre propagates along the axis and cannot address the soft radial motion of lattice-trapped atoms. Here we propose radial electromagnetically-induced-transparency (EIT) cooling with the coupling beam in the LP$_{01}$ mode and the probe in the LP$_{11}$ mode, whose node lies on the trap axis. As for an ion at a standing-wave node, the carrier vanishes and the probe couples to the motion only through its gradient. Master-equation simulations for $^{87}$Rb in a \SI{1064}{nm} lattice give, with nanowatts of probe power, cooling rates of $1.3\times10^3$\,s$^{-1}$ ($15\um$ core radius) and $1.2\times10^4$\,s$^{-1}$ ($3.5\um$), with steady-state occupations of 0.13 and 0.04. Cooling from \SI{10}{\micro K} takes about \SI{150}{ms} and \SI{3}{ms}, respectively, and the cooling time grows linearly with the initial temperature up to a tenth of the lattice depth. A simple rate model reproduces the weak-probe limit but overestimates rates and purity tolerance at the optimal working point. The key experimental requirement is an LP$_{11}$ probe with less than $10^{-3}$ LP$_{01}$ power content.
+Guided light in a hollow-core fibre propagates along the axis and cannot address the soft radial motion of lattice-trapped atoms. Here we propose radial electromagnetically-induced-transparency (EIT) cooling with the coupling beam in the LP$_{01}$ mode and the probe in the LP$_{11}$ mode, whose node lies on the trap axis. As for an ion at a standing-wave node, the carrier vanishes and the probe couples to the motion only through its gradient. Master-equation simulations for $^{87}$Rb in a \SI{1064}{nm} lattice give, with nanowatts of probe power, cooling rates of $1.6\times10^3$\,s$^{-1}$ ($15\um$ core radius) and $1.2\times10^4$\,s$^{-1}$ ($3.5\um$), with steady-state occupations of 0.15 and 0.04. Cooling from \SI{10}{\micro K} takes about \SI{150}{ms} and \SI{3}{ms}, respectively, and the cooling time grows linearly with the initial temperature up to a tenth of the lattice depth. A simple rate model reproduces the weak-probe limit but overestimates rates and purity tolerance at the optimal working point. The key experimental requirement is an LP$_{11}$ probe with less than $10^{-3}$ LP$_{01}$ power content.
 \end{minipage}
 \end{flushleft}
 \vspace{14pt}
@@ -130,9 +130,9 @@ $\langle n_x\rangle$ at \SI{10}{\micro K} & 29 & 6.3\\
 \end{table}
 
 \subsection{Rate and final occupation}
-Figure~\ref{fig:saturation} shows $W$ and $n_{\rm ss}$ versus probe strength. At weak probe the master equation and equation~\eqref{eq:simple} agree within 5\%, provided $\kappa=2$; with $\kappa=1$ the model underestimates $n_{\rm ss}$ by 40\% in case A. The weak-probe floor is $n_{\rm ss}=0.017$ (A) and 0.009 (B). At $s=1$, $W=1.3\times10^3$\,s$^{-1}$ with $n_{\rm ss}=0.13$ (A) and $W=1.2\times10^4$\,s$^{-1}$ with $n_{\rm ss}=0.04$ (B), 25--50 times faster than a carrier-present scheme. The maximum rate, $3.3\times10^3$ and $1.8\times10^4$\,s$^{-1}$, is reached at $s\approx5$ at the cost of $n_{\rm ss}=0.4$ and 0.2.
+Figure~\ref{fig:saturation} shows $W$ and $n_{\rm ss}$ versus probe strength. At weak probe the master equation and equation~\eqref{eq:simple} agree within 8\%, provided $\kappa=2$; with $\kappa=1$ the model underestimates $n_{\rm ss}$ by 40\% in case A. The weak-probe floor is $n_{\rm ss}=0.018$ (A) and 0.009 (B). At $s=1$, $W=1.6\times10^3$\,s$^{-1}$ with $n_{\rm ss}=0.15$ (A) and $W=1.2\times10^4$\,s$^{-1}$ with $n_{\rm ss}=0.04$ (B), 25--60 times faster than a carrier-present scheme. The maximum rate, $3.3\times10^3$ and $1.8\times10^4$\,s$^{-1}$, is reached at $s\approx5$ at the cost of $n_{\rm ss}=0.4$ and 0.2; for $n_{\rm ss}\gtrsim0.2$, $W$ is only indicative (Methods). In case A the recoil builds a long tail in the Fock distribution, which $\langle n\rangle$ feels more strongly than the ground-state population. That population relaxes at $W_0=2.2\times10^3$\,s$^{-1}$ (A) and $1.4\times10^4$\,s$^{-1}$ (B) at $s=1$, reaching $P_0=0.95$ and 0.97.
 
-Above $s\approx0.1$ the simple model overestimates $W$ by up to 65\% and underestimates $n_{\rm ss}$ by up to a factor of 4. Here $s=2(\Om_R/\Gamma_n)^2$, with $\Om_R=\Om_c\Om_\perp/2\Delta$ the Raman coupling between $\ket{g_p,n}$ and $\ket{g_c,n\mp1}$. When $\Om_R$ approaches $\Gamma_n$ the narrow resonance splits, which a perturbative rate picture cannot capture (Methods).
+Above $s\approx0.1$ the simple model overestimates $W$ by up to 40\% and underestimates $n_{\rm ss}$ by up to a factor of 5. Here $s=2(\Om_R/\Gamma_n)^2$, with $\Om_R=\Om_c\Om_\perp/2\Delta$ the Raman coupling between $\ket{g_p,n}$ and $\ket{g_c,n\mp1}$. When $\Om_R$ approaches $\Gamma_n$ the narrow resonance splits, which a perturbative rate picture cannot capture (Methods).
 
 \begin{figure*}[t]
 \centering
@@ -142,7 +142,7 @@ Above $s\approx0.1$ the simple model overestimates $W$ by up to 65\% and underes
 \end{figure*}
 
 \subsection{Robustness}
-\paragraph{Mode impurity.} The maximum rate falls gradually with the LP$_{01}$ admixture: by 23\% at $\epsilon=0.01$ and by half at $\epsilon\approx1.4\,\etap\approx0.03$ (Fig.~\ref{fig:robust}a). The simple model's threshold is too optimistic by a factor of two. A trap offset $x_s$ is exactly equivalent to $\epsilon_{\rm eff}=\etap x_s/x_0$.
+\paragraph{Mode impurity.} The maximum rate falls gradually with the LP$_{01}$ admixture: by 25\% at $\epsilon=0.01$ and by half at $\epsilon\approx1.3\,\etap\approx0.03$ (Fig.~\ref{fig:robust}a). The simple model's threshold is too optimistic by a factor of two. A trap offset $x_s$ is exactly equivalent to $\epsilon_{\rm eff}=\etap x_s/x_0$.
 
 \paragraph{Two-photon detuning.} With a clean node, a positive error $\delta_{\rm e}$ only reduces the rate (halved at $+0.25\,\nu_r$), while $n_{\rm ss}$ stays below 0.05 up to $+0.6\,\nu_r$ (Fig.~\ref{fig:robust}b). With $\epsilon=0.05$ the carrier heats on both sides. This is the node advantage identified in ref.~\citenum{cirac1992}.
 
@@ -187,8 +187,8 @@ Table~\ref{tab:validity} summarises the comparison. The simple model captures th
 Quantity & Simple model & Master equation\\
 \midrule
 $n_{\rm ss}$, $W$ at weak probe & equation~\eqref{eq:simple} & within 5\% if $\kappa=2$\\
-$W$, $n_{\rm ss}$ at $s\sim1$ & equation~\eqref{eq:simple} & $W$ up to 65\% lower, $n_{\rm ss}$ up to 4$\times$ higher\\
-Mode impurity & $\epsilon\lesssim2.8\,\etap$ & rate halved at $\epsilon\approx1.4\,\etap$\\
+$W$, $n_{\rm ss}$ at $s\sim1$ & equation~\eqref{eq:simple} & $W$ up to 40\% lower, $n_{\rm ss}$ up to 5$\times$ higher\\
+Mode impurity & $\epsilon\lesssim2.8\,\etap$ & rate halved at $\epsilon\approx1.3\,\etap$\\
 Two-photon error & sideband shift on Fano profile & agrees where $W>0$\\
 Trap-frequency mismatch & Fano profile & shape within 20--30\%\\
 Cooling from \SI{10}{\micro K} & single exponential & too fast; saturated removal rate is 30--45\% of the bound\\
@@ -252,11 +252,11 @@ In the frame rotating at the laser frequencies,
   L_{jk}&=\sqrt{\Gamma b_jw_k}\,\ket{g_j}\bra e\,e^{i\eta_{\rm sp}u_k(b+b^\dagger)},
 \end{aligned}
 \end{equation}
-with $f_p(x)=(A_{11}/A_{01})J_1(u_{11}(x+x_s)/a)+\epsilon J_0(u_{01}(x+x_s)/a)$ and $f_c(x)=J_0(u_{01}(x+x_s)/a)$. The recoil is discretised with ten equal-weight nodes $u_k$ of the distribution of $u_x=\sin\theta\cos\phi$ for a dipole along $z$ ($\langle u_x^2\rangle=0.397$)\cite{cirac1992}; $b_p=b_c=1/2$. Functions of $\hat x$ are evaluated in the eigenbasis of the truncated position operator. Twenty Fock states suffice for $\langle n\rangle\lesssim0.5$ (checked with 30 and 40). The steady state is obtained from $\mathcal L\rho=0$ with the trace condition, using a sparse LU factorisation. The cooling rate is the inverse integrated relaxation time after preparing $\rho_0=\ket{g_p,1}\bra{g_p,1}$,
+with $f_p(x)=(A_{11}/A_{01})J_1(u_{11}(x+x_s)/a)+\epsilon J_0(u_{01}(x+x_s)/a)$ and $f_c(x)=J_0(u_{01}(x+x_s)/a)$. The recoil is discretised with ten equal-weight nodes $u_k$ of the distribution of $u_x=\sin\theta\cos\phi$ for a dipole along $z$ ($\langle u_x^2\rangle=0.397$)\cite{cirac1992}; $b_p=b_c=1/2$. Functions of $\hat x$ are evaluated in the eigenbasis of the truncated position operator. The steady state is obtained from $\mathcal L\rho=0$ with the trace condition. Twenty Fock states and a sparse LU factorisation suffice for case B (checked up to 40). Case A has a long recoil tail in $P(n)$ and needs $N=120$--400, out of reach for the full $\mathcal L$, whose recoil terms are nearly dense. There the excited state is eliminated adiabatically\cite{reiter2012}, which keeps the EIT interference, the coherences are restricted to $|n-m|\le4$--6, and the system is solved by dense LU. This agrees with the full equation within 0.5\% at $\Delta=3\Gamma$ ($N=20$, 40), and $n_{\rm ss}$ and $W$ are converged in $N$ to $0.1\%$ for $s\ge0.3$ and within 2\% for $s<0.3$. The cooling rate is the inverse integrated relaxation time after preparing $\rho_0=\ket{g_p,1}\bra{g_p,1}$,
 \begin{equation}
   W^{-1}=\int_0^\infty\!\frac{\langle n\rangle(t)-n_{\rm ss}}{1-n_{\rm ss}}dt=-\frac{{\rm Tr}[\hat n\,\mathcal L^{-1}(\rho_0-\rho_{\rm ss})]}{1-n_{\rm ss}},
 \end{equation}
-which reuses the same factorisation and, unlike the slowest Liouvillian eigenvalue, is not affected by slow modes at the truncation edge. Time evolution uses a fixed-step BDF2 scheme with $\Delta t=0.02/\nu_r$.
+which reuses the same factorisation and, unlike the slowest Liouvillian eigenvalue, is not affected by slow modes at the truncation edge. After a fast fall, $\langle n\rangle$ rises slowly as recoil fills the tail. This contribution to the integral raises $W$, and for $n_{\rm ss}\gtrsim0.2$ it can make $W$ diverge or change sign. The ground-state rate $W_0^{-1}=\int_0^\infty[P_0^{\rm ss}-P_0(t)]\,dt/P_0^{\rm ss}$, from the same $\rho_0$, sees the tail through its weight rather than its energy: from $N=20$ to 120 at $s=1$, case A, $W$ changes by 22\% and $W_0$ by 1.7\%. The two measure different things, energy relaxation and arrival in $n=0$, and differ by $\approx1.2$ even at weak probe in case A. Time evolution uses a fixed-step BDF2 scheme with $\Delta t=0.02/\nu_r$, or $0.25/\nu_r$ after the elimination.
 
 \paragraph{Strong-probe regime.}
 The effective Raman coupling between $\ket{g_p,n}$ and $\ket{g_c,n\mp1}$ is $\Om_R=\Om_c\Om_\perp/2\Delta$. With $\Gamma_n\simeq\Gamma\Om_c^2/4\Delta^2$ one finds $\Om_R^2=s\Gamma_n^2/2$. For $s\gtrsim0.1$ the narrow resonance is therefore split and broadened, and a coherent $\gc$ admixture builds up (2.4\% at $s=1$, case A). The off-resonant blue-sideband Raman process then grows faster than $(1+s)$.
@@ -284,7 +284,7 @@ GRM, $c_{\rm sat}=2.25$ & 1.33 & 1.69 & 1.81 & 1.87 & 1.89 & 1.91 & 1.92\\
 \end{table}
 
 \paragraph{Experimental estimates.}
-\emph{Probe purity along the fibre.} The LP$_{01}$ admixture grows as $\epsilon(z)=\epsilon_0e^{(\alpha_{11}-\alpha_{01})z/2}$. Requiring $\epsilon\le1.4\,\etap$ (rate halved) gives a differential-loss budget $(\alpha_{11}-\alpha_{01})L\lesssim20\log_{10}(1.4\etap/\epsilon_0)$\,dB: 9\,dB for $\epsilon_0=0.01$ and 20\,dB for $\epsilon_0=0.003$ (case A).
+\emph{Probe purity along the fibre.} The LP$_{01}$ admixture grows as $\epsilon(z)=\epsilon_0e^{(\alpha_{11}-\alpha_{01})z/2}$. Requiring $\epsilon\le1.3\,\etap$ (rate halved) gives a differential-loss budget $(\alpha_{11}-\alpha_{01})L\lesssim20\log_{10}(1.3\etap/\epsilon_0)$\,dB: 9\,dB for $\epsilon_0=0.01$ and 19\,dB for $\epsilon_0=0.003$ (case A).
 \emph{Uniformity along the strip.} For counter-propagating lattice beams with power loss $\alpha_L$, the antinode field is $\propto e^{-\alpha_Lz/2}+e^{-\alpha_L(L-z)/2}\propto\cosh[\alpha_L(z-L/2)/2]$, so $\nu_r\propto\cosh[\alpha_L(z-L/2)/2]$; a 10\% variation corresponds to $\approx\SI{8}{dB}$ of lattice loss across the strip. The Fano peak scales as $\delta_+\propto P_c$, so a $\pm10\%$ tolerance limits the coupling-beam loss across the strip to $\approx\SI{0.8}{dB}$.
 \emph{Light shifts.} The differential light shift of the hyperfine $\Lambda$ in the \SI{1064}{nm} lattice is $\delta_{\rm diff}\approx U_0\omega_{\rm hfs}/\Delta_{\rm eff}\approx\SI{0.8}{kHz}$ for $U_0/h=\SI{11}{MHz}$ (ref.~\citenum{kuhr2005}). The $F'=1$/$F'=2$ splitting (\SI{814}{MHz}) adds a shift of $\gc$ of order $\Om_c^2/(4\times\SI{814}{MHz})\approx\SI{0.15}{kHz}$, small compared with $\Gamma_n$.
 \emph{Other heating and offsets.} Photon scattering from the lattice adds $\sim1$ radial quantum per second. Gravity sag in a horizontal fibre, $g/\omega_r^2=\SI{4.9}{nm}=0.05\,x_0$ (A), corresponds to $\epsilon_{\rm eff}=0.001$.

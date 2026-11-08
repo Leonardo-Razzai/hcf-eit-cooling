@@ -11,7 +11,7 @@ sys.path.insert(0, str(SIM))
 import eitsim as E  # noqa: E402
 
 CASES = E.paper_cases()
-NME = 20            # Fock truncation for master-equation steady states
+NME = E.CFG['full_me']['N_legacy']   # fixed truncation of the original studies
 
 
 def save(name, cols, rows):

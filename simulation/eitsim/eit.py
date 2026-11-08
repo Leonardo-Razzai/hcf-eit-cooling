@@ -6,12 +6,13 @@ input of the master-equation and rate models.
 """
 import numpy as np
 
+from .config import CFG
 from .fibre import gfac
 
 GP, GC, EX = 0, 1, 2             # atomic level indices: |g_p>, |g_c>, |e>
 
 
-def emission_nodes(K=10, seed=1):
+def emission_nodes(K=CFG['emission']['nodes'], seed=CFG['emission']['seed']):
     """Quantile quadrature for u = projection of the emission direction on x.
 
     Dipole along the fibre axis z (pattern ~ sin^2 theta), <u^2> = 2/5.

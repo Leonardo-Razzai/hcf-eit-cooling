@@ -26,7 +26,7 @@ from _common import E, CASES, save, log
 TU = np.logspace(-3, -1, 20)                    # k_B T_r / U0 (metrics)
 TRACE_TU = (1e-3, 4e-3, 1e-2, 4e-2, 1e-1)       # k_B T_r / U0 of the stored <n>(t), P0(t)
 P0_TARGET = 0.9                                 # ground-state criterion
-NFOCK = {'A': 1600, 'B': 400}
+NFOCK = {'A': E.CFG['grm']['N_case_A'], 'B': E.CFG['grm']['N_case_B']}
 TGRID = {'A': (400e-3, 2000), 'B': (25e-3, 2000)}   # (t_max, steps)
 
 

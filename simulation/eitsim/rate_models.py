@@ -10,12 +10,13 @@ grm_matrix(): Markov chain on Fock populations of |g_p, n> with exact
 """
 import numpy as np
 
+from .config import CFG
 from .eit import NODES, WEIGHTS, ALPHA, absorption, excited_weights
 from .operators import oscillator, profile_ops
 
 # GRM saturation constant fitted to the master-equation phonon drift
 # (Fock states n0 = 1..15, s = 0.2 and 1, both fibre cases; 17 % rms).
-CSAT = 2.25
+CSAT = CFG['grm']['csat']
 
 
 def simple(p, photons=1.0, sat=True):

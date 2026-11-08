@@ -1,0 +1,136 @@
+# Numerical settings of the eitsim simulations: truncations, cutoffs, quadrature,
+# step sizes. Physics parameters (fibre, atom, lasers) are NOT here; they are
+# arguments of fibre_case / params. Change a value only together with the
+# convergence evidence that supports it (results/convergence/, CLAUDE.md), and
+# rerun the affected studies. Loaded by eitsim/config.py.
+
+# ---------------------------------------------------------------- steady states
+# eitsim.steady(fc, s, ...) solves the eliminated master equation keeping the
+# coherences |n - m| <= band (master_equation.solve_banded). The Fock
+# truncation N and the band are chosen by the FIRST rule whose ranges contain
+# the actual eta_sp (recoil Lamb-Dicke parameter; eta_sp^2 = omega_rec/nu_r)
+# and the saturation parameter s. Ranges: eta_sp <= eta_sp_max,
+# s_min <= s < s_max. No match -> error: run a convergence check first.
+# Rules may also restrict the branching ratio (optional bp_min <= bp <= bp_max) and
+# the detuning (optional delta_min <= Delta/Gamma): the recoil tail is set by
+# h = alpha eta_sp^2 / bp, and reaches further at large Delta. Evidence:
+# lines_nconv.dat, lines_nconv_delta.dat. All other evidence is at Delta = 3 Gamma.
+# Status: validated (< 0.1 %), approximate (stated accuracy), provisional (unchecked).
+#
+# Evidence (results/convergence/, case A eta_sp = 0.71, case B 0.34, Delta = 3 Gamma):
+#   - band 6: error < 1e-5 for s <= 1, < 2e-3 (W) at s = 5; band 4: < 1e-8 at s = 0.1
+#   - case B (and any eta_sp <= 0.4): converged at N = 20 for s = 1
+#   - case A, s >= 1: n_ss and W converged to < 1e-4 at N = 120 (s = 5 already at N = 40)
+#   - case A, s = 0.3: converged by N = 250 (band 4); s = 0.01: +0.1 % per 50 states at N = 300;
+#     s = 0.1: power-law tail, +0.7 % from N = 300 to 400 (results/convergence/nconv_weak.dat,
+#     tail_s0p1.dat): rule marked approximate
+
+[steady_state]
+elimination_valid_delta_min = 2.0     # Delta/Gamma; < 0.5 % error at 3 Gamma, ~1 % at Gamma
+
+[[steady_state.rule]]
+name = "stiff trap (case B and stiffer)"
+eta_sp_max = 0.40
+s_min = 0.0
+s_max = 1e9
+N = 40
+band = 6
+status = "validated"                  # N = 20 converged for case B, s = 1; margin x2
+
+[[steady_state.rule]]
+name = "soft trap, leaky Lambda (bp <= 1/4: h = alpha eta_sp^2 / bp > 1 in case A)"
+eta_sp_max = 1.0
+s_min = 0.0
+s_max = 1e9
+bp_max = 0.25
+N = 250
+band = 4
+status = "unconverged"                # bp = 1/6: s = 0.1 runaway, n_ss = 0.83, 1.88, 4.18 at N = 60, 120,
+                                      # 250; s >= 1 converged by N = 120, but W is ill-defined (n_ss > 1)
+
+[[steady_state.rule]]
+name = "soft trap, strong repumping (bp >= 0.7, e.g. bp = 5/6: h = 0.24)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 1e9
+bp_min = 0.7
+N = 120
+band = 6
+status = "validated"                  # bp = 5/6, s = 0.1, 1, 5: N = 60 already within 1e-3 of N = 250
+
+[[steady_state.rule]]
+name = "soft trap, far detuned (bp ~ 1/2, Delta >= 4 Gamma)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 1e9
+delta_min = 4.0
+N = 400
+band = 4
+status = "approximate"                # the recoil tail grows with Delta (lines_nconv_delta.dat): bp = 1/2,
+                                      # s = 1, N = 120 -> 250 changes n_ss, W by ~5 % at 8 Gamma
+                                      # N = 250 -> 400: W +0.1, 1.3, 2 %, n_ss +0.1, 0.7, 3 % at 5, 8, 12 Gamma.
+                                      # With all excited levels, D2 F'=2: W not converged (206 -> 1254 /s, N = 80
+                                      # -> 550, lines_nconv_d2.dat); n_ss slowly rising; W0 converged.
+
+[[steady_state.rule]]
+name = "soft trap, saturated probe (case A, s >= 1)"
+eta_sp_max = 0.75
+s_min = 1.0
+s_max = 1e9
+N = 120
+band = 6
+status = "validated"                  # n_ss, W change < 1e-4 between N = 120 and 160
+
+[[steady_state.rule]]
+name = "soft trap, intermediate probe (case A, 0.3 <= s < 1)"
+eta_sp_max = 0.75
+s_min = 0.3
+s_max = 1.0
+N = 250
+band = 4
+status = "validated"                  # s = 0.3: n_ss, W change < 1e-3 from N = 250 to 300
+
+[[steady_state.rule]]
+name = "soft trap, weak probe (case A, s < 0.3)"
+eta_sp_max = 0.75
+s_min = 0.0
+s_max = 0.3
+N = 400
+band = 4
+status = "approximate"                # power-law recoil tail (P ~ n^-2.35 at s = 0.1): n_ss within
+                                      # ~2 % (s = 0.1: +0.7 % from N = 300 to 400, extrapolated
+                                      # 0.033), W within ~1 %; s = 0.01 within ~0.3 %
+
+[[steady_state.rule]]
+name = "very soft trap (eta_sp up to 1, e.g. trap-frequency mismatch nu_rel < 0.9 for case A)"
+eta_sp_max = 1.0
+s_min = 0.0
+s_max = 1e9
+N = 400
+band = 4
+status = "unconverged"                # h = kappa alpha eta_sp^2 up to ~0.8 > 1/2: the power-law
+                                      # recoil tail may make n_ss diverge with N; use W only
+
+# ---------------------------------------------------------------- full master equation
+[full_me]
+N_legacy = 20         # fixed truncation of the original studies (not converged for case A)
+
+# ---------------------------------------------------------------- operators
+[operators]
+function_of_x_tol = 1e-11             # elements < tol * max of f(x) are dropped (round-off level)
+
+# ---------------------------------------------------------------- spontaneous emission
+[emission]
+nodes = 10            # equal-probability quadrature of u = k_x / k; <u^2> = 0.397 (exact 0.4)
+seed = 1              # fixed RNG seed: results reproducible to ~1e-8
+
+# ---------------------------------------------------------------- rate model (GRM)
+[grm]
+csat = 2.25           # saturation constant fitted to ME Fock drift (n0 = 1..15, bp = 1/2)
+N_case_A = 1600       # Fock space up to the trap depth (U0 / hbar nu_r = 1552)
+N_case_B = 400        # (U0 / hbar nu_r = 362)
+
+# ---------------------------------------------------------------- rates
+[rates]
+n_rate_max = 0.2      # relax_rate (from |g_p,1>) is reported only where n_ss < n_rate_max: W has a pole
+                      # and changes sign near this value; W0 (solve_banded) has neither (rate_p0.dat)

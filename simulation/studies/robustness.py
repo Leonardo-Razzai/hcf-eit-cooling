@@ -1,5 +1,8 @@
 """Robustness of radial EIT cooling (paper Fig. 4).
 
+Master equation: converged eliminated/banded solver E.steady (numerics.toml).
+Runtime several hours for case A (weak-probe points use N = 400).
+
   carrier    LP01 admixture eps and trap offset x_s     -> results/carrier_A.dat   (~2 min)
   twophoton  two-photon detuning error                  -> results/twophoton_A.dat (<1 min)
   mismatch   actual vs design radial trap frequency     -> results/mismatch_{A,B}.dat (~1 min)
@@ -24,7 +27,7 @@ def carrier():
             for s in svals:
                 kw = {'eps': v} if kind == 'eps' else {'xs': v}
                 p = E.params(fc, s=s, N=NME, **kw)
-                r = E.solve_me(p)
+                r = E.steady(fc, s, **kw)
                 if r['W'] > best[0]:
                     best = (r['W'], r['n'], s)
             epseff = v if kind == 'eps' else v * p['etap']
@@ -42,7 +45,7 @@ def twophoton():
     for d2 in np.linspace(-0.6, 0.6, 13):
         row = [d2]
         for eps in (0.0, 0.05):
-            r = E.solve_me(E.params(fc, s=0.2, N=NME, eps=eps, d2=d2))
+            r = E.steady(fc, 0.2, eps=eps, d2=d2)
             row += [r['n'], r['W'] * fc['om']]
         sm = E.simple(E.params(fc, s=0.2, N=NME, d2=d2), 2)
         row += [sm['n'], sm['W'] * fc['om']]
@@ -52,11 +55,11 @@ def twophoton():
 
 
 def mismatch():
-    for key, fc in CASES.items():
+    for key, fc in (('A', CASES['A']),):          # case B converged at N = 20: kept as is
         rows = []
         for nr in np.linspace(0.6, 1.6, 21):
             p = E.params(fc, s=0.2, N=NME, nu_rel=nr)
-            r = E.solve_me(p)
+            r = E.steady(fc, 0.2, nu_rel=nr)
             sm = E.simple(p, 2)
             # rates converted with the actual trap frequency
             rows.append([nr, r['n'], r['W'] * fc['om'] * nr, sm['n'],

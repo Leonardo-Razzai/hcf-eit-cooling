@@ -1,6 +1,7 @@
 """Validation and calibration of the generalised rate model (GRM).
 
-  steady   GRM (c_sat = 1) vs master-equation steady state  -> results/grmcheck.dat
+  steady   GRM (c_sat = 1) vs converged master-equation steady state -> results/grmcheck.dat
+           (the Fock drift below is short-time and already converged at N = 34)
   drift    master-equation phonon drift from Fock states vs GRM for several
            c_sat; prints the rms log error used to fix eitsim.rate_models.CSAT
                                                              -> results/drift_calib.dat
@@ -17,10 +18,10 @@ CSAT_GRID = (1, 1.5, 2, 2.25, 2.5, 3, 4)
 
 def steady():
     rows = []
-    for key, fc in CASES.items():
+    for key, fc in (('A', CASES['A']),):            # case B converged at N = 20: not rerun
         for s in (0.01, 0.1, 0.3, 1.0):
             p = E.params(fc, s=s, N=NME)
-            r = E.solve_me(p)
+            r = E.steady(fc, s)                       # converged ME (numerics.toml)
             ss = E.grm_steady_state(E.grm_matrix(p, N=60, csat=1.0))
             rows.append([0 if key == 'A' else 1, s, r['n'], np.arange(60) @ ss])
             log('steady', rows[-1])

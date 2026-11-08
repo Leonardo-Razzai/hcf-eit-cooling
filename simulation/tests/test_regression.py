@@ -33,12 +33,13 @@ def test_fibre_cases():
 
 
 def test_master_equation_matches_saturation_results():
-    d = load('sat_A.dat')
+    d = load('sat_A.dat')                                  # converged solver (numerics.toml)
     fc = E.paper_cases()['A']
-    i = int(np.argmin(np.abs(d['s'] - 0.1)))
-    r = E.solve_me(E.params(fc, s=d['s'][i], N=20))
-    assert np.isclose(r['n'], d['nME'][i], rtol=1e-6)
-    assert np.isclose(r['W'] * fc['om'], d['WME'][i], rtol=1e-6)
+    i = int(np.argmin(np.abs(d['s'] - 1.0)))
+    r = E.steady(fc, d['s'][i])
+    assert r['N'] == d['N'][i] and r['band'] == d['band'][i]
+    assert np.isclose(r['n'], d['nME'][i], rtol=1e-8)
+    assert np.isclose(r['W'] * fc['om'], d['WME'][i], rtol=1e-8)
 
 
 def test_simple_model_matches_saturation_results():
@@ -223,8 +224,115 @@ def test_lines_multilevel_study():
     assert set(np.unique(dl['DeltaG'])) == {1, 2, 3, 5, 8, 12}
     assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
 
+
+# ---------------------------------------------------------------- eliminated / banded ME
+def test_eliminated_me_matches_full():
+    """Adiabatic elimination of |e> (Delta = 3 Gamma): < 1 % in n_ss and W."""
+    for key in 'AB':
+        p = E.params(E.paper_cases()[key], s=1.0, N=12)
+        f, e = E.solve_me(p), E.solve_me(p, eliminate=True)
+        assert abs(e['n'] / f['n'] - 1) < 1e-2 and abs(e['W'] / f['W'] - 1) < 1e-2
+
+
+def test_banded_solver():
+    p = E.params(E.paper_cases()['A'], s=1.0, N=16)
+    e = E.solve_me(p, eliminate=True)
+    full_band = E.solve_banded(p, B=16)                 # band holds everything: exact
+    assert np.isclose(full_band['n'], e['n'], rtol=1e-10)
+    assert np.isclose(full_band['W'], e['W'], rtol=1e-10)
+    b6 = E.solve_banded(p, B=6)
+    assert abs(b6['n'] / e['n'] - 1) < 1e-5 and abs(b6['W'] / e['W'] - 1) < 1e-5
+    assert np.isclose(b6['P'].sum(), 1.0, atol=1e-10)
+
+
+def test_convergence_results():
+    d = np.genfromtxt(RESULTS / 'convergence' / 'nconv.dat', names=True)
+    r = d[(d['case'] == 0) & (d['s'] == 1.0) & (d['method'] == 1)]
+    assert np.isclose(r['n'][r['N'] == 160][0], 0.15447, atol=2e-5)
+    assert np.isclose(r['W'][r['N'] == 160][0], 1614.1, rtol=1e-3)
+    fc = E.paper_cases()['A']
+    x = E.solve_banded(E.params(fc, s=1.0, N=40), B=6)
+    row = r[r['N'] == 40][0]
+    assert np.isclose(x['n'], row['n'], rtol=1e-8) and np.isclose(x['W'] * fc['om'], row['W'], rtol=1e-8)
+
+
+# ---------------------------------------------------------------- numerics.toml
+def test_numerics_config_rules():
+    c = E.paper_cases()
+    assert E.me_cutoffs(c['A']['eta_sp'], 1.0)['N'] == 120
+    weak = E.me_cutoffs(c['A']['eta_sp'], 0.1)
+    assert weak['band'] == 4 and weak['N'] == 400 and weak['status'] == 'approximate'
+    assert E.me_cutoffs(c['A']['eta_sp'], 0.5)['N'] == 250
+    assert E.me_cutoffs(c['B']['eta_sp'], 0.1)['N'] == 40
+    with pytest.raises(ValueError):
+        E.me_cutoffs(1.2, 1.0)                           # no rule covers it: must fail
+    assert E.CSAT == E.CFG['grm']['csat'] and len(E.NODES) == E.CFG['emission']['nodes']
+
+
+def test_steady_uses_config():
+    fc = E.paper_cases()['B']
+    r = E.steady(fc, 1.0)
+    p = E.params(fc, s=1.0, N=r['N'])
+    ref = E.solve_banded(p, B=r['band'])
+    assert r['N'] == 40 and r['band'] == 6
+    assert np.isclose(r['n'], ref['n'], rtol=1e-12) and np.isclose(r['W'], ref['W'], rtol=1e-12)
+
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith('test_'):
             f()
             print('ok', name)
+
+
+def test_banded_evolution_matches_full():
+    """Second order in h and agreement with the full BDF2 evolution (N = 10)."""
+    N = 10
+    p = E.params(E.paper_cases()['B'], s=0.2, N=N)
+    th = E.thermal(1.0, N)
+    L, d, b = E.liouvillian(p)
+    rho0 = np.zeros((d, d), complex)
+    rho0[np.arange(N), np.arange(N)] = th
+    t, full = E.evolve(L, rho0, 5.0, E.number_op(b), h=0.05, n_out=5)
+    _, n1 = E.banded_evolve(p, th, 5.0, B=N, h=0.0625, n_out=5)
+    _, n2 = E.banded_evolve(p, th, 5.0, B=N, h=0.03125, n_out=5)
+    _, n3 = E.banded_evolve(p, th, 5.0, B=N, h=0.015625, n_out=5)
+    assert np.max(abs(n1 / full - 1)) < 1e-3
+    assert abs(n1[-1] - n2[-1]) > 3 * abs(n2[-1] - n3[-1])     # second order: ratio -> 4
+
+
+def test_cutoff_rules_depend_on_branching():
+    eta = 0.71
+    assert E.me_cutoffs(eta, 1.0)['N'] == 120
+    assert E.me_cutoffs(eta, 0.1, 5 / 6)['N'] == 120
+    assert E.me_cutoffs(eta, 1.0, 1 / 6)['status'] == 'unconverged'
+    assert E.me_cutoffs(0.34, 1.0, 1 / 6)['status'] == 'validated'
+    assert E.me_cutoffs(eta, 1.0, 0.5, 8.0)['N'] == 400
+    assert E.me_cutoffs(eta, 1.0, 5 / 6, 8.0)['N'] == 120
+
+
+def test_rates_match_direct_time_integration():
+    """W and W0 of solve_banded against integrals of the exact dynamics (small N)."""
+    from scipy.linalg import expm
+    N = 8
+    p = E.params(E.paper_cases()['B'], s=0.3, N=N)
+    r = E.solve_banded(p, B=N)
+    M, ri, ci, n_of = E.banded_generator(p, B=N)
+    diag = np.nonzero(ri == ci)[0]
+    nv = np.zeros(ri.size)
+    nv[diag] = n_of[ri[diag]]
+    pv = np.zeros(ri.size)
+    pv[diag[n_of[ri[diag]] == 0]] = 1.0
+    y = np.zeros(ri.size, complex)
+    y[int(np.nonzero((ri == 1) & (ci == 1))[0][0])] = 1.0
+    dt = 0.5
+    U = expm(M * dt)
+    tn, tp = 0.0, 0.0
+    for k in range(40000):
+        a = float(np.real(nv @ y)) - r['n']
+        b = r['P0'] - float(np.real(pv @ y))
+        tn += a * dt * (0.5 if k == 0 else 1.0)
+        tp += b * dt * (0.5 if k == 0 else 1.0)
+        y = U @ y
+    assert np.isclose(1 / (tn / (1 - r['n'])), r['W'], rtol=1e-3)
+    assert np.isclose(1 / (tp / r['P0']), r['W0'], rtol=1e-3)
+
