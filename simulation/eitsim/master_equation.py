@@ -154,8 +154,13 @@ def solve_banded(p, B=6, rate=True):
 
     The steady state is almost diagonal in n (case A, N = 40: |rho_n,n+k| < 4e-5
     for k >= 4), while the nearly dense recoil operator makes the full
-    Liouvillian grow as N^4. Returns dict(n, W, pgc, P (Fock populations),
-    dim, rho (2N x 2N, zero outside the band)).
+    Liouvillian grow as N^4. Both rates start from |g_p, 1>: W is the integrated
+    relaxation of <n>, W0 that of the ground-state population,
+    1/W0 = int (P0_ss - P0(t)) dt / P0_ss. In a heavy recoil tail <n> undershoots
+    n_ss and rises slowly, which biases W upwards and can make it diverge or
+    change sign; the tail enters W0 through its weight, not its energy.
+    Returns dict(n, W, W0, P0, pgc, P (Fock populations), dim,
+    rho (2N x 2N, zero outside the band)).
     """
     from scipy.linalg import lu_factor, lu_solve
     N = p['N']
@@ -172,7 +177,10 @@ def solve_banded(p, B=6, rate=True):
     nvec = np.zeros(S)
     nvec[diag] = n_of[r[diag]]
     nss = float(np.real(nvec @ x))
-    W = np.nan
+    p0vec = np.zeros(S)
+    p0vec[diag[n_of[r[diag]] == 0]] = 1.0               # projector on n = 0, both ground levels
+    P0 = float(np.real(p0vec @ x))
+    W = W0 = np.nan
     if rate:
         x0 = np.zeros(S, complex)
         x0[int(np.nonzero((r == 1) & (c == 1))[0][0])] = 1.0   # |g_p,1><g_p,1|
@@ -180,10 +188,12 @@ def solve_banded(p, B=6, rate=True):
         src[i0] = 0.0
         y = lu_solve(lu, src)
         W = 1.0 / (-float(np.real(nvec @ y)) / (1.0 - nss))
+        W0 = P0 / float(np.real(p0vec @ y))
     rho = np.zeros((2 * N, 2 * N), complex)
     rho[r, c] = x
     P = np.real(np.diag(rho)[:N] + np.diag(rho)[N:])
-    return dict(n=nss, W=W, pgc=float(np.real(np.trace(rho[N:, N:]))), P=P, dim=S, rho=rho)
+    return dict(n=nss, W=W, W0=W0, P0=P0, pgc=float(np.real(np.trace(rho[N:, N:]))), P=P,
+                dim=S, rho=rho)
 
 
 def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):

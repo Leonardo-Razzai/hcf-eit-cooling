@@ -17,18 +17,18 @@ there (results/convergence/nconv.dat), and are not rewritten.
              atoms.neighbour_shift (stage 2 treats them exactly).
                                         -> results/lines_{A,B}.dat (summary)
                                            results/lines_scan_{A,B}.dat (W, n vs s)
-                                           (~2 h, one process)
+                                           (~40 min, one process)
 
   multilevel every Lambda with all excited hyperfine levels in the master
              equation (stage 2), at Delta = 3 Gamma, s = 1, for both signs of
              the Raman interference through the other levels: lasers as in
              the three-level design, and with the two-photon detuning d2
              re-optimised (simple-model optimum refined with the ME).
-                                        -> results/lines_ml_{A,B}.dat (~1 h, 4 workers)
+                                        -> results/lines_ml_{A,B}.dat (~20 min, 4 workers)
   delta      the four cooling configurations (bp >= 1/2) versus Delta/Gamma,
              multi-level ME with re-optimised d2, sign +1; W is reliable only
              where nopt < N_RATE (column 'ok')
-                                        -> results/lines_delta_{A,B}.dat (~1.5 h, 2 workers)
+                                        -> results/lines_delta_{A,B}.dat (~70 min, 2 workers)
 
 Usage: python lines.py [effective] [multilevel] [delta]   (default: all)
 """

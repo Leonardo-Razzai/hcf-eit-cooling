@@ -445,14 +445,32 @@ the same value. So $h=1$ does not end the steady state: it ends ground-state coo
 \begin{equation}
   \frac{1-n_{\rm ss}}{W}=\int_0^\infty\big(\langle n\rangle-n_{\rm ss}\big)dt\simeq\frac{1-n_{\rm core}}{W_c}-\frac{n_{\rm tail}}{\lambda},
 \end{equation}
-with $W_c$ the true decay rate of the core and $\lambda$ the slow filling rate. The negative term makes $W>W_c$, and $W\to\infty$ and then $W<0$ when $n_{\rm tail}/\lambda$ reaches $1/W_c$. This explains three observations: the pole and sign change of $W$ versus $\delta_{\rm e}$ near $n_{\rm ss}\approx0.2$ (\texttt{lines\_d2scan.dat}), the negative $W$ at $\Delta=\Gamma$, and the runaway $W=206$, 207, 237, 399, 1254\,s$^{-1}$ at $N=80$, 160, 250, 400, 550 for D2 $F'=2$ at $12\Gamma$ while $n_{\rm ss}$ changes by only 56\%. There, $\Delta(1/W)/\Delta n_{\rm ss}$ gives $1/\lambda\approx0.5$\,s, of the order of the time to reach $n\sim300$ at the plateau rate.
+with $W_c$ the true decay rate of the core and $\lambda$ the slow filling rate. The negative term raises $W$, and $W\to\infty$ and then $W<0$ when $n_{\rm tail}/\lambda$ reaches $1/W_c$. This explains three observations: the pole and sign change of $W$ versus $\delta_{\rm e}$ near $n_{\rm ss}\approx0.2$ (\texttt{lines\_d2scan.dat}), the negative $W$ at $\Delta=\Gamma$, and the runaway $W=206$, 207, 237, 399, 1254\,s$^{-1}$ at $N=80$, 160, 250, 400, 550 for D2 $F'=2$ at $12\Gamma$ while $n_{\rm ss}$ changes by only 56\%. There, $\Delta(1/W)/\Delta n_{\rm ss}$ gives $1/\lambda\approx0.5$\,s, of the order of the time to reach $n\sim300$ at the plateau rate.
 
-This also concerns the headline result of the fibre paper. In case A at $s=1$ the rise from $W=1319$ ($N=20$) to 1614\,s$^{-1}$ (converged) gives $1/\lambda\approx6$\,ms, also of the order of the filling time ($n\sim20$ at $2\times10^3$\,s$^{-1}$). So this rise may reflect the tail rather than faster cooling. The stored drift from $n_0=1$, a proxy for $W_c$, is 1199\,s$^{-1}$ at $s=1$, 26\% below $W$; at $s=0.1$ and 0.01, where the tail is lighter at low $n$, the drift is 386 and 43\,s$^{-1}$ against $W=338$ and 42\,s$^{-1}$. A well-behaved rate is that of the ground-state population, with $P_0(0)=0$ from $\ket{g_p,1}$:
+\paragraph{The ground-state rate [numerics].} A well-behaved rate is that of the ground-state population, with $P_0(0)=0$ from $\ket{g_p,1}$:
 \begin{equation}
   W_0^{-1}=\frac{1}{P_0^{\rm ss}}\int_0^\infty\big(P_0^{\rm ss}-P_0(t)\big)dt ,
   \label{eq:W0}
 \end{equation}
-in which the tail enters through its weight ($10^{-3}$) instead of its energy. It needs one extra triangular solve with the existing factorisation. Not yet computed.
+in which the tail enters through its weight ($10^{-3}$) instead of its energy. It costs one extra product with the existing solution (\texttt{solve\_banded}; \texttt{rate\_p0.dat}):
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}Xll@{}}
+\toprule
+Point & $W$ (s$^{-1}$) & $W_0$ (s$^{-1}$)\\
+\midrule
+Case A, $s=1$, $N=20$, 40, 120 & 1319, 1544, 1614 & 2188, 2220, 2225\\
+Case A, $s=0.01$, 0.1, 5 (converged $N$) & 42, 338, 3321 & 51, 451, 4555\\
+$b_p=\tfrac56$, $s=0.1$, 1, 5 & 515, 2941, 4680 & 551, 3441, 6601\\
+D2 $F'=2$, $g_p=2$, $12\Gamma$, $N=80$, 160, 250, 400 & 206, 207, 237, 399 & 507, 507, 509, 511\\
+D2 $F'=2$, $g_p=2$, $3\Gamma$, $\delta_{\rm e}=-0.05$, 0, 0.09, 0.13, 0.3 & $-2850$, 4587, 1839, 1629, 1123 & 1395, 1695, 2143, 2225, 1819\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+So $W_0$ is converged where $W$ is not, and it has a real maximum in $\delta_{\rm e}$ where $W$ has a pole. The rise of $W$ with $N$ in the fibre paper's case A is therefore a tail effect: $W$ changes by 22\% from $N=20$ to 120, $W_0$ by 1.7\%.
+
+$W$ and $W_0$ do not measure the same thing, however, and $W$ is not simply an overestimate. An earlier version of this section suggested that the true rate lies below $W$, using the drift from $n_0=1$ (1199\,s$^{-1}$ at $s=1$) as a proxy; $W_0$ lies \emph{above} $W$, by a factor 1.2 even at weak probe, where the tail is light. A possible reading [hypothesis]: $W$ integrates energy, so a recoil excursion to high $n$ costs it a long time, whereas $W_0$ only asks how soon the atom reaches $n=0$. At $s=1$ the three numbers answer three questions: net energy removal from $n=1$ (1199), integrated energy relaxation (1614), arrival in the ground state (2225)\,s$^{-1}$. For the applications below, where $P_0$ matters, $W_0$ is the relevant one. Whether $1/W_0$ gives the time to reach $P_0$ from a thermal state has still to be checked with the time evolution.
 
 \paragraph{Figures of merit from applications [model].} The hyperfine coherence of an atom in $\ket n$ acquires a phase at the differential light shift, $2\pi\epsilon nT$, with $\epsilon=\delta_{\rm diff}\hbar\nur/2U_0=0.26$\,Hz per quantum per axis for case A and $\delta_{\rm diff}=800$\,Hz (the paper's value; 1.1\,Hz for case B). An ensemble then has the coherence $|\phi(T)|^2$ for two equal axes, with $\phi(T)=\sum_nP(n)e^{2\pi i\epsilon nT}$, the characteristic function of $P(n)$. All the statistics enter through this one function (Fig.~\ref{fig:fom}c):
 \begin{itemize}
@@ -485,7 +503,7 @@ The recommended single measure is $t_{\rm prep}(P_0^\ast)$, the time to reach a 
 \end{equation}
 \begin{itemize}
 \item $s$: the factor peaks at $s=2$ with the core alone. The tail, ignored here, raises $1-P_0$ at large $s$ (the master equation gives $P_0=0.844$ at $s=5$), so the practical optimum is lower, $s\sim1$ in the last stage.
-\item $b_p$: at fixed trap, $Q$ favours large $b_p$ twice, directly and through $h$. Case A: $Q=0.20$ for $b_p=\tfrac12$, $0.50$ for $b_p=\tfrac56$, a factor 2.5; the master equation gives 1.8 in $W$, but that $W$ is inflated for $b_p=\tfrac12$ (see above), so the true factor is probably closer to the estimate.
+\item $b_p$: at fixed trap, $Q$ favours large $b_p$ twice, directly and through $h$. Case A: $Q=0.20$ for $b_p=\tfrac12$, $0.50$ for $b_p=\tfrac56$, a factor 2.5; the master equation gives 1.8 in $W$ and 1.55 in $W_0$, so this estimate overstates the gain.
 \item $\nur$: the rate grows with $\nur$ and $h$ falls, so a stiffer trap always helps; the limit is the fibre (loading, wall effects), not the cooling.
 \item $\Delta$: set by the target, $\Delta/\Gamma\simeq\frac14\sqrt{\frac{1+h}{1-h}\frac{1+s}{\varepsilon}}$. For $h=0.24$, $s=1$: $4.5\Gamma$ for $\varepsilon=0.01$ and $14\Gamma$ for $\varepsilon=10^{-3}$. Stored three-level values give $n_{\rm ss}=0.013$ and 0.005 at $5\Gamma$ and $8\Gamma$, about 1.6 times the core estimate.
 \end{itemize}
@@ -502,7 +520,7 @@ For hot atoms the theory suggests a ramp [hypothesis]: at large $s\,n$ the fast 
 
 \paragraph{How to study the windows numerically, when simulations resume.} In order of cost:
 \begin{enumerate}
-\item One extra solve per point: $W_0$ of Eq.~\eqref{eq:W0} and $\langle n\rangle/(1-P_0)$ next to $W$, $n_{\rm ss}$, at case A $s=0.1$, 1, 5. It decides whether the paper's rate has to change.
+\item Report $W_0$ and $\langle n\rangle/(1-P_0)$ next to $W$, $n_{\rm ss}$ in all scans (done for the points above), and select $\delta_{\rm e}$ on $W_0$ in the D1/D2 study.
 \item A chain for $P(n)$ with the exact recoil kernel and measured $R(n)$ ($N$ up to several thousand, cheap), with regime III on and off: thresholds without cut-off, then their rounding. This is the only way to test the sharp thresholds, since the master equation stops at $N\approx550$ with 11\,GB.
 \item Master equation at $h=0.1$, 0.25, 0.33, 0.4, 0.5, 0.6, 0.8, 1, 1.2, reached in two ways, by $\nur/\omega_{\rm rec}$ at $b_p=\tfrac12$ and by $b_p$ at fixed trap, at $s=1$, $\Delta=8\Gamma$ ($\rho=128$, $N=400$). Equal tails at equal $h$ test universality. The band $B$ must be rechecked in regime III, where $\Om_R\sqrt n>\nur$ may widen the coherences.
 \item Banded time evolution for $t_{\rm prep}(P_0^\ast)$ from thermal states, with $P_0(t)$ added to the output: about 4\,min per point at $N=400$, for $(\Delta,s,b_p)$ and for ramps.
@@ -525,7 +543,7 @@ For hot atoms the theory suggests a ramp [hypothesis]: at large $s\,n$ the fast 
 \item \textbf{Semiclassical model.} Compute the friction and momentum diffusion of an atom moving through the LP$_{11}$ gradient from linear response of the optical Bloch equations, and compare with the master-equation drift in regime III.
 \item \textbf{Capture.} Banded time evolution from thermal states ($\bar n\approx30$, $N\approx400$) should give the true capture time from \SI{10}{\micro K}, which may be much shorter than the rate-model estimate because of regime III.
 \item \textbf{Beyond the minimal model.} Treat the recoil with its exact Franck--Condon kernel in a master equation for $P(n)$ in place of the Fokker--Planck form, which fails at $n\lesssim5$ where single jumps are comparable with $n$.
-\item \textbf{Rate definitions.} Compare $W$ with the rate $W_0$ of Eq.~\eqref{eq:W0} and with the direct decay from $n=1$.
+\item \textbf{Rate definitions.} Check $1/W_0$ against the time to reach $P_0$ from thermal states, and the origin of the factor $W_0/W\approx1.2$ at weak probe.
 \end{enumerate}
 
 \begin{thebibliography}{99}

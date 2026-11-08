@@ -39,9 +39,15 @@ plotting/convergence_plots.py into the same folder. One process, sequential.
                                                  -> lines_nconv.dat (~10 min)
   lines_nconv_delta  N-convergence versus Delta/Gamma, bp = 1/2, 5/6, s = 1
                                                  -> lines_nconv_delta.dat
+  lines_nconv_d2  N-convergence of D2 F' = 2, all excited levels, Delta = 8, 12 Gamma
+                                                 -> lines_nconv_d2.dat
+  lines_d2scan  W, n_ss versus two-photon detuning around the stored optimum (N = 80)
+                                                 -> lines_d2scan.dat (~15 min)
+  rate0  W against the ground-state rate W0: case A versus s, N, bp; D1/D2 points where W
+         runs away or has a pole                  -> rate_p0.dat (~30 min)
 
 Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices] [weak] [rates] [tailshape]
-       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta]
+       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta] [lines_nconv_d2] [lines_d2scan] [rate0]
 """
 import sys
 
@@ -267,10 +273,96 @@ def lines_nconv_delta():
     save('lines_nconv_delta.dat', ['bp', 'DeltaG', 'N', 'n', 'W'], rows)
 
 
+def lines_nconv_d2():
+    """N-convergence of D2 F' = 2 with all excited levels, large Delta, s = 1, at the
+    stored optimum of lines_delta_A; D1 F' = 2 as reference. Band 4."""
+    dl = np.genfromtxt(RESULTS / 'lines_delta_A.dat', names=True)
+    rows = []
+    for line, Fe, gp, DG, Ns in (('D1', 2, 2, 12.0, (80, 160, 250, 400)),
+                                 ('D2', 2, 1, 12.0, (80, 160, 250, 400)),
+                                 ('D2', 2, 2, 8.0, (80, 160, 250, 400)),
+                                 ('D2', 2, 2, 12.0, (80, 160, 250, 400, 550))):
+        fc = E.paper_cases(line)['A']
+        lv = E.excited_manifold(line, Fe, gp)
+        m = (dl['line'] == int(line[1])) & (dl['Fe'] == Fe) & (dl['gp'] == gp) & (dl['DeltaG'] == DG)
+        d2 = float(dl['d2opt'][m][0])
+        popt = E.params(fc, s=1.0, Delta_G=DG, d2=d2, levels=lv)
+        beff = float(np.dot(E.excited_weights(popt, 1.0 + d2), [l[3] for l in popt['levels']]))
+        for N in Ns:
+            r = E.steady(fc, 1.0, cut=(N, 4), Delta_G=DG, d2=d2, levels=lv)
+            W = r['W'] * fc['om']
+            rows.append([int(line[1]), Fe, gp, DG, d2, beff, N, r['n'], W])
+            log('lines_nconv_d2', line, "F'=%d gp=%d D %g beff %.3f N %d" % (Fe, gp, DG, beff, N),
+                'n %.5f W %.1f' % (r['n'], W))
+    save('lines_nconv_d2.dat', ['line', 'Fe', 'gp', 'DeltaG', 'd2', 'beff', 'N', 'n', 'W'], rows)
+
+
+def lines_d2scan():
+    """W and n_ss versus the two-photon detuning around the stored optimum (s = 1, all
+    excited levels, sign +1, N = 80, band 4: shapes only): is the search of lines.py on
+    the peak, and is the selection n_ss < 0.2 limiting?"""
+    dl = np.genfromtxt(RESULTS / 'lines_delta_A.dat', names=True)
+    rows = []
+    for line, Fe, gp, DG in (('D2', 2, 1, 3.0), ('D2', 2, 2, 3.0), ('D2', 2, 1, 8.0), ('D2', 2, 2, 8.0),
+                             ('D2', 2, 1, 12.0), ('D2', 2, 2, 12.0), ('D1', 1, 2, 12.0),
+                             ('D1', 2, 1, 12.0), ('D1', 1, 2, 3.0)):
+        fc = E.paper_cases(line)['A']
+        lv = E.excited_manifold(line, Fe, gp)
+        m = (dl['line'] == int(line[1])) & (dl['Fe'] == Fe) & (dl['gp'] == gp) & (dl['DeltaG'] == DG)
+        d0 = float(dl['d2opt'][m][0])
+        w = 0.3 * min(1.0, 3.0 / DG)
+        for d2 in d0 + np.linspace(-w, w, 17):
+            r = E.steady(fc, 1.0, cut=(80, 4), Delta_G=DG, d2=d2, levels=lv)
+            rows.append([int(line[1]), Fe, gp, DG, d0, d2, r['W'] * fc['om'], r['n']])
+        log('lines_d2scan', line, Fe, gp, DG)
+    save('lines_d2scan.dat', ['line', 'Fe', 'gp', 'DeltaG', 'd2stored', 'd2', 'W', 'n'], rows)
+
+
+def rate0():
+    """W against the ground-state rate W0 (solve_banded): case A at the paper settings
+    versus s and N, bp = 5/6, and the D1/D2 points where W runs away or has a pole."""
+    rows = []
+
+    def row(lab, fc, r, s, DG, bp, d2, N, B):
+        W, W0 = r['W'] * fc['om'], r['W0'] * fc['om']
+        rows.append([lab, s, DG, bp, d2, N, B, r['n'], r['P0'], W, W0])
+        log('rate0 set %d s %g D %g bp %.3f d2 %.3f N %d' % (lab, s, DG, bp, d2, N),
+            'n %.4f P0 %.4f W %.0f W0 %.0f' % (r['n'], r['P0'], W, W0))
+    fc = CASES['A']
+    for s, Ns in ((0.01, (120, 400)), (0.1, (120, 400)), (0.3, (120, 250)), (1.0, (20, 40, 120)),
+                  (5.0, (40, 120))):
+        for N in Ns:
+            B = 4 if N > 160 else 6
+            row(0, fc, E.solve_banded(E.params(fc, s=s, N=N), B=B), s, 3.0, 0.5, 0.0, N, B)
+    row(1, fc, E.solve_banded(E.params(fc, s=1.0, N=120, bp=5 / 6), B=6), 1.0, 3.0, 5 / 6, 0.0, 120, 6)
+    row(1, fc, E.solve_banded(E.params(fc, s=0.1, N=120, bp=5 / 6), B=6), 0.1, 3.0, 5 / 6, 0.0, 120, 6)
+    row(1, fc, E.solve_banded(E.params(fc, s=5.0, N=120, bp=5 / 6), B=6), 5.0, 3.0, 5 / 6, 0.0, 120, 6)
+    dl = np.genfromtxt(RESULTS / 'lines_delta_A.dat', names=True)
+    for line, Fe, gp, DG, Ns in (('D2', 2, 2, 12.0, (80, 160, 250, 400)), ('D2', 2, 1, 3.0, (120,)),
+                                 ('D2', 2, 2, 3.0, (120,)), ('D1', 2, 2, 3.0, (120,)),
+                                 ('D1', 1, 2, 3.0, (120,))):
+        fl = E.paper_cases(line)['A']
+        lv = E.excited_manifold(line, Fe, gp)
+        m = (dl['line'] == int(line[1])) & (dl['Fe'] == Fe) & (dl['gp'] == gp) & (dl['DeltaG'] == DG)
+        d2 = float(dl['d2opt'][m][0])
+        for N in Ns:
+            B = 4 if N > 160 else 6
+            r = E.solve_banded(E.params(fl, s=1.0, N=N, Delta_G=DG, d2=d2, levels=lv), B=B)
+            row(2 if line == 'D1' else 3, fl, r, 1.0, DG, lv[0]['bp'], d2, N, B)
+    # across the pole of W versus d2: D2 F'=2, gp = 2, 3 Gamma (lines_d2scan.dat)
+    fl = E.paper_cases('D2')['A']
+    lv = E.excited_manifold('D2', 2, 2)
+    for d2 in (-0.05, 0.0, 0.03, 0.06, 0.09, 0.13, 0.2, 0.3):
+        r = E.solve_banded(E.params(fl, s=1.0, N=80, d2=d2, levels=lv), B=4)
+        row(4, fl, r, 1.0, 3.0, 0.5, d2, 80, 4)
+    save('rate_p0.dat', ['set', 's', 'DeltaG', 'bp', 'd2', 'N', 'band', 'n', 'P0', 'W', 'W0'], rows)
+
+
 STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices,
            'weak': weak, 'rates': rates, 'tailshape': tailshape, 'evolution': evolution,
            'lines_elim': lines_elim, 'lines_nconv': lines_nconv,
-           'lines_nconv_delta': lines_nconv_delta}
+           'lines_nconv_delta': lines_nconv_delta, 'lines_nconv_d2': lines_nconv_d2,
+           'lines_d2scan': lines_d2scan, 'rate0': rate0}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

@@ -24,12 +24,16 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 
 ### Key results (keep the text consistent with these)
 
+Case A is from the converged solver (branch `fix-truncation`); `paper/manuscript/main.tex` still has the
+N = 20 values until the author approves the changes.
+
 | Quantity | Case A | Case B |
 |---|---|---|
-| W at s = 1 (s⁻¹) | 1.3×10³ | 1.2×10⁴ |
-| n_ss at s = 1 | 0.13 | 0.04 |
-| Weak-probe floor n_ss | 0.017 | 0.009 |
-| Maximum W at s ≈ 5 (s⁻¹) | 3.3×10³ | 1.8×10⁴ |
+| W at s = 1 (s⁻¹) | 1.6×10³ | 1.2×10⁴ |
+| Ground-state rate W₀ at s = 1 (s⁻¹) | 2.2×10³ | not computed |
+| n_ss at s = 1 | 0.15 | 0.04 |
+| Weak-probe floor n_ss | 0.018 | 0.009 |
+| Maximum W at s ≈ 5 (s⁻¹; n_ss = 0.41 in A, above the 0.2 flag) | 3.3×10³ | 1.8×10⁴ |
 | Probe power at s = 1 | 8 nW | 0.4 nW |
 | Cooling from 10 µK | P₀ = 97.5% after 150 ms (staged Δ = Γ → 3Γ); ⟨n⟩ = 1.45, carried by a 0.4% hot tail | ⟨n⟩ = 0.04 in 2.4 ms |
 | Time to P₀ ≥ 0.9 vs k_BT_r/U₀ = 10⁻³–10⁻¹ (s = 1) | 2.6–255 ms, ≈ 2.5 s × k_BT_r/U₀ | 0–7.7 ms, ≈ 80 ms × k_BT_r/U₀ |
@@ -37,29 +41,30 @@ A theory/simulation paper (target: Nature Communications / Nature Physics style)
 
 - **Simple model:**
   - It is valid at weak probe only if it counts κ = 1/b_p ≈ 2 photons per cycle.
-  - At s ~ 1 it overestimates W by up to 65% and underestimates n_ss by up to 4×. The cause is
-    Raman splitting of the narrow line, since s = 2(Ω_R/Γ_n)².
-- **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.4 η⊥. The simple model's threshold,
+  - At s ~ 1 it overestimates W by up to 38% (A; 43% in B at s = 10) and underestimates n_ss by up to 5×.
+    The cause is Raman splitting of the narrow line, since s = 2(Ω_R/Γ_n)², and the recoil tail.
+- **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.3 η⊥. The simple model's threshold,
   2.8 η⊥, is about 2× too optimistic. A trap offset x_s is equivalent to ε_eff = η⊥ x_s/x₀.
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
 - **LP₁₂ vs LP₁₁:** identical rate at equal s; a higher mode only lowers the probe power.
 - **D1 vs D2, stage 1 (effective Λ, three-level ME):** only Γ, η_sp, b_p and the leg strengths
   differ. b_p = 5/6 (D1 F′=1 with probe on F=2; D2 F′=1 with probe on F=1) gives W(s=1) = 2.9×10³ s⁻¹
-  and n_ss = 0.038 in case A (2.2× faster, 3.5× colder than b_p = ½), 1.7×10⁴ s⁻¹ / 0.020 in case B.
+  and n_ss = 0.038 in case A (1.8× faster in W, 1.55× in W₀, 4× colder than b_p = ½), 1.7×10⁴ s⁻¹ / 0.020 in case B.
   b_p = 1/6 does not cool in case A (h > 1). D2 F′=1 (probe F=1) has a weak coupling leg (S = 1/20)
   and a neighbour light shift of −1.3× δ₊, so stage 2 must decide it; D1 F′=1 has −0.11×.
   D2 is otherwise ~5% slower (larger Γ, η_sp). Paper probe powers use S = 1; with S_FF′ they
   are 1.2–2× higher.
 - **D1 vs D2, stage 2 (all excited hyperfine levels in the ME, Δ = 3Γ, s = 1, two-photon detuning
   re-optimised, both signs of the Raman interference through the other levels):**
-  D1 is robust: F′=2 (paper) changes by < 2% (retune ≤ 0.05 ν_r); F′=1 with probe on F=2 gives
-  W = 2.8–3.1×10³ s⁻¹, n_ss = 0.033–0.042 (A) and 1.6–1.8×10⁴ s⁻¹, 0.018–0.022 (B) after retuning
-  δ_e ≈ −0.1 ν_r, i.e. 2.1–2.3× the paper rate. D2 F′=2 is within ±5% of its three-level value
-  (retune ≈ ±0.16 ν_r) but degrades at large Δ (−18% at 8Γ, A). D2 F′=1 (probe on F=1, b_p = 5/6)
-  needs δ_e ≈ −1.3 ν_r, depends on the interference sign by a factor 2 (A: 1.7–3.2×10³ s⁻¹) and
-  stops cooling for Δ ≥ 8Γ: unreliable without the Zeeman model. Rates with n_ss > 0.2 are
-  ill-defined (relaxation from |g_p,1⟩) and flagged.
+  D1 is robust: F′=2 (paper) changes by < 2.5% (retune ≤ 0.05 ν_r); F′=1 with probe on F=2 gives
+  W = 2.8–3.1×10³ s⁻¹, n_ss = 0.034–0.043 (A) and 1.6–1.8×10⁴ s⁻¹, 0.018–0.022 (B) after retuning
+  δ_e ≈ −0.1 ν_r, i.e. 1.7–1.9× the paper rate in A. D2 F′=2 (A, Δ = 3Γ): W = 1.3–1.8×10³ s⁻¹ (retune
+  −0.18 to +0.29 ν_r), limited by the selection n_ss < 0.2, since W has a pole there; W₀ at sign +1 is
+  2.2×10³ s⁻¹, within 1% of D1 F′=2. At Δ ≥ 8Γ its W is not converged in N (see Truncation).
+  D2 F′=1 (probe on F=1, b_p = 5/6) needs δ_e ≈ −1.3 ν_r, depends on the interference sign by a factor 2
+  (A: 1.7–3.3×10³ s⁻¹) and stops cooling for Δ ≥ 8Γ: unreliable without the Zeeman model. Rates with
+  n_ss > 0.2 are ill-defined (relaxation from |g_p,1⟩) and flagged.
 - **Initial temperature:** above n̄₀ ≈ 3 the sideband saturates and the cooling time grows linearly
   with k_BT_r/U₀ (U₀/k_B = 530 µK). Recoil makes hot atoms diffuse in energy (≈ η_sp√n per photon),
   so ⟨n⟩ lags behind P₀. Beyond its calibration range (n ≤ 15) the GRM underestimates the
@@ -144,16 +149,19 @@ Study scripts (run from `simulation/studies/`):
 - `saturation.py` → `sat_A.dat`, `sat_B.dat` (Fig. 3).
 - `robustness.py [carrier|twophoton|mismatch]` → `carrier_A.dat`, `twophoton_A.dat`,
   `mismatch_{A,B}.dat` (Fig. 4).
-- `dynamics.py [relaxation|capture]` → `dyn_A.dat` (master equation, ~6 min), `capture_{A,B}.dat` (Fig. 5).
+- `dynamics.py [relaxation|capture]` → `dyn_A.dat` (converged master equation, N = 400, ~4 min), `capture_{A,B}.dat` (Fig. 5).
 - `calibration.py [steady|drift]` → `grmcheck.dat`, `drift_calib.dat`. These fix `rate_models.CSAT`
   and Methods Table 3.
 - `temperature.py [scan|drift]` → `temperature_{A,B}.dat` (metrics, 20 log steps) and
   `temptrace_{A,B}.dat` (⟨n⟩(t), P₀(t) at k_BT_r/U₀ = 1e-3, 4e-3, 1e-2, 4e-2, 1e-1; column
   `n_0p004` = 0.004) (Fig. 6, ~2 min);
   `drift_hi.dat` (master-equation check of the GRM at n₀ = 20, 30, ~25 min).
-- `lines.py [effective|multilevel|delta]` → `lines_{A,B}.dat`, `lines_scan_{A,B}.dat` (stage 1,
-  three-level, ~7 min); `lines_ml_{A,B}.dat` (stage 2 at Δ = 3Γ, ~35 min) and
-  `lines_delta_{A,B}.dat` (stage 2 vs Δ, ~40 min); 4 worker processes, ~1 GB each.
+- `lines.py [effective|multilevel|delta]` → case A only, converged solver (case-B files are kept from the
+  full ME at N = 20): `lines_A.dat`, `lines_scan_A.dat` (stage 1, ~40 min); `lines_ml_A.dat` (stage 2 at Δ = 3Γ,
+  ~20 min, 4 workers, `OPENBLAS_NUM_THREADS=2`); `lines_delta_A.dat` (stage 2 vs Δ, ~70 min, 2 workers,
+  `OPENBLAS_NUM_THREADS=4`).
+- `convergence.py` → `results/convergence/`: evidence for `numerics.toml` (elimination, band, N, tail, drift,
+  time evolution, D1/D2 checks, W against W0); `plotting/convergence_plots.py` plots it.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
@@ -189,6 +197,9 @@ Conventions and gotchas:
 - **Vectorisation.** ρ is vectorised column-stacked, so vec(AρB) = (Bᵀ⊗A)vec(ρ).
 - **Steady state.** The first row of L is replaced by the trace condition. Factorise with
   `permc_spec='MMD_AT_PLUS_A'`, which is about 4× faster than the default.
+- **Rates.** `solve_banded` returns W (integrated ⟨n⟩ relaxation from |g_p,1⟩) and W0 (the same for P₀). W gets a
+  negative contribution while the recoil tail fills: it depends on N, has a pole and changes sign near n_ss ≈ 0.2.
+  W0 is stable (`results/convergence/rate_p0.dat`), and above W by ≈ 1.2× even at weak probe. Studies still report W.
 - **Cooling rate.** `relax_rate` returns the inverse *integrated* relaxation time from |g_p,1⟩.
   Do **not** use the slowest Liouvillian eigenvalue. It picks up slow modes at the truncation edge
   and drifts with N, because saturated high-n states cool linearly in time.
@@ -196,8 +207,9 @@ Conventions and gotchas:
   roughly exponential recoil-diffusion tail (P(n) falls ≈ ×0.89 per quantum; 0.3 % of atoms above
   n = 10 carry a third of ⟨n⟩) is cut off. Case A, s = 1: n_ss = 0.133 / 0.147 / 0.152 / 0.154 and
   W = 1319 / 1446 / 1546 / 1605 s⁻¹ for N = 20 / 30 / 40 / 60 (n_ss converged ≈ 0.155, W still
-  rising). Case A at s = 5 and case B are converged at N = 20. Always check N-convergence when
-  η_sp ≳ 0.5. Use N ≥ 30 for dynamics. Thermal GRM dynamics need N up to the trap depth, U₀/ħν_r = 1552 (A) / 362 (B):
+ rising). Case A at s = 5 and case B are converged at N = 20. Always check N-convergence when
+  η_sp ≳ 0.5. The tail also depends on b_p and Δ, so the `numerics.toml` rules do too; D2 F′=2 at Δ ≥ 8Γ is
+  not converged (effective b_p falls, h ≈ 0.57 for g_p = 1 at 12Γ). Use N ≥ 30 for dynamics. Thermal GRM dynamics need N up to the trap depth, U₀/ħν_r = 1552 (A) / 362 (B):
   the code uses N = 1600 / 400. Recoil diffusion carries a few atoms to high n, and a smaller N
   acts as an artificial sink (N = 300 gave ⟨n⟩ = 0.24 instead of 1.45 for case A from 10 µK).
 - **Recoil.** The master equation scatters κ = 1/b_p photons per cycle automatically, since decays
@@ -262,8 +274,9 @@ Conventions and gotchas:
   coherences |n − m| ≤ B = 6, dense LU): exact for B ≥ N, 2×10⁻⁸ error at B = 6, N = 160 in 34 s.
   Converged case A, s = 1: n_ss = 0.1545, W = 1614 s⁻¹ (paper N = 20: 0.133, 1319). Checks and plots:
   `studies/convergence.py` → `results/convergence/`, `plotting/convergence_plots.py`.
-  **To do when finished:** add the eliminated + banded method, its validity conditions and the
-  convergence evidence to `simulation/docs/code_guide.tex` (requested by the author).
+  Then: time evolution validated, Fig. 5a data, D1/D2 rerun, figures, code guide done. W0 added (Rates, above).
+  **Pending:** author's approval of the merge and of the paper numbers; decide W or W0 in the paper; rerun
+  `universal` with converged cut-offs; talk (slide 12 and result plots) still has the old case-A numbers.
 
 - **Possible separate paper: anomalous (scale-free) Fock statistics** — hypothesis from the case-A
   convergence problem: recoil diffusion with h = κα·η_sp² may give a power-law tail P(n) ∝ n^(−1/h);
@@ -288,10 +301,11 @@ Conventions and gotchas:
   messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
   that should not change are reproduced exactly, new results are committed, and the code guide and
   this file are updated. `main` must always have code, results, paper and tests in agreement.
-- **One simulation at a time (requested by the author).** Never run simulations in parallel: do not
+- **One simulation at a time (requested by the author).** Worker processes inside one study are allowed
+  (`lines.py`) if they fit in memory. Otherwise never run simulations in parallel: do not
   start a study, check or diagnostic while another is still running (check with
   `ps -eo pid,etime,rss,args | grep python`), and wait for it to finish first. Concurrent jobs
-  compete for CPU and memory (7 GB) and make every run slower.
+  compete for CPU and memory (11 GB) and make every run slower.
 - Do not commit LaTeX build products (see `.gitignore`).
 - `figures/*.pdf` and `results/*.dat` *are* tracked: they are inputs or outputs the paper depends on.
 - Run `make test` before committing changes to `simulation/`.

@@ -207,9 +207,13 @@ Findings:
   but 0.76 vs 1.44 at s = 5; s = 0.1 predicts ~38 (unconverged 4.18 at N = 250). Scaling not confirmed.
 - **Effective h.** Neighbouring levels change bp: D2 F'=2, gp = 1, 12 Gamma has beff = 0.37, h ~ 0.57.
 - **W fails in a heavy tail.** From n = 1, <n> undershoots and rises as the tail fills, so
-  1/W ~ 1/W_c - n_tail/lambda: W > W_c, pole, then W < 0. Explains the pole vs delta_e, W < 0 at Gamma, and
-  W = 206 -> 1254 /s with N at D2 F'=2, 12 Gamma. **Concerns the paper:** the rise 1319 -> 1614 /s may be this
-  effect; direct drift from n0 = 1 at s = 1 is 1199 /s. Proposed: W_0 from P_0(t), one extra solve.
+  1/W ~ 1/W_c - n_tail/lambda: pole, then W < 0. Explains the pole vs delta_e, W < 0 at Gamma, and
+  W = 206 -> 1254 /s with N at D2 F'=2, 12 Gamma.
+- **Ground-state rate W_0 (from P_0(t), `results/convergence/rate_p0.dat`) is stable.** Case A, s = 1:
+  W_0 = 2188, 2220, 2225 /s at N = 20, 40, 120 (W: 1319, 1544, 1614). D2 F'=2, 12 Gamma: 507-511 /s while W
+  runs away. Smooth maximum vs delta_e across the pole of W. **Correction:** I first expected the true rate
+  below W (~1200 /s); W_0 is above W, by 1.2x even at weak probe, so the two measure different things. Open:
+  origin of that factor; is 1/W_0 the time to reach P_0 from a thermal state?
 - **Figure of merit.** Coherence |phi(T)|^2, phi = characteristic function of P(n). Long T: ~ P_0^2, stays.
   Memory: P_0 (threshold h = 1). Interferometer/clock: sigma_n at fixed P_0 (h = 1/3), T_QPN = 0.53 s (s = 0.1),
   0.36 s (s = 1) for case A, delta_diff = 800 Hz, no echo. Mean shifts: <n> (h = 1/2). Overall:
@@ -219,7 +223,8 @@ Findings:
   dark states of F=2 -> F'=1, not in the model. Ramps of s and a spill of the tail are untested ideas.
 
 Next, when simulations resume (cost order):
-- [ ] W_0 and <n>/(1-P_0) at case A, s = 0.1, 1, 5 (decides whether the paper's rate changes).
+- [x] W_0 at case A, s = 0.01-5, bp = 5/6, D2 points (`rate_p0.dat`).
+- [ ] Select delta_e on W_0 in the D1/D2 study, and report <n>/(1-P_0) in all scans.
 - [ ] Chain for P(n) with the exact recoil kernel and measured R(n), N up to several thousand, regime III
       on and off: sharp thresholds, then their rounding.
 - [ ] ME at h = 0.1-1.2 by two routes (nu_r/omega_rec; bp), s = 1, Delta = 8 Gamma, N = 400: universality.

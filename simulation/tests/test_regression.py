@@ -308,3 +308,31 @@ def test_cutoff_rules_depend_on_branching():
     assert E.me_cutoffs(0.34, 1.0, 1 / 6)['status'] == 'validated'
     assert E.me_cutoffs(eta, 1.0, 0.5, 8.0)['N'] == 400
     assert E.me_cutoffs(eta, 1.0, 5 / 6, 8.0)['N'] == 120
+
+
+def test_rates_match_direct_time_integration():
+    """W and W0 of solve_banded against integrals of the exact dynamics (small N)."""
+    from scipy.linalg import expm
+    N = 8
+    p = E.params(E.paper_cases()['B'], s=0.3, N=N)
+    r = E.solve_banded(p, B=N)
+    M, ri, ci, n_of = E.banded_generator(p, B=N)
+    diag = np.nonzero(ri == ci)[0]
+    nv = np.zeros(ri.size)
+    nv[diag] = n_of[ri[diag]]
+    pv = np.zeros(ri.size)
+    pv[diag[n_of[ri[diag]] == 0]] = 1.0
+    y = np.zeros(ri.size, complex)
+    y[int(np.nonzero((ri == 1) & (ci == 1))[0][0])] = 1.0
+    dt = 0.5
+    U = expm(M * dt)
+    tn, tp = 0.0, 0.0
+    for k in range(40000):
+        a = float(np.real(nv @ y)) - r['n']
+        b = r['P0'] - float(np.real(pv @ y))
+        tn += a * dt * (0.5 if k == 0 else 1.0)
+        tp += b * dt * (0.5 if k == 0 else 1.0)
+        y = U @ y
+    assert np.isclose(1 / (tn / (1 - r['n'])), r['W'], rtol=1e-3)
+    assert np.isclose(1 / (tp / r['P0']), r['W0'], rtol=1e-3)
+
