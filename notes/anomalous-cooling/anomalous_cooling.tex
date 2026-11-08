@@ -75,7 +75,7 @@ $\etasp=kx_0$ & 0.71 & Lamb--Dicke parameter of a spontaneous photon (scale $\la
 $s=2\Om_\perp^2/\Gamma\Gamma_n$ & --- & saturation of the $1\to0$ sideband, $\Om_\perp=\etap\bar\Om_p$\\
 $\Om_R=\Om_c\Om_\perp/2\Delta$ & $\Om_R^2=s\Gamma_n^2/2$ & Raman coupling $\ket{g_p,n}\leftrightarrow\ket{g_c,n-1}$, per $\sqrt n$\\
 $\kappa=1/b_p$ & 2 & photons per cooling cycle\\
-$\alpha=\langle u_x^2\rangle$ & 0.40 & projection of the emission direction on $x$\\
+$\alpha=\langle u^2\rangle$ & 0.40 & mean square of $u=\hat{\mathbf k}\cdot\hat{\mathbf x}$, the projection of the emission direction on $x$\\
 $h=\kappa\alpha\etasp^2$ & 0.40 & recoil quanta added per removed phonon\\
 $U_0/\hbar\nur$ & 1552 & trap depth in radial quanta\\
 \bottomrule
@@ -106,7 +106,7 @@ Each absorption therefore removes exactly one quantum ($\etap\ll1$, deep Lamb--D
   \langle\Delta n\rangle=\etasp^2u^2,\qquad {\rm Var}(\Delta n)=\etasp^2u^2(2n+1).
   \label{eq:kick}
 \end{equation}
-The spread grows as $\sqrt n$ while the mean stays fixed (Fig.~\ref{fig:recoil}). This is multiplicative noise: a hot atom is kicked by many quanta in a random direction, while the cooling step is always one quantum. In ion-trap EIT cooling both Lamb--Dicke parameters are of order 0.1 and this separation does not occur.
+Here $u=\hat{\mathbf k}\cdot\hat{\mathbf x}=\sin\vartheta\cos\varphi$ is the projection of the emission direction $\hat{\mathbf k}$ of the spontaneous photon (polar angle $\vartheta$, azimuth $\varphi$) on the cooled radial axis $x$: the photon carries momentum $\hbar k$, of which $\hbar k u$ along $x$, and the displacement $e^{i\etasp u(\hat b+\hat b^\dagger)}=e^{iku\hat x}$ is that momentum kick. $u$ is random from photon to photon, distributed according to the dipole radiation pattern; for a dipole perpendicular to $x$ its mean square is $\alpha=\langle u^2\rangle=2/5$ (Table~\ref{tab:params}; the code uses a ten-node quadrature of this distribution, $\langle u^2\rangle=0.397$). Averaged over $u$, one photon thus gives $\langle\Delta n\rangle=\alpha\etasp^2$ and ${\rm Var}(\Delta n)\simeq\alpha\etasp^2(2n+1)$. The spread grows as $\sqrt n$ while the mean stays fixed (Fig.~\ref{fig:recoil}). This is multiplicative noise: a hot atom is kicked by many quanta in a random direction, while the cooling step is always one quantum. In ion-trap EIT cooling both Lamb--Dicke parameters are of order 0.1 and this separation does not occur.
 
 \begin{figure}[t]
 \centering
