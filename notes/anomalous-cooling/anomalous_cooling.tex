@@ -126,11 +126,31 @@ Each removed phonon therefore costs almost half a phonon of recoil. This is the 
   \ket{D(x)}=\cos\theta\,\gp-\sin\theta\,\gc,\qquad \tan\theta(x)=\frac{\bar\Om_pf_p(x)}{\Om_c}\simeq\frac{\Gamma_n}{\nur}\sqrt{\frac s8}\,\frac{x}{x_0},
   \label{eq:theta}
 \end{equation}
-where the last form uses the near-axis profile and the EIT condition. The bright state is light-shifted upwards for blue detuning, by
+where the last form uses the near-axis profile and the EIT condition. The orthogonal combination is the bright state,
 \begin{equation}
-  \delta_B(x)=\frac{\Om_c^2+\bar\Om_p^2f_p(x)^2}{4\Delta},\qquad \delta_B(x)-\delta_B(0)\simeq\hbar\nur\Big(\frac{\Gamma_n}{\nur}\Big)^2\frac{s}{8}\Big(\frac{x}{x_0}\Big)^2 .
+  \ket{B(x)}=\sin\theta\,\gp+\cos\theta\,\gc .
+  \label{eq:bright}
+\end{equation}
+
+\emph{Why the bright state has this light shift.} Both lasers drive the same excited state $\ket e$. At a fixed position $x$ (motion neglected), the coupling from the ground manifold to $\ket e$ is the operator
+\begin{equation}
+  A(x)=\tfrac12\big[\bar\Om_pf_p(x)\,\bra{g_p}+\Om_c\,\bra{g_c}\big],\qquad
+  A\ket{D}=0,\qquad A\ket{B}=\tfrac12\Om_{\rm eff}(x),\qquad
+  \Om_{\rm eff}^2=\Om_c^2+\bar\Om_p^2f_p(x)^2 .
+\end{equation}
+The dark state is the combination for which the two excitation amplitudes cancel, so it is not coupled to $\ket e$ at all. The bright state couples with the total Rabi frequency $\Om_{\rm eff}$. Eliminating $\ket e$ adiabatically (detuning $\Delta$, width $\Gamma$; Ref.~\cite{reiter2012}) gives the effective Hamiltonian $\frac{\Delta}{\Delta^2+\Gamma^2/4}A^\dagger A$ and an optical-pumping rate $\frac{\Gamma}{\Delta^2+\Gamma^2/4}A^\dagger A$. Both act only on $\ket B$. For $\Delta\gg\Gamma$ the bright state therefore has the second-order light shift and width
+\begin{equation}
+  \delta_B(x)=\frac{\Om_c^2+\bar\Om_p^2f_p(x)^2}{4\Delta},\qquad
+  \Gamma_B(x)=\Gamma\,\frac{\Om_c^2+\bar\Om_p^2f_p(x)^2}{4\Delta^2},
+  \label{eq:dB0}
+\end{equation}
+while $\ket D$ has neither shift nor width. The shift is positive, i.e.\ $\ket B$ is pushed up, because the lasers are blue-detuned ($\Delta>0$): in the frame rotating with the lasers the excited state lies $\hbar\Delta$ \emph{below} the ground manifold, and level repulsion pushes the state coupled to it upwards (for red detuning the shift would be negative). On the axis, $f_p(0)=0$, so $\ket B=\gc$, $\delta_B(0)=\Om_c^2/4\Delta=\nur$ by the EIT condition and $\Gamma_B(0)=\Gamma_n$: the bright state at the node is the narrow dressed state of EIT cooling. Away from the axis the probe intensity $\propto f_p(x)^2$ adds to the shift, so the bright state sits on a hill,
+\begin{equation}
+  \delta_B(x)-\delta_B(0)=\frac{\bar\Om_p^2f_p(x)^2}{4\Delta}\simeq\hbar\nur\Big(\frac{\Gamma_n}{\nur}\Big)^2\frac{s}{8}\Big(\frac{x}{x_0}\Big)^2
+  =\hbar\nur\tan^2\theta(x),
   \label{eq:dB}
 \end{equation}
+where the near-axis form uses $\bar\Om_pf_p\simeq\Om_\perp x/x_0$, $\Om_\perp^2=s\Gamma\Gamma_n/2$, $\Om_c^2\simeq4\nur\Delta$ and $\Gamma/\Delta=\Gamma_n/\nur$.
 The hill grows as $x^2$, like the trap, and extends smoothly over the whole core (Fig.~\ref{fig:geometry}). In free-space gray molasses the light shift is modulated on the scale $\lambda/2$.
 
 \begin{figure}[t]
