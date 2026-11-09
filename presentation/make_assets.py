@@ -563,37 +563,55 @@ def rb_figure():
 
 
 def robust_figure():
-    """Rate against probe-mode impurity / trap offset, and against trap-frequency mismatch."""
-    fig, ax = plt.subplots(2, 1, figsize=(6.4, 7.6))
-    c = load('carrier_A.dat')
-    eta = 0.021
-    e, x = c['kind'] == 0, c['kind'] == 1
-    w0 = c['WmaxME'][e][0]
-    ax[0].semilogx(c['epseff'][e][1:] / eta, c['WmaxME'][e][1:] / w0, 'o-', color=PROBE, ms=6, label=r'LP$_{01}$ admixture $\epsilon$')
-    ax[0].semilogx(c['epseff'][x] / eta, c['WmaxME'][x] / w0, 's', color=COUPL, ms=9, mfc='none', mew=1.8, label=r'trap offset $x_s$ ($\epsilon = \eta_\perp x_s/x_0$)')
-    ax[0].semilogx(c['epseff'][e][1:] / eta, c['Wunified'][e][1:] / w0, '--', color=GREY, lw=1.6, label='simple model')
-    ax[0].axhline(0.5, color=GREY, lw=1, ls=':')
-    ax[0].set_ylim(0, 1.05)
-    ax[0].set_xlabel(r'impurity $\epsilon/\eta_\perp$')
-    ax[0].set_ylabel(r'maximum rate / clean node')
-    ax[0].set_title('a   probe purity, case A', loc='left', fontsize=13)
-    ax[0].legend(loc='lower left', fontsize=11)
+    """Rate against trap-frequency mismatch (lasers fixed at the design value), cases A and B."""
+    fig, ax = plt.subplots(figsize=(6.4, 4.6))
     for key, col in (('A', PROBE), ('B', COUPL)):
         m = load(f'mismatch_{key}.dat')
-        ax[1].plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=col, ms=5, label=f'case {key}')
-    ax[1].axvspan(0.9, 1.1, color=GREEN, alpha=0.12, lw=0)
-    ax[1].text(1.0, 0.08, '±10 %', ha='center', fontsize=12, color=GREEN)
-    ax[1].set_ylim(0, 1.05)
-    ax[1].set_xlabel(r'radial frequency / design value, $\nu_r/\nu_r^{\rm design}$')
-    ax[1].set_ylabel(r'rate / maximum')
-    ax[1].set_title('b   lasers fixed, trap frequency varies', loc='left', fontsize=13)
-    ax[1].legend(loc='upper left', fontsize=11)
-    fig.tight_layout(h_pad=2.0)
+        ax.plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=col, ms=5, label=f'case {key}')
+    ax.axvspan(0.9, 1.1, color=GREEN, alpha=0.12, lw=0)
+    ax.text(1.0, 0.08, '±10 %', ha='center', fontsize=12, color=GREEN)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(r'radial frequency / design value, $\nu_r/\nu_r^{\rm design}$')
+    ax.set_ylabel(r'rate / maximum')
+    ax.set_title('lasers fixed, trap frequency varies', loc='left', fontsize=13)
+    ax.legend(loc='upper left', fontsize=11)
     save(fig, 'robust.png')
+
+
+def purity_figure():
+    """Steady state against the LP01 power fraction in the probe (eps^2), cases A and B, s = 0.3, 1, 3."""
+    d = load('purity.dat')
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5))
+    styles = {0.3: ':', 1.0: '-', 3.0: '--'}
+    for case, c, lab in ((0, PROBE, 'A'), (1, COUPL, 'B')):
+        for s, ls in styles.items():
+            r = d[(d['case'] == case) & (d['s'] == s)]
+            r = r[np.argsort(r['eps'])]
+            clean = r[r['eps'] == 0][0]
+            x = r['eps'][1:]**2
+            ax[0].semilogx(x, r['W0'][1:] / clean['W0'], ls, color=c, marker='o', ms=4.5, lw=2)
+            ax[1].loglog(x, 1 - r['P0'][1:], ls, color=c, marker='o', ms=4.5, lw=2)
+            ax[1].plot([x[0] * 0.55], [1 - clean['P0']], marker='<', color=c, ms=7, alpha=0.8)
+    ax[0].axhline(0.5, color=GREY, lw=1, ls=':')
+    ax[0].set_ylim(0, 1.08)
+    ax[0].set_ylabel(r'ground-state rate $W_0$ / clean mode')
+    ax[1].set_ylabel(r'population outside the ground state, $1-P_0$')
+    for a in ax:
+        a.set_xlabel(r'LP$_{01}$ power fraction in the probe, $\epsilon^2$')
+        a.axvline(1e-3, color=GREEN, lw=1.2, ls='-', alpha=0.6)
+    ax[0].text(1.1e-3, 1.02, r'$10^{-3}$', color=GREEN, fontsize=12, va='bottom')
+    ax[0].set_title('a   cooling rate', loc='left', fontsize=13)
+    ax[1].set_title(r'b   ground state (arrows: clean mode)', loc='left', fontsize=13)
+    hs = [Line2D([], [], color=PROBE, lw=3), Line2D([], [], color=COUPL, lw=3),
+          Line2D([], [], color=INK, ls=':', lw=2), Line2D([], [], color=INK, ls='-', lw=2), Line2D([], [], color=INK, ls='--', lw=2)]
+    fig.legend(hs, [r'A: $a=15\,\mu$m, $\eta_\perp=0.021$', r'B: $a=3.5\,\mu$m, $\eta_\perp=0.043$', '$s=0.3$', '$s=1$', '$s=3$'],
+               loc='upper center', ncol=5, bbox_to_anchor=(0.5, 1.08), fontsize=12)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'purity.png')
 
 
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure):
         f()
         print('ok', f.__name__)
