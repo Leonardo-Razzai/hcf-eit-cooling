@@ -196,6 +196,8 @@ Lifetime × efficiency is the gap: the best efficiencies and the best lifetimes 
 - **Adiabatic lowering after cooling.** n is conserved, ε ∝ √(U₀), scattering ∝ U₀, heating in quanta ∝ √(U₀).
   A factor 100 in depth leaves ≈ 55 lattice recoil energies (still deep, but check tunnelling and gravity): heating ≈ 0.045 quanta s⁻¹ per axis, ~20 s scale. **Idea to simulate.**
 - Second radial axis (not simulated) and axial cooling (assumed, from Raman sideband).
+- **Lattice intensity variation along the column, possibly the first limit.** At an antinode 1 % gives ≈ 8 Hz (δ_diff ≈ 800 Hz),
+  far above the ≈ 0.01 Hz radial value in the present paper. Needs compensation, echo or a low depth.
 - Magnetic field noise: clock states or magic field. Lattice intensity and pointing noise. Background gas inside
   the fibre (a poor vacuum conductance): **may be the actual limit; check the fibre experiments.**
 - Collisions if > 1 atom per site, hence the OD limit used above.
@@ -208,6 +210,13 @@ Lifetime × efficiency is the gap: the best efficiencies and the best lifetimes 
 - Target that would be a real advance: **η ≳ 80 % with τ ≳ 1 s, no cavity,** which would beat Yang 2016 in both.
   A fair comparison must state the conditions, as these benchmarks differ in protocol and in what they call efficiency.
 - Interferometry and clocks: a shorter section at most. T_QPN ≈ 0.4–0.5 s in case A; relevant only at long T.
+
+### Higher-order modes
+
+Worked out in `hom_memory_theory.md`. In short: LP₀m raises the on-axis OD by g = 2.3–6.3 for cooled atoms (a real link between
+radial cooling and the memory), which helps efficiency only at low OD and with conversion ≳ 0.97 per pass, and helps bandwidth ∝ g.
+A LP₁₁ signal on the node is useless. The largest possible storage-time gain is a blue dark trap in a donut HOM, which also lowers h by 1.94.
+Compare always with the no-HOM alternatives: a smaller core and a lowered red lattice.
 
 ## Proposed figures
 
