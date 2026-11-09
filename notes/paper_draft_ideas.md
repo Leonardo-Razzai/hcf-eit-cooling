@@ -4,22 +4,23 @@ Working document for the author and collaborators. **Nothing here is final.**
 Status tags: **[done]** computed and converged; **[model]** analytic estimate, not simulated;
 **[to do]** not computed yet; **[decide]** needs a decision.
 
-## Working thesis
+## Focus (author's decision, 9 Nov 2026)
 
-A single-mode hollow-core fibre lets a higher-order probe mode cool the soft radial motion of lattice
-atoms from a node. Because the trap is soft, the cooling is not ordinary sideband cooling: recoil gives
-the Fock distribution a heavy tail, set by one number, h = (α/b_p)(ω_rec/ν_r). This changes which
-quantities can be trusted, which configuration is best, and what a quantum memory should be optimised for.
+**Radial ground-state cooling of atoms inside a hollow-core fibre with an LP₁₁ probe.** Everything else serves that claim. The heavy-tailed
+statistics explain how the cooling behaves in this soft trap; the memory is why it matters.
 
-The paper would have three layers:
+**Claim we could make, if the open items hold:** all-guided radial ground-state cooling of a cm-long atomic column in a hollow-core fibre, with nanowatts of
+LP₁₁ light and no transverse optical access.
 
-1. **General:** how models fail, a map in (b_p, ν_r/ω_rec), anomalous statistics.
-2. **⁸⁷Rb:** best core radius, D1 vs D2, Zeeman structure.
-3. **Application:** cm-long ground-state column in a fibre as a spin-wave memory.
+**Prior work to state clearly.** Targeted search only, no paper found on LP₁₁ or node-based ground-state cooling in a hollow-core fibre. But radial cooling in a fibre is
+not new in general: in-fibre gray molasses and delta-kick cooling (arXiv:2112.10088), a hyperfine-selective radial scheme and its Cs study (Waterloo, DAMOP 2024; full
+paper not found). Guided-light ground-state cooling exists for nanofibres (Meng et al. arXiv:1712.05749; Østfeldt et al. arXiv:1708.03488), and the node idea for ions in
+integrated waveguides (Xing & Mehta 2025; arXiv:2512.10900). So the claim is specifically: **ground state, radial, inside a hollow-core fibre, through a higher-order guided mode.**
 
-Possible titles:
-- *Anomalous recoil statistics and radial ground-state cooling of atoms in a hollow-core fibre*
-- *Radial EIT cooling at a guided-mode node: from heavy-tailed recoil statistics to long-lived fibre quantum memories*
+**Weak points of this claim, to fix first:**
+1. **Only one radial axis is simulated, and an LP₁₁ lobe pattern addresses one axis.** Without the second axis there is no radial ground state.
+2. Hyperfine-averaged Λ: Zeeman dark states of the best configuration.
+3. Real-fibre modes: TE₀₁/TM₀₁/HE₂₁ structure, polarisation, beating along z.
 
 ## 1. Introduction
 
@@ -240,27 +241,21 @@ Fig. 4 of the current paper (robustness) can go in compact form with Fig. 5 or i
 
 ## Work list, in order
 
-1. Thermal test of 1/W₀ (running). Map (queued).
-2. Chain model for thresholds; Δ scan and sign-of-Δ test of the fast channel.
-3. Literature check on the anomalous part: done 9 Nov 2026. Two papers still to read.
-4. Zeeman model, D1 F′=1. **This can overturn the choice of configuration, so before polishing Section 4.**
-5. Decide the definition of best a, with fibre input.
-6. Memory model, including lattice scattering and lowering.
-7. Rb imperfections at converged N.
+1. **Both radial axes:** alternating LP₁₁ lobes, a rotating pattern or a donut. Rate and P₀ per axis, heating of the other axis during each stage.
+2. **Zeeman model,** D1 F′=1. It can overturn the choice of configuration.
+3. Real fibre modes, purity and beating along z; a realistic core radius; definition of best a.
+4. t_prep(P₀*) on the map; the deferred s-ramp steps.
+5. Memory model with lattice scattering, lowering and inhomogeneity.
+6. Fast-channel confirmations (Δ < 0, Δ scan); Rb imperfections at converged N.
+7. Read: Roghani & Helm 2008; find the Waterloo paper.
 
 ## Where to publish
 
-**Recommendation: PRX Quantum,** with **Nature Communications** as the higher-risk first attempt only if the memory
-section ends with a quantitative, defensible advantage.
+**Recommendation: PRX Quantum,** if both axes and Zeeman hold and the memory section is quantitative.
 
-- **PRX Quantum:** open access, quantum science and technology, accepts theory; room for the model comparison and the
-  full Zeeman and memory analysis. A cold-atom cooling study framed around a memory fits, if the memory link is strong.
-- **Nature Communications:** the manuscript is already in this layout. It needs a broad claim; a theory proposal with
-  no experiment and several models would have to lead with the memory or the anomalous statistics.
-- **Physical Review Letters:** a stand-alone letter on the statistics is now less likely, as the tail law is known for Sisyphus cooling.
-- **Nature Physics / Nature Photonics:** unlikely without an experiment.
-
-The choice now depends mostly on whether the memory beats the benchmarks (work-list item 6). The literature check (item 3) favours one integrated paper. **Splitting** is a real option: the current plan is close to two papers.
+- **Cooling only, no memory result:** Physical Review Research or Physical Review A; **Physical Review Letters** is possible for a short paper on the concept plus the one-formula result, but it would need both axes done.
+- **Nature Communications:** realistic only with a quantified memory advantage or an experimental collaborator. A pure proposal on cooling in one geometry is a hard sell.
+- **Nature Physics / Nature Photonics:** not without an experiment.
 
 ## Open questions for the author
 
