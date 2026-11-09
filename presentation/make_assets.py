@@ -519,8 +519,81 @@ def memory_panel():
     save(fig, 'memory.png')
 
 
+def rb_figure():
+    """Rate against ground-state population: hyperfine Lambda configurations (Delta scan) and the
+    cost of the Zeeman structure (remixing schemes), case A."""
+    om = E.paper_cases()['A']['om']
+    fig, ax = plt.subplots(2, 1, figsize=(6.4, 8.2), sharex=True)
+    d = load('lines_delta_A.dat')
+    cfgs = (((1, 1, 2), SKY, "D1 F'=1, probe F=2"), ((1, 2, 1), PROBE, "D1 F'=2"),
+            ((2, 2, 1), COUPL, "D2 F'=2"), ((2, 1, 1), ATOM, "D2 F'=1, probe F=1"))
+    for (line, Fe, gp), c, lab in cfgs:
+        r = d[(d['line'] == line) & (d['Fe'] == Fe) & (d['gp'] == gp) & (d['okopt'] == 1)]
+        r = r[np.argsort(r['DeltaG'])]
+        ax[0].loglog(1 - r['P0opt'], r['W0opt'], 'o-', color=c, ms=6, label=lab)
+        if (line, Fe) == (1, 1):
+            for x, y, D in zip(1 - r['P0opt'], r['W0opt'], r['DeltaG']):
+                ax[0].annotate(r'%g$\Gamma$' % D, (x, y), textcoords='offset points', xytext=(-4, 7), fontsize=11, ha='right', color=GREY)
+    ax[0].set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax[0].set_title(r'a   all excited hyperfine levels, $\Delta$ = 2–12$\Gamma$', loc='left', fontsize=13)
+    ax[0].legend(loc='upper left', fontsize=11)
+    z = np.genfromtxt(RESULTS / 'zeeman_refine.dat', names=True)
+    z = z[(z['P0'] > 0.85) & (z['n'] < 1) & (z['W0'] > 0) & np.isfinite(z['W0']) & (np.abs(z['nu_wrec'] - 1.97) < 0.01)]
+    m = load('universal_map.dat')
+    ref = m[(np.abs(m['nu_wrec'] - 1.968) < 0.01) & (np.abs(m['bp'] - 5 / 6) < 0.01) & (m['P0'] > 0.85)]
+    groups = ((ref, INK, r"closed $\Lambda$, $b_p$ = 5/6 (no Zeeman)"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 2)], SKY, "D1 F'=1 + repumper"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 0)], GREEN, "D1 F'=1 + transverse field"),
+              (z[z['scheme'] == 1], COUPL, r"Zeeman $\Lambda$ in F=2 + repumper"))
+    for g, c, lab in groups:
+        x, y = 1 - g['P0'], g['W0'] * om
+        o = np.argsort(x)
+        ax[1].loglog(x, y, '.', color=c, ms=4, alpha=0.35)
+        ax[1].loglog(x[o], np.maximum.accumulate(y[o]), '-', color=c, lw=2.2, label=lab)
+    ax[1].axvline(0.03, color=GREY, ls=':', lw=1.2)
+    ax[1].set_xlabel(r'population outside the ground state, $1-P_0$')
+    ax[1].set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax[1].set_title('b   all 8 ground sublevels: best rate at each $P_0$ (dotted: $P_0$ = 0.97)', loc='left', fontsize=12)
+    ax[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=10.5)
+    ax[1].set_xlim(1.5e-3, 0.16)
+    ax[1].set_ylim(50, 1.5e4)
+    ax[0].set_ylim(300, 3e4)
+    fig.tight_layout(h_pad=1.5)
+    save(fig, 'rb.png')
+
+
+def robust_figure():
+    """Rate against probe-mode impurity / trap offset, and against trap-frequency mismatch."""
+    fig, ax = plt.subplots(2, 1, figsize=(6.4, 7.6))
+    c = load('carrier_A.dat')
+    eta = 0.021
+    e, x = c['kind'] == 0, c['kind'] == 1
+    w0 = c['WmaxME'][e][0]
+    ax[0].semilogx(c['epseff'][e][1:] / eta, c['WmaxME'][e][1:] / w0, 'o-', color=PROBE, ms=6, label=r'LP$_{01}$ admixture $\epsilon$')
+    ax[0].semilogx(c['epseff'][x] / eta, c['WmaxME'][x] / w0, 's', color=COUPL, ms=9, mfc='none', mew=1.8, label=r'trap offset $x_s$ ($\epsilon = \eta_\perp x_s/x_0$)')
+    ax[0].semilogx(c['epseff'][e][1:] / eta, c['Wunified'][e][1:] / w0, '--', color=GREY, lw=1.6, label='simple model')
+    ax[0].axhline(0.5, color=GREY, lw=1, ls=':')
+    ax[0].set_ylim(0, 1.05)
+    ax[0].set_xlabel(r'impurity $\epsilon/\eta_\perp$')
+    ax[0].set_ylabel(r'maximum rate / clean node')
+    ax[0].set_title('a   probe purity, case A', loc='left', fontsize=13)
+    ax[0].legend(loc='lower left', fontsize=11)
+    for key, col in (('A', PROBE), ('B', COUPL)):
+        m = load(f'mismatch_{key}.dat')
+        ax[1].plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=col, ms=5, label=f'case {key}')
+    ax[1].axvspan(0.9, 1.1, color=GREEN, alpha=0.12, lw=0)
+    ax[1].text(1.0, 0.08, '±10 %', ha='center', fontsize=12, color=GREEN)
+    ax[1].set_ylim(0, 1.05)
+    ax[1].set_xlabel(r'radial frequency / design value, $\nu_r/\nu_r^{\rm design}$')
+    ax[1].set_ylabel(r'rate / maximum')
+    ax[1].set_title('b   lasers fixed, trap frequency varies', loc='left', fontsize=13)
+    ax[1].legend(loc='upper left', fontsize=11)
+    fig.tight_layout(h_pad=2.0)
+    save(fig, 'robust.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure):
         f()
         print('ok', f.__name__)

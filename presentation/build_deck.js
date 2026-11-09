@@ -293,14 +293,15 @@ async function main() {
     ["D1 F′=2, b_p = 1/2", "2.2×10³", "0.953"],
     ["D1 F′=1, probe on F=2, b_p = 5/6", "3.2–3.6×10³", "0.974–0.979"],
     ["D2 F′=2", "2.1–2.2×10³", "0.94–0.955"],
-    ["D2 F′=1, probe on F=1", "2.0–4.2×10³, sign dependent", "stops cooling near 8Γ"],
-  ], MX, 1.5, [5.6, 3.4, 3.13], { fontSize: 15, rowH: 0.5, name: "transition table" });
+    ["D2 F′=1, probe on F=1", "2.0–4.2×10³ (sign)", "fails above 8Γ"],
+  ], MX, 1.5, [3.3, 2.3, 1.7], { fontSize: 13, rowH: 0.5, name: "transition table" });
+  await img(s, "rb.png", 8.15, 1.35, W - MX - 8.15, 5.3, { valign: "middle", name: "Rb transitions and Zeeman cost" });
   text(s, bullets([
     ["All excited hyperfine levels: ", "D1 is robust (within 1 %); D2 F′=1 depends on the sign of the interference"],
     ["All 8 ground sublevels: ", "a fixed polarisation leaves dark states, so population must be remixed; a weak repumper or a Zeeman Λ inside F=2 (as in Qiu et al.) cools at about 1/3 of the closed-Λ rate, W₀ ≈ 10³ s⁻¹ at P₀ ≥ 0.97"],
     ["Open: ", "Zeeman structure with both axes, and the real polarisation of the fibre modes"],
-  ], { space: 12 }), MX, 4.25, W - 2 * MX, 2.3, { fontSize: 16 });
-  s.addNotes("First the excited hyperfine levels. On D1 the second excited level is 814 MHz away and changes nothing; on D2 the levels are close and the F'=1 configuration depends on the interference sign. D1 F'=1 with the probe on F=2 is the best option, because five sixths of the decays return to the probe state. With all Zeeman sublevels, any fixed polarisation leaves dark states independent of motion; remixing by a repumper costs about a factor of three in rate. The Zeeman lambda used by Qiu and co-workers in tweezers performs about the same.");
+  ], { space: 10 }), MX, 4.2, 7.3, 2.4, { fontSize: 14 });
+  s.addNotes("Figure a: ground-state rate against the population left outside the ground state, as the detuning goes from 2 to 12 Gamma; up and left is better. Figure b: with all Zeeman sublevels, the best rate reachable at each ground-state population for each remixing scheme, against the closed lambda. First the excited hyperfine levels. On D1 the second excited level is 814 MHz away and changes nothing; on D2 the levels are close and the F'=1 configuration depends on the interference sign. D1 F'=1 with the probe on F=2 is the best option, because five sixths of the decays return to the probe state. With all Zeeman sublevels, any fixed polarisation leaves dark states independent of motion; remixing by a repumper costs about a factor of three in rate. The Zeeman lambda used by Qiu and co-workers in tweezers performs about the same.");
 
   // ============================================================ 15 requirements
   s = content("Rubidium");
@@ -311,8 +312,9 @@ async function main() {
     ["Radial frequency uniformity", "± 10 % along the column", "keeps W above 70 % of its maximum"],
     ["Probe power", "0.4–8 nW", "set by s, not by the small gradient"],
     ["Mode order", "LP₁₁ or LP₁₂", "same rate at equal s; a higher mode only lowers the power"],
-  ], MX, 1.5, [3.4, 3.6, 5.13], { fontSize: 15, rowH: 0.62, name: "requirements table" });
-  s.addNotes("Mode purity is the critical experimental requirement, as for ions: a small LP01 admixture restores a carrier. The simple estimate of the tolerance is a factor two too optimistic. A displaced trap is equivalent to an admixture. The trap frequency must be uniform along the column to within ten percent, which sets the tolerable lattice-beam loss.");
+  ], MX, 1.5, [2.2, 2.25, 2.85], { fontSize: 13, rowH: 0.7, name: "requirements table" });
+  await img(s, "robust.png", 8.15, 1.35, W - MX - 8.15, 5.3, { valign: "middle", name: "purity and trap-frequency tolerance" });
+  s.addNotes("Figure a: the maximum rate against the LP01 admixture in units of eta perp; squares are trap offsets converted with epsilon = eta perp x_s / x0, which fall on the same curve; dashed is the simple model, a factor two too optimistic. Figure b: lasers set for the design trap frequency while the actual one varies, as it would along a lossy fibre. Mode purity is the critical experimental requirement, as for ions: a small LP01 admixture restores a carrier. The simple estimate of the tolerance is a factor two too optimistic. A displaced trap is equivalent to an admixture. The trap frequency must be uniform along the column to within ten percent, which sets the tolerable lattice-beam loss.");
 
   // ============================================================ 16 memory
   pres.addSection({ title: "Application" });
