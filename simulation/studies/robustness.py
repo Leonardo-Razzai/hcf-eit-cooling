@@ -39,6 +39,21 @@ def carrier():
                            'Wunified'], rows)
 
 
+def purity():
+    """Steady state against LP01 admixture eps at fixed s (converged solver), cases A and B:
+    P0, <n>, W and W0 for eps / eta_perp = 0 ... 5 at s = 0.3, 1, 3 -> purity.dat."""
+    rows = []
+    for key in ('A', 'B'):
+        fc = CASES[key]
+        etap = E.params(fc, s=1.0)['etap']
+        for s in (0.3, 1.0, 3.0):
+            for x in (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0):
+                r = E.steady(fc, s, eps=x * etap)
+                rows.append([0 if key == 'A' else 1, s, x, x * etap, r['P0'], r['n'], r['W'] * fc['om'], r['W0'] * fc['om'], r['N'], r['band']])
+                log('purity', key, 's %g eps/eta %g: P0 %.4f n %.4f W0 %.0f' % (s, x, r['P0'], r['n'], r['W0'] * fc['om']))
+    save('purity.dat', ['case', 's', 'eps_eta', 'eps', 'P0', 'n', 'W', 'W0', 'N', 'band'], rows)
+
+
 def twophoton():
     fc = CASES['A']
     rows = []
@@ -68,7 +83,7 @@ def mismatch():
         save(f'mismatch_{key}.dat', ['nurel', 'nME', 'WME', 'nSM', 'WSM'], rows)
 
 
-STUDIES = {'carrier': carrier, 'twophoton': twophoton, 'mismatch': mismatch}
+STUDIES = {'carrier': carrier, 'twophoton': twophoton, 'mismatch': mismatch, 'purity': purity}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
