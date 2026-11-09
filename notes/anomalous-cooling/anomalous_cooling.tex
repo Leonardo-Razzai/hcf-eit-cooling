@@ -301,6 +301,7 @@ The tail is a power law, not an exponential. In regime II, where it is heaviest,
 \item $1/3\le h<1/2$: ${\rm Var}(n)=\infty$; case A ($h=0.40$) lies here;
 \item $1/2\le h<1$: normalisable with finite $P_0$, but $\langle n\rangle=\infty$ ("anomalous cooling");
 \item $h\ge1$: no steady state, runaway heating (without regime III; with it, a hot steady state, Sec.~\ref{sec:theory}).
+\item[] The same exponent and the thresholds at $\tfrac12$ and 1 are known for Sisyphus cooling in a harmonic trap (Sec.~\ref{sec:prior}).
 \end{itemize}
 The mean-energy threshold $h=1/2$ is twice as strict as the naive condition $h<1$ that every cycle removes energy. In reality the tail is cut off (Sec.~\ref{sec:scales}), so the divergences are rounded into a strong sensitivity of $n_{\rm ss}$ to the cut-offs. The truncation $N$ acts as a system size: the missing part of $\langle n\rangle$ scales as $N^{2-1/h}$, so a convergence study measures $h$. This explains the slow convergence of case A, and the fast convergence of case B, where $h\approx0.09$ and the tail falls as $n^{-11}$.
 
@@ -527,6 +528,29 @@ For hot atoms the theory suggests a ramp [hypothesis]: at large $s\,n$ the fast 
 \end{enumerate}
 
 %=====================================================================
+\section{Relation to earlier work}
+\label{sec:prior}
+%=====================================================================
+Literature check of November 2026: full texts of refs.~\cite{phatak2024,bartolotta2024,xing2025,dechant2016,morillas2026} (the last two partly, and refs.~\cite{he2017,roghani2008} from their abstracts only).
+
+\paragraph{Already known: the heavy-tail class.} Dechant \emph{et al.}\ study Sisyphus cooling in an optical lattice with added harmonic confinement~\cite{dechant2015,dechant2016}. In a semiclassical Fokker--Planck description they find an energy tail $P(E)\propto E^{-1/D}$, a mean energy that diverges for $D>1/2$, and no normalisable stationary state for $D>1$, with $D\sim cE_r/U_0$. \textbf{This is the same structure as Eq.~\eqref{eq:tail} and the thresholds of Sec.~\ref{sec:model}, with $D\leftrightarrow h$.} The reason is common: a constant energy-removal rate and an energy diffusion $\propto E$, so $v/D\propto1/E$. The power law, the exponent $1/$parameter and the thresholds at $\tfrac12$ and 1 therefore cannot be presented as new. Momentum tails of the same origin were predicted by Lutz~\cite{lutz2003} and observed in free lattices~\cite{douglas2006}. Multiplicative energy noise gives similar tails for ions in buffer gas~\cite{devoe2009,rouse2017}.
+
+\paragraph{Already known: the node and the plateau.} Carrier-free EIT at a standing-wave node or a Hermite--Gauss nodal line is treated for ions by Xing and Mehta~\cite{xing2025} and demonstrated with $\bar n=0.05$~\cite{xing2026}. It includes modal impurity (advantage lost above $\approx1\%$ in intensity, at their larger Lamb--Dicke parameter). An $n$-independent red-sideband rate at high intensity, bounded by the bright-state decay, appears in the dark-polaron theory~\cite{morillas2026}. Cooling of neutral atoms by EIT outside the Lamb--Dicke regime was simulated in ref.~\cite{roghani2008}. Bartolotta \emph{et al.}\ find, for travelling waves, that high-energy EIT cooling degrades and can turn into heating, with a capture range~\cite{bartolotta2024}; at our node the high-$n$ rate instead grows.
+
+\paragraph{Not found so far, hence possibly new.}
+\begin{enumerate}
+\item The heavy tail in \emph{resolved-sideband ground-state cooling}, in a quantum treatment of Fock states, with $h=\alpha\,\omega_{\rm rec}/(b_p\nur)$ set by the trap and the branching ratio and not by a lattice depth.
+\item \textbf{The tail coexists with $P_0>0.95$ and begins at low $n$.} In the Sisyphus case the core is thermal-like and the tails appear above $\sim10^3E_r$, out of reach at large detuning~\cite{dechant2016}. Here they begin near $n\approx3$.
+\item The cut-off: three regimes within one trapped atom, the fast channel that ends the tail, the finite width of the thresholds, and a hot steady state above $h=1$ (Sec.~\ref{sec:theory}). The Sisyphus work has no such cut-off.
+\item The failure of the integrated rate $W$ and the use of $W_0$.
+\item The consequences for a spin-wave memory, and the connection to an application.
+\item The fibre geometry itself: LP$_{11}$ radial EIT cooling in a hollow-core fibre. A transverse cooling result in a fibre exists~\cite{anderson2024}, whose mechanism we could not determine from the abstract.
+\end{enumerate}
+This is the outcome of a targeted search, not proof of absence.
+
+\paragraph{Presentation.} Present the effect as the quantum, ground-state-cooling member of a known class, cite refs.~\cite{dechant2015,dechant2016} prominently, and put the emphasis on items 2--5. We prefer ``heavy-tailed Fock statistics'' to ``anomalous cooling''.
+
+%=====================================================================
 \section{Predictions and tests}
 %=====================================================================
 \begin{enumerate}
@@ -558,6 +582,17 @@ For hot atoms the theory suggests a ramp [hypothesis]: at large $s\,n$ the fast 
 \bibitem{phatak2024} S.~S.~Phatak, K.~N.~Blodgett, D.~Peana, M.~R.~Chen \emph{et al.}, A generalized theory for optical cooling of a trapped atom with spin, Phys.\ Rev.\ A \textbf{110}, 043116 (2024).
 \bibitem{he2017} P.~He, P.~M.~Tengdin, D.~Z.~Anderson and A.~M.~Rey, Sub-Doppler laser cooling using electromagnetically induced transparency, Phys.\ Rev.\ A \textbf{95}, 053403 (2017).
 \bibitem{bartolotta2024} J.~P.~Bartolotta, B.~Estey, M.~Foss-Feig, D.~Hayes \emph{et al.}, Laser cooling trapped-ion crystal modes beyond the Lamb--Dicke regime, arXiv:2411.18818 (2024).
+\bibitem{dechant2015} A.~Dechant, D.~A.~Kessler and E.~Barkai, Deviations from Boltzmann--Gibbs statistics in confined optical lattices, Phys.\ Rev.\ Lett.\ \textbf{115}, 173006 (2015).
+\bibitem{dechant2016} A.~Dechant, S.~T.~Shafier, D.~A.~Kessler and E.~Barkai, Heavy-tailed phase-space distributions beyond Boltzmann--Gibbs: Confined laser-cooled atoms, Phys.\ Rev.\ E \textbf{94}, 022151 (2016).
+\bibitem{lutz2003} E.~Lutz, Anomalous diffusion and Tsallis statistics in an optical lattice, Phys.\ Rev.\ A \textbf{67}, 051402 (2003).
+\bibitem{douglas2006} P.~Douglas, S.~Bergamini and F.~Renzoni, Tunable Tsallis distributions in dissipative optical lattices, Phys.\ Rev.\ Lett.\ \textbf{96}, 110601 (2006).
+\bibitem{devoe2009} R.~G.~DeVoe, Power-law distributions for a trapped ion interacting with a classical buffer gas, Phys.\ Rev.\ Lett.\ \textbf{102}, 063001 (2009).
+\bibitem{rouse2017} I.~Rouse and S.~Willitsch, Superstatistical energy distributions of an ion in an ultracold buffer gas, Phys.\ Rev.\ Lett.\ \textbf{118}, 143401 (2017).
+\bibitem{xing2025} Z.~Xing and K.~K.~Mehta, Trapped-ion laser cooling in structured light fields, Phys.\ Rev.\ Appl.\ \textbf{24}, 014034 (2025).
+\bibitem{xing2026} Z.~Xing, H.~M.~Rivy, V.~Natarajan \emph{et al.}, Rapid multi-mode trapped-ion laser cooling in a phase-stable standing wave, arXiv:2512.10900.
+\bibitem{morillas2026} M.~Morillas-Rozas, A.~L\'opez-Garc\'ia, E.~Haque \emph{et al.}, Dark polaron theory for high intensity laser cooling, arXiv:2607.22243 (2026).
+\bibitem{roghani2008} M.~Roghani and H.~Helm, Trapped-atom cooling beyond the Lamb-Dicke limit using electromagnetically induced transparency, Phys.\ Rev.\ A \textbf{77}, 043418 (2008).
+\bibitem{anderson2024} P.~Anderson, S.~S.~Venuturumilli, R.~Al Maruf \emph{et al.}, Transverse cooling of cold caesium atoms in a hollow-core fiber, APS DAMOP 2024 (abstract).
 \end{thebibliography}
 
 \end{document}

@@ -168,7 +168,7 @@ much faster than the GRM-based capture times of the paper.
       (power-law vs exponential).
 - [ ] Role of the cut-offs: include anharmonicity / trap depth / Bessel non-linearity and see how
       they round the transition; dependence on Δ/Γ and core size.
-- [ ] Literature check (Crossref): Lévy statistics in subrecoil cooling, Kesten processes,
+- [x] Literature check, done 9 Nov 2026: see below and note Sec. "Relation to earlier work". Lévy statistics in subrecoil cooling, Kesten processes,
       dissipative phase transitions in open quantum systems, high-intensity EIT cooling breakdown;
       full texts of Phatak 2024, Bartolotta 2024, He 2017 for the EIT/gray-molasses crossover.
 - [ ] Decide: section of the fibre paper, or a separate paper on anomalous Fock statistics in
@@ -242,4 +242,18 @@ Theory in `s_ramp_theory.md`. **Do not start these unprompted: ask the author fi
 - [ ] Master equation at constant s = 3, 5 from nbar_0 = 30: tests the 1/s estimate of the hot stage.
 - [ ] Chain for P(n) with the exact kernel and tabulated R(n,s); solve the Pontryagin problem by forward-backward sweeps.
 - [ ] Validate the ramp as piecewise-constant s in the banded ME; write it as a recipe in nu_r/omega_rec, bp, Delta/Gamma, nbar_0, P0*.
+
+## Literature check (9 Nov 2026): result
+
+**Not new:** power-law energy tail, exponent 1/parameter, mean diverging at 1/2, no stationary state above 1, for Sisyphus cooling in a
+harmonic trap: Dechant, Kessler, Barkai PRL 115, 173006 (2015); Dechant et al. PRE 94, 022151 (2016), D <-> h. Same reason: constant energy
+removal, diffusion ~ E. Also carrier-free EIT at a node for ions: Xing & Mehta PR Applied 24, 014034 (2025), experiment arXiv:2512.10900.
+Saturated n-independent rate: Morillas-Rozas et al., arXiv:2607.22243.
+
+**Possibly new (targeted search only):** tail in resolved-sideband ground-state cooling, quantum Fock treatment, h set by the trap and bp; coexists with
+P0 > 0.95, begins near n ~ 3 (Sisyphus: > 10^3 E_r); fast-channel cut-off, threshold widths, hot state above h = 1; failure of W, use of W0; memory
+consequences; LP11 radial EIT in a hollow-core fibre.
+
+**Still to read:** Roghani & Helm 2008 full text (may contain Fock distributions); Waterloo transverse-cooling result in HCF (Anderson et al., DAMOP 2024);
+He 2017 full text; last 13 % of Bartolotta. Consider contacting the Barkai group.
 
