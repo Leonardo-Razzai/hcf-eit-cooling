@@ -77,8 +77,16 @@ Atoms other than Rb enter as points on this map only (Sr later). Only b_p = 1/6,
   not confirmed: 3.8 vs 2.69 at s = 1, 0.76 vs 1.44 at s = 5]
 - **Why it is fibre-relevant:** the soft trap puts the crossovers inside the thermal population; the hill is
   the smooth mode profile, not λ/2; the node keeps low n carrier-free.
-- **Novelty is not yet established.** Full-text check of Phatak 2024, Bartolotta 2024, He 2017 is still needed
-  before any such claim. Bardou 1994 is the analogy, not the same system.
+- **Literature check done (9 Nov 2026): the tail law itself is not new.** Sisyphus cooling in a harmonic trap has P(E) ∝ E^(−1/D), the mean
+  diverging at D > 1/2 and no stationary state at D > 1 (Dechant, Kessler, Barkai PRL 115, 173006; Dechant et al. PRE 94, 022151): the same
+  structure with D ↔ h, from constant energy removal and diffusion ∝ E. **Cite these prominently.**
+- **What we can claim as new, after a targeted search:** the heavy tail in *resolved-sideband ground-state cooling*, with h set by the trap and b_p; coexistence
+  with P₀ > 0.95 and a tail starting near n ≈ 3 (Sisyphus: above ~10³ E_r); the cut-off, threshold widths and hot state above h = 1; the failure of W; the memory
+  consequences; the LP₁₁ fibre geometry.
+- **Also cite:** carrier-free EIT at a node for ions, Xing & Mehta PR Applied 24, 014034 (2025), and experiment arXiv:2512.10900; saturated rate in the dark-polaron
+  theory arXiv:2607.22243; EIT for atoms beyond Lamb–Dicke, Roghani & Helm PRA 77, 043418. Our "fibre analogue of an ion at a node" is now also an analogue of these.
+- **Name:** prefer "heavy-tailed Fock statistics" to "anomalous cooling".
+- **Open:** read Roghani & Helm in full, and the Waterloo transverse-cooling result in a fibre (DAMOP 2024).
 
 **Figure:** drift collapse, tail with the fit, window map with data points.
 
@@ -234,7 +242,7 @@ Fig. 4 of the current paper (robustness) can go in compact form with Fig. 5 or i
 
 1. Thermal test of 1/W₀ (running). Map (queued).
 2. Chain model for thresholds; Δ scan and sign-of-Δ test of the fast channel.
-3. Literature full-text check on the anomalous part. **Do this early: it decides how to present Section 3.**
+3. Literature check on the anomalous part: done 9 Nov 2026. Two papers still to read.
 4. Zeeman model, D1 F′=1. **This can overturn the choice of configuration, so before polishing Section 4.**
 5. Decide the definition of best a, with fibre input.
 6. Memory model, including lattice scattering and lowering.
@@ -249,16 +257,13 @@ section ends with a quantitative, defensible advantage.
   full Zeeman and memory analysis. A cold-atom cooling study framed around a memory fits, if the memory link is strong.
 - **Nature Communications:** the manuscript is already in this layout. It needs a broad claim; a theory proposal with
   no experiment and several models would have to lead with the memory or the anomalous statistics.
-- **Physical Review Letters:** if the anomalous statistics turn out to be new, a short letter on that alone is an
-  alternative, with this paper as the long companion (Phys. Rev. A or PRX Quantum).
+- **Physical Review Letters:** a stand-alone letter on the statistics is now less likely, as the tail law is known for Sisyphus cooling.
 - **Nature Physics / Nature Photonics:** unlikely without an experiment.
 
-The choice depends on two results we do not have: whether the anomalous effect is new, and whether the memory beats the
-benchmarks. Decide after work-list items 3 and 6. **Splitting** is a real option: the current plan is close to two papers.
+The choice now depends mostly on whether the memory beats the benchmarks (work-list item 6). The literature check (item 3) favours one integrated paper. **Splitting** is a real option: the current plan is close to two papers.
 
 ## Open questions for the author
 
-- One paper, or a letter on anomalous statistics plus a long paper?
 - How much of the present manuscript's two-fibre comparison to keep, given the move to the universal map?
 - Fibre input for "best a": which fibres are realistic, and what loading is achievable?
 - Is an experimental collaborator available? It strongly affects journal options.
