@@ -258,7 +258,7 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
-- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. Next: both axes, real mode polarisations.
+- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. The effective 2D chain (`two_axes_zeeman.py`) passes the closed-Λ benchmark but fails the P(n) test for Zeeman schemes: do not quote its Zeeman P₀₀. A full 2D Zeeman ME is for a cluster, if needed. Next: real mode polarisations.
 - **Prior work:** carrier-free EIT at a node is Xing & Mehta, PR Applied 24, 014034 (2025), and the heavy-tail law is Dechant et al. (2015, 2016). Do not present either as new; see `notes/paper_draft_ideas.md`.
 - **Both radial axes (theory and chain done; `notes/anomalous-cooling/two_axes_theory.md`).** One probe cools one motional mode; recoil heats both axes, so a cold state needs h < 1/2. h = 0.188 ζ/b_p with ζ = k_L a ω_rec/ν_z: the limits on a scale with ν_z. Numbers in the key-results table are for ONE axis.
 - **Case-A convergence fix (done).** The case-A
