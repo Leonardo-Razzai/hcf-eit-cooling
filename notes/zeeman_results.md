@@ -54,7 +54,7 @@ No 2D Zeeman master equation (for later, on a cluster, if needed). `simulation/s
 | Zeeman $\Lambda$, $s = 1$ | 4.6–4.9 | 0.78 | 0.33 |
 | Zeeman $\Lambda$, $s = 0.3$ | 2.7–3.2 | 0.54 | 0.18 |
 
-With the two-axis condition $h < 1/2$ **the Zeeman $\Lambda$ is excluded in case A at 300 kHz, while the hyperfine scheme is allowed.** With the floor formula, as an analytic estimate only: hyperfine, case A, $s = 0.3$: $P_{00} \approx 0.97$; hyperfine at $\nu_r/\omega_{\rm rec} = 5$, $s = 1$: about 0.92; Zeeman at $\nu_r/\omega_{\rm rec} = 5$: about 0.88 ($s = 1$) and 0.98 ($s = 0.3$).
+With the two-axis condition $h < 1/2$ **the Zeeman $\Lambda$ is excluded in case A at 300 kHz, while the hyperfine scheme is allowed.** With the floor formula, as an analytic estimate only: hyperfine, case A, $s = 0.3$: $P_{00} \approx 0.97$; hyperfine at $\nu_r/\omega_{\rm rec} = 5$, $s = 1$: about 0.94; Zeeman at $\nu_r/\omega_{\rm rec} = 5$: about 0.88 ($s = 1$) and 0.98 ($s = 0.3$).
 
 ## Not included yet
 
