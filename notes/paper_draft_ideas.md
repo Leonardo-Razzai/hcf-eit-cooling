@@ -17,6 +17,8 @@ not new in general: in-fibre gray molasses and delta-kick cooling (arXiv:2112.10
 paper not found). Guided-light ground-state cooling exists for nanofibres (Meng et al. arXiv:1712.05749; Østfeldt et al. arXiv:1708.03488), and the node idea for ions in
 integrated waveguides (Xing & Mehta 2025; arXiv:2512.10900). So the claim is specifically: **ground state, radial, inside a hollow-core fibre, through a higher-order guided mode.**
 
+**Relation to Xing & Mehta, PR Applied 24, 014034 (2025), and arXiv:2512.10900 (compared 9 Nov 2026).** Already theirs, for ions: carrier-free EIT at a node, a rate independent of the gradient, wider bandwidth, tolerance to modal impurity and position, master-equation simulation with Zeeman levels, and an experiment ($\bar n = 0.05$). So the concept is not ours, and most of the present manuscript's Figs 3 and 4 is a translation of it to another system. They work at $\eta \approx 0.1$, MHz traps, where recoil is a small correction. **Ours:** the recoil-dominated regime ($h \sim 0.1$–$1$, heavy tail, failure of $W$, one law for all regimes), two axes with recoil coupling, alkali dark states and remixing, the fibre (modes, purity along a column, $\zeta$), capture from about 10 µK, memory.
+
 **Weak points of this claim, to fix first:**
 1. **Only one radial axis is simulated, and an LP₁₁ lobe pattern addresses one axis.** Without the second axis there is no radial ground state.
    Theory (9 Nov 2026, `notes/anomalous-cooling/two_axes_theory.md` on `universal`): one probe cools one motional mode, so a single scalar OAM beam is not enough. Recoil
