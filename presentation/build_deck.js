@@ -303,20 +303,31 @@ async function main() {
   ], { space: 10 }), MX, 4.2, 7.3, 2.4, { fontSize: 14 });
   s.addNotes("Figure a: ground-state rate against the population left outside the ground state, as the detuning goes from 2 to 12 Gamma; up and left is better. Figure b: with all Zeeman sublevels, the best rate reachable at each ground-state population for each remixing scheme, against the closed lambda. First the excited hyperfine levels. On D1 the second excited level is 814 MHz away and changes nothing; on D2 the levels are close and the F'=1 configuration depends on the interference sign. D1 F'=1 with the probe on F=2 is the best option, because five sixths of the decays return to the probe state. With all Zeeman sublevels, any fixed polarisation leaves dark states independent of motion; remixing by a repumper costs about a factor of three in rate. The Zeeman lambda used by Qiu and co-workers in tweezers performs about the same.");
 
-  // ============================================================ 15 requirements
+  // ============================================================ 15 purity
+  s = content("Rubidium");
+  s.addText("Mode purity: how clean must the LP₁₁ probe be?", { placeholder: "title" });
+  await img(s, "purity.png", MX, 1.35, W - 2 * MX, 4.4, { name: "steady state against mode purity" });
+  text(s, bullets([
+    "An LP₀₁ admixture ε moves the node and adds a carrier; P₀ is unchanged up to ε ≈ 3 η⊥ and drops beyond",
+    "The ground-state rate halves at ε ≈ 3.6 η⊥ for s = 1 and 2.2 η⊥ for s = 3, nearly the same in both fibres; a larger η⊥ (small core) tolerates more power",
+    "LP₀₁ power below 10⁻³ keeps ≥ 90 % of the rate at s ≤ 1 in case A; the ⟨n⟩-based rate looks more fragile (halves at 1.4 η⊥, s = 3) because ⟨n⟩ sits in the hot tail",
+  ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 14 });
+  s.addNotes("Converged master equation at fixed saturation, both fibres. Horizontal axis: the LP01 power fraction in the probe, epsilon squared, which is what a mode measurement gives. Left: the ground-state rate relative to a clean mode. Right: the population outside the ground state, with the clean-mode value marked by arrows. A small admixture is equivalent to displacing the node, so the ground state is hardly affected; the rate suffers first, and more at high saturation, where the carrier is driven harder. An earlier estimate, rate halving at 1.3 eta perp, used the rate from the mean occupation at the rate-optimal s near 3; in case A that rate is dominated by the tail and exaggerates the sensitivity.");
+
+  // ============================================================ 16 requirements
   s = content("Rubidium");
   s.addText("Practical requirements", { placeholder: "title" });
   table(s, ["Requirement", "Value", "Reason"], [
-    ["Probe mode purity", "LP₀₁ power < 10⁻³", "rate halves at an LP₀₁ amplitude ε ≈ 1.3 η⊥ ≈ 0.03"],
-    ["Trap centring", "offset below ≈ x₀ (0.1 µm in case A)", "an offset x_s acts as an admixture ε = η⊥ x_s/x₀"],
+    ["Probe mode purity", "LP₀₁ power < 10⁻³", "keeps ≥ 90 % of the rate at s ≤ 1 (case A); see previous slide"],
+    ["Trap centring", "offset below ≈ x₀ (0.1 µm in case A)", "acts as ε = η⊥ x_s/x₀: ≤ 5 % rate loss at s = 1"],
     ["Radial frequency uniformity", "± 10 % along the column", "keeps W above 70 % of its maximum"],
     ["Probe power", "0.4–8 nW", "set by s, not by the small gradient"],
     ["Mode order", "LP₁₁ or LP₁₂", "same rate at equal s; a higher mode only lowers the power"],
   ], MX, 1.5, [2.2, 2.25, 2.85], { fontSize: 13, rowH: 0.7, name: "requirements table" });
-  await img(s, "robust.png", 8.15, 1.35, W - MX - 8.15, 5.3, { valign: "middle", name: "purity and trap-frequency tolerance" });
-  s.addNotes("Figure a: the maximum rate against the LP01 admixture in units of eta perp; squares are trap offsets converted with epsilon = eta perp x_s / x0, which fall on the same curve; dashed is the simple model, a factor two too optimistic. Figure b: lasers set for the design trap frequency while the actual one varies, as it would along a lossy fibre. Mode purity is the critical experimental requirement, as for ions: a small LP01 admixture restores a carrier. The simple estimate of the tolerance is a factor two too optimistic. A displaced trap is equivalent to an admixture. The trap frequency must be uniform along the column to within ten percent, which sets the tolerable lattice-beam loss.");
+  await img(s, "robust.png", 8.15, 1.35, W - MX - 8.15, 5.3, { valign: "middle", name: "trap-frequency tolerance" });
+  s.addNotes("Figure: lasers set for the design trap frequency while the actual one varies, as it would along a lossy fibre. Mode purity is the critical experimental requirement, as for ions: a small LP01 admixture restores a carrier. The simple estimate of the tolerance is a factor two too optimistic. A displaced trap is equivalent to an admixture. The trap frequency must be uniform along the column to within ten percent, which sets the tolerable lattice-beam loss.");
 
-  // ============================================================ 16 memory
+  // ============================================================ 17 memory
   pres.addSection({ title: "Application" });
   s = content("Application");
   s.addText("Application: a spin-wave memory in the fibre", { placeholder: "title" });
@@ -328,7 +339,7 @@ async function main() {
   ], { space: 6 }), MX, 5.5, W - 2 * MX, 1.35, { fontSize: 14 });
   s.addNotes("Theory only. Left: optical depth per centimetre of column for one atom per site, as a function of core radius; rho_s is the number of atoms per square micrometre of mode area. A 15 micrometre core gives only 7 to 15 per centimetre on a usable lambda scheme, so efficient storage needs a small core, a longer column or several atoms per site. Right: storage model with lattice scattering and a one percent intensity spread along the column. Lowering the lattice a hundred times after cooling and using an echo gives seconds, limited by the background gas inside the fibre, which is the least certain input. The radial ground state is not mainly a coherence-time gain; it allows shallow traps and uniform coupling.");
 
-  // ============================================================ 17 summary
+  // ============================================================ 18 summary
   pres.addSection({ title: "Summary" });
   s = pres.addSlide({ masterName: "DARK", sectionTitle: "Summary" });
   s.addText("Summary", { placeholder: "title" });

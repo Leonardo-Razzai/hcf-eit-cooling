@@ -44,6 +44,9 @@ Case A is from the converged solver.
     The cause is Raman splitting of the narrow line, since s = 2(Ω_R/Γ_n)², and the recoil tail.
 - **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.3 η⊥ ≈ 0.03 (linear interpolation between ε = 0.02 and 0.04; 1.2 η⊥ in log-log). The simple model's threshold,
   2.8 η⊥, is about 2× too optimistic. A trap offset x_s is equivalent to ε_eff = η⊥ x_s/x₀.
+  **Caveat (purity.dat, fixed s, converged):** the 1.3 η⊥ figure is for the maximum W (⟨n⟩-based, s ≈ 3), which in case A
+  is dominated by the tail. The ground-state rate W₀ halves at ε ≈ 3.6 η⊥ (s = 1) and 2.2 η⊥ (s = 3) in both fibres, and P₀ is
+  unchanged (slightly better) up to ε ≈ 3 η⊥. LP₀₁ power < 10⁻³ keeps ≥ 90 % of W₀ at s ≤ 1 in case A. Paper not updated.
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
 - **LP₁₂ vs LP₁₁:** identical rate at equal s; a higher mode only lowers the probe power.
@@ -146,8 +149,8 @@ figures, and margins must be at least 0.5 in.
 
 Study scripts (run from `simulation/studies/`):
 - `saturation.py` → `sat_A.dat`, `sat_B.dat` (Fig. 3).
-- `robustness.py [carrier|twophoton|mismatch]` → `carrier_A.dat`, `twophoton_A.dat`,
-  `mismatch_{A,B}.dat` (Fig. 4).
+- `robustness.py [carrier|twophoton|mismatch|purity]` → `carrier_A.dat`, `twophoton_A.dat`,
+  `mismatch_{A,B}.dat` (Fig. 4); `purity.dat` (P₀, ⟨n⟩, W, W₀ against ε at s = 0.3, 1, 3, both cases, ~12 min).
 - `dynamics.py [relaxation|capture]` → `dyn_A.dat` (converged master equation, N = 400, ~4 min), `capture_{A,B}.dat` (Fig. 5).
 - `calibration.py [steady|drift]` → `grmcheck.dat`, `drift_calib.dat`. These fix `rate_models.CSAT`
   and Methods Table 3.
