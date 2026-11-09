@@ -1,0 +1,59 @@
+== A. Overlap of plane-wave spin waves on a randomly filled lattice
+O_kk' = [b_k, b_k'^dag] = (1/N) sum_j exp(i (k' - k) z_j); orthogonal grid Delta k = 2 pi m / L
+prediction for m != 0: E|O|^2 = (1 - f) / N
+   sites      f        N      <|O|^2>      (1-f)/N
+    2000    1.0     2000     3.75e-33     0.00e+00
+    2000    0.5     1000     5.31e-04     5.00e-04
+    2000    0.1      200     4.52e-03     4.50e-03
+   20000    0.5    10000     4.94e-05     5.00e-05
+Aliasing: k and k + 2 pi / d (d = 532 nm site spacing, 2 pi/d = 1.181e+07 1/m) are the same spin wave.
+  forward write, co-propagating        k = 1.432e+02 1/m, k d / 2 pi mod 1 = 0.000
+  backward write, counter-propagating  k = 1.581e+07 1/m, k d / 2 pi mod 1 = 0.338
+
+== B. Independent random phases phi_j: transfer into another orthogonal mode
+prediction E|M_kk'|^2 = |chi|^2 |O_kk'|^2 + (1 - |chi|^2) / N, chi = <exp(-i phi)>
+motional example: phi_j = 2 pi eps n_j T, n_j thermal-like with P0 per atom
+P0=0.95  2 pi eps T=0.5  |M_kk|^2=0.9866 (|chi|^2=0.9867)  N|M_kk'|^2=0.013 (pred 0.013)
+P0=0.95  2 pi eps T=3.0  |M_kk|^2=0.8196 (|chi|^2=0.8202)  N|M_kk'|^2=0.172 (pred 0.180)
+P0=0.80  2 pi eps T=3.0  |M_kk|^2=0.4462 (|chi|^2=0.4446)  N|M_kk'|^2=0.553 (pred 0.555)
+
+== C. Phase smooth along z: coherent transfer between spin waves
+Periodic phase phi(z) = phi0 cos(q z): amplitude into k + m q is J_m(phi0) (Jacobi-Anger).
+Source: LP02 admixture p in the 1064 nm lattice, phi0 = 2 pi delta_nu T, delta_nu = 2 sqrt(p g) ddiff u
+       p      u     dnu (Hz)  T for J1^2=1e-3  T for J1^2=1e-2
+   1e-03   1.00       73.191        1.376e-04        4.349e-04
+   1e-03   0.01        0.732        1.376e-02        4.349e-02
+   1e-04   1.00       23.145        4.350e-04        1.375e-03
+   1e-04   0.01        0.231        4.350e-02        1.375e-01
+   1e-05   1.00        7.319        1.376e-03        4.349e-03
+   1e-05   0.01        0.073        1.376e-01        4.349e-01
+Linear phase gradient beta z shifts every k by beta: crosstalk to the channel at k + Delta k
+peaks when beta T = Delta k (a gradient echo memory uses exactly this, reversibly).
+
+== D. Read-out of a spin wave with a phase mismatch phi = Delta k L (forward retrieval kernel)
+X(phi) = sigma_phi^dag K sigma_phi, sigma = optimal retrieval spin wave of the channel
+d=15   X(0)=0.8647; X/X0 at phi = 2 pi, 10 pi, d, 2d, 4d: 4.3e-01 2.4e-02 1.0e-01 2.7e-02 6.7e-03; phi for X/X0 < 1e-2: 49, < 1e-3: 156
+d=50   X(0)=0.9519; X/X0 at phi = 2 pi, 10 pi, d, 2d, 4d: 7.3e-01 7.9e-02 3.2e-02 8.3e-03 2.1e-03; phi for X/X0 < 1e-2: 91, < 1e-3: 289
+d=150  X(0)=0.9826; X/X0 at phi = 2 pi, 10 pi, d, 2d, 4d: 8.9e-01 2.2e-01 1.1e-02 2.9e-03 7.2e-04; phi for X/X0 < 1e-2: 161, < 1e-3: 508
+so channels must differ by Delta k L >> d (EIT momentum window ~ d / L, Gorshkov 2007), not just 2 pi
+
+== E. Mode-pair channels (signal LP0m, control LP0m'): wavevector of the spin wave
+kappa_mm' = beta_m - beta_m' = (u_m'^2 - u_m^2) / (2 k a^2); a = 15.0 um, L = 10 mm
+(m, m')    kappa L (rad)
+LP01/LP02         69.4
+LP01/LP03        194.3
+LP01/LP04        374.7
+LP02/LP01        -69.4
+LP02/LP03        124.9
+LP02/LP04        305.3
+LP03/LP01       -194.3
+LP03/LP02       -124.9
+LP03/LP04        180.4
+LP04/LP01       -374.7
+LP04/LP02       -305.3
+LP04/LP03       -180.4
+LP01/LP01          0.0
+Control LP0m' reads every channel (x, m') at once, each into its own signal mode LP0x:
+  random access is per control mode (groups of M channels), unless the outputs are sorted by mode.
+other groups, smallest mismatch: 14 rad (control LP01, channel LP04/LP03 -> LP03); 14 rad (control LP03, channel LP03/LP01 -> LP04); 14 rad (control LP03, channel LP03/LP04 -> LP01); 14 rad (control LP04, channel LP01/LP03 -> LP03)
+The kappa = 0 spin wave (any m = m') is read by every control: keep it empty.

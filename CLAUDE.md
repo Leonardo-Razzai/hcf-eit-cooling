@@ -101,7 +101,8 @@ presentation/            18-slide talk for an atomic-physics audience
                          writes the theme colours into the .pptx
   assets/                generated PNGs (300 dpi)
   radial_eit_cooling_talk.pptx
-notes/                   research notes; anomalous-cooling/ (theory note + to-do)
+notes/                   research notes; anomalous-cooling/ (theory note + to-do);
+                         quantum-memory/ (standalone memory note + light scripts, for a separate project)
 Makefile                 make test | results | figures | paper | report | slides | clean
 ```
 

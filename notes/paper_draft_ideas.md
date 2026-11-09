@@ -176,6 +176,8 @@ Reference for ion tripod schemes: Lechner et al. 2016. Dark-state destabilisatio
 
 ## 6. Application: spin-wave memory in a cm-long column
 
+**Superseded in detail by `quantum-memory/memory_theory.md`** (budget, multimode, crosstalk model, future simulations). Main correction: with one atom per site and a real Λ line strength, a = 15 µm gives OD ≈ 4–7 per cm, so efficient storage needs a small core.
+
 **The honest position: we have not shown that this outperforms existing memories.** What follows is the
 argument and what must be computed.
 

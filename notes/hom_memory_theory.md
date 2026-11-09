@@ -3,6 +3,8 @@
 Theory only; no master-equation simulation. All numbers are **estimates** for ⁸⁷Rb, $a = 15$ µm, $x_{0} = 0.09$ µm,
 1 atom per lattice site over 1 cm unless stated. Companion to `paper_draft_ideas.md`, Section 6.
 
+**Caveat (see `quantum-memory/memory_theory.md`):** the OD values below are for a closed two-level transition (r = 1) at full filling. A usable Λ has r = ¼ (clock) to ½ (stretched), and f ≈ ½, so divide them by 4–8. The ratios g are unaffected.
+
 ## Short answer
 
 A HOM can play three roles, and they behave very differently.
