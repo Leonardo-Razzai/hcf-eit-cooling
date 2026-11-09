@@ -33,6 +33,8 @@ The other limit: x hot and saturated, y cold, where y tracks R(n_y) = R_x h/(1�
 
   n_core = ξ (1 + 2h)/(1 − 2h), ξ = (Γ/4Δ)²,  against ξ(1 + h)/(1 − h) in 1D.
 
+Table at ν_z = 300 kHz:
+
 | a (µm) | b_p | h | 2h | h/(1−h) | 2D/1D floor | P₀ both axes, 3Γ | 6Γ |
 |---|---|---|---|---|---|---|---|
 | 3.5 | 1/2 | 0.09 | 0.19 | 0.10 | 1.2 | 0.98 | 0.995 |
@@ -49,9 +51,24 @@ The other limit: x hot and saturated, y cold, where y tracks R(n_y) = R_x h/(1�
 Weak probe, core only, so upper bounds on P₀: no s dependence, no tail. **Case A with b_p = 1/2 (the current paper) moves into the window where the mean is set by the cut-off,** and the floor rises 4×.
 With 2h: h₂ < 1/3 needs a < 10 µm for b_p = 5/6 and 6 µm for b_p = 1/2.
 
-**Consequences.** The argument for small a and large b_p gets much stronger. It agrees with the expectation of a ≈ 7–10 µm from optical depth.
+**Consequences at ν_z = 300 kHz:** the argument for small a and large b_p gets stronger. See 2b for other depths.
 
 **Polarisation matters.** α depends on the emission pattern: dipole along z gives α_x = α_y = 0.4, radial sum 0.8; along x gives 0.2 and 0.4, sum 0.6; averaged, 2/3. Guided light is transverse, so the sum may be below 0.8. Must come from the Zeeman model.
+
+## 2b. The limits are on a/ν_z, not on a
+
+ν_r = 0.357 ν_z / a(µm) at fixed lattice wavelength, so **h = 0.403 (a/15 µm)(300 kHz/ν_z)(½/b_p).** The table above is for ν_z = 300 kHz only. In fibres the depth can be
+raised with lattice power, so the limits on a scale with ν_z: 2h < 1/3 needs a < 10 µm (ν_z/300 kHz) for b_p = 5/6, and 6 µm for b_p = 1/2; h < 1/2 needs a < 31 µm and 19 µm, times the same factor.
+
+**Unchanged:** the map in ν_r/ω_rec, one probe per mode, the doubling of h, the condition h < 1/2. Only the mapping to a changes.
+
+**Costs of a deeper lattice (estimates).** Beam power ∝ ν_z² a² (≈ 0.14 W per beam at a = 15 µm, 300 kHz, from α ≈ 690 a.u.). Lattice scattering ∝ ν_z² (4 s⁻¹ at 300 kHz); its radial
+heating relative to W is unchanged, so it is harmless during cooling, but it limits storage. Purity gets harder: ε_c² ∝ η⊥² ∝ 1/(a ν_z), −31 dB at a = 15 µm, 300 kHz, −36 dB at 1 MHz.
+The excited-state light shift grows with U₀: at 6 mK, U₀/h ≈ 120 MHz ≈ 20Γ, and it is **not in the model.** Not relevant to the map, but it limits how far this goes. The elimination needs ν_r ≪ Δ, easily met.
+
+**Smaller a helps both h and purity, and OD. A deeper lattice helps h but hurts purity.** So ν_z is a real design knob, not a free gain.
+
+**For a memory: cool deep, store shallow.** Adiabatic lowering conserves n, so cooling at high ν_z (low h) and then lowering (low scattering, low δ_diff) keeps both. To be simulated.
 
 ## 3. Ways to cool both axes
 
