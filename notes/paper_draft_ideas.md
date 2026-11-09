@@ -194,7 +194,7 @@ Lifetime × efficiency is the gap: the best efficiencies and the best lifetimes 
   hyperfine coherence (Ozeri 2005) but kick the atom: ≈ 0.45 radial quanta s⁻¹ per axis in case A. So P₀ decays
   within ≈ 1 s, and the coherence with it. **Our ground state would not last unless the trap is lowered.**
 - **Adiabatic lowering after cooling.** n is conserved, ε ∝ √(U₀), scattering ∝ U₀, heating in quanta ∝ √(U₀).
-  A factor 100 in depth leaves ≈ 550 lattice recoil energies: heating ≈ 0.045 quanta s⁻¹ per axis, ~20 s scale. **Idea to simulate.**
+  A factor 100 in depth leaves ≈ 55 lattice recoil energies (still deep, but check tunnelling and gravity): heating ≈ 0.045 quanta s⁻¹ per axis, ~20 s scale. **Idea to simulate.**
 - Second radial axis (not simulated) and axial cooling (assumed, from Raman sideband).
 - Magnetic field noise: clock states or magic field. Lattice intensity and pointing noise. Background gas inside
   the fibre (a poor vacuum conductance): **may be the actual limit; check the fibre experiments.**
