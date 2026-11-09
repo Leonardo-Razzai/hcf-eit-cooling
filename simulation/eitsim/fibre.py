@@ -49,8 +49,23 @@ def fibre_case(a, nuz=300e3, lam_lat=1064e-9, line='D1'):
     x0 = np.sqrt(HBAR / (2 * M_RB * om))
     U0 = M_RB * (2 * np.pi * nuz)**2 / (2 * kl**2)
     lam = LINES[line]['lam']
-    return dict(a=a, nur=nur, om=om, x0=x0, eta_sp=2 * np.pi / lam * x0,
-                x0a=x0 / a, U0=U0, line=line, Gamma=LINES[line]['Gamma'], lam=lam)
+    eta_sp = 2 * np.pi / lam * x0
+    return dict(a=a, nur=nur, om=om, x0=x0, eta_sp=eta_sp, x0a=x0 / a, U0=U0,
+                line=line, Gamma=LINES[line]['Gamma'], lam=lam, nu_wrec=1 / eta_sp**2)
+
+
+def reduced_case(nu_wrec, Gamma_nu=800.0, x0a=0.006):
+    """Atom- and fibre-independent case in internal units (om = nu_r = 1).
+
+    nu_wrec = nu_r / omega_rec = 1 / eta_sp^2 is the only physical parameter of
+    the cold-atom problem (closed Lambda, node geometry, Gamma >> nu_r): with
+    Gamma/nu_r and x0/a varied by factors 16 and 4 the master-equation rate and
+    n_ss change by < 0.3 %. Gamma_nu and x0a are therefore nuisance parameters;
+    x0a matters only for hot states (Bessel non-linearity) and the probe power.
+    Rates computed with this case are in units of nu_r.
+    """
+    return dict(om=1.0, Gamma=Gamma_nu, eta_sp=nu_wrec**-0.5, x0a=x0a,
+                nu_wrec=nu_wrec, line=None)
 
 
 def lp01_power(fc, Om, S=1.0):

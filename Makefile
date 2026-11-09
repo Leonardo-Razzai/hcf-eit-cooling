@@ -43,6 +43,7 @@ paper: check-tex
 
 report: check-tex
 	cd paper/background_report && $(TEX) report.tex
+	cd paper/background_report && $(TEX) core_facts.tex
 
 docs: check-tex
 	cd simulation/docs && $(TEX) code_guide.tex
@@ -54,5 +55,5 @@ all: figures paper report docs
 
 clean:
 	cd paper/manuscript && rm -f *.aux *.bbl *.blg *.log *.out *.fls *.fdb_latexmk main.pdf
-	cd paper/background_report && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fls *.fdb_latexmk report.pdf
+	cd paper/background_report && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fls *.fdb_latexmk report.pdf core_facts.pdf
 	cd simulation/docs && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fls *.fdb_latexmk code_guide.pdf

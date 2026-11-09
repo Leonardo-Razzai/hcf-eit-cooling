@@ -23,14 +23,22 @@ there (results/convergence/nconv.dat), and are not rewritten.
              equation (stage 2), at Delta = 3 Gamma, s = 1, for both signs of
              the Raman interference through the other levels: lasers as in
              the three-level design, and with the two-photon detuning d2
-             re-optimised (simple-model optimum refined with the ME).
+             re-optimised on the ground-state rate W0 (simple-model optimum
+             refined with the ME).
                                         -> results/lines_ml_{A,B}.dat (~20 min, 4 workers)
   delta      the four cooling configurations (bp >= 1/2) versus Delta/Gamma,
              multi-level ME with re-optimised d2, sign +1; W is reliable only
              where nopt < N_RATE (column 'ok')
                                         -> results/lines_delta_{A,B}.dat (~70 min, 2 workers)
 
-Usage: python lines.py [effective] [multilevel] [delta]   (default: all)
+  imperfections  case A, D1 F'=2, D1 F'=1, D2 F'=2, D2 F'=1 (both signs), all
+             excited levels, two-photon detuning at its stage-2 optimum
+             (lines_ml_A): LP01 admixture eps (units of eta_perp, best of
+             s = 0.3, 1, 3), two-photon error around the optimum and
+             trap-frequency mismatch with fixed lasers (s = 1)
+                                        -> results/lines_imperf_A.dat (~20 min, 4 workers)
+
+Usage: python lines.py [effective] [multilevel] [delta] [imperfections]   (default: all)
 """
 import sys
 from concurrent.futures import ProcessPoolExecutor
@@ -38,7 +46,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from _common import E, NME, save, log
+from _common import E, NME, save, log, load
 
 KEYS = 'A'
 
@@ -96,14 +104,16 @@ def effective():
               'Pp_nW', 'Pc_nW', 'nbshift', 'dmin_G'], rows)
 
 
-def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=0.15):
-    """Two-photon detuning (units of nu_r) that maximises the multi-level ME
-    rate among states with n_ss < N_RATE: the multi-level simple model locates
+def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=None):
+    """Two-photon detuning (units of nu_r) that maximises the ground-state rate W0
+    among states with n_ss < N_COLD (W has a pole near n_ss ~ 0.2 and depends on N
+    in a heavy tail, W0 does not): the multi-level simple model locates
     the red sideband on the narrow resonance (strongest local maximum of the
     absorption within +-10 nu_r), a
     parabola through three ME points refines it. Returns (d2, ME result at d2,
     simple-model d2)."""
     lv = E.excited_manifold(cfg['line'], cfg['Fe'], cfg['gp'])
+    step = step or 0.15 * min(1.0, DELTA_G / Delta_G)     # follows the narrow-line width
 
     def par(d2):
         return E.params(fc, s=s, N=NME, Delta_G=Delta_G, d2=d2, levels=lv, sign=sign)
@@ -125,12 +135,12 @@ def optimise_d2(fc, cfg, Delta_G=DELTA_G, s=1.0, sign=1.0, step=0.15):
                            bounds=(g0 - 0.05, g0 + 0.05), method='bounded').x
     pts = {g: solve(g) for g in (d2sm - step, d2sm, d2sm + step)}
     xs = np.array(sorted(pts))
-    ys = np.array([pts[g]['W'] for g in xs])
+    ys = np.array([pts[g]['W0'] for g in xs])
     c2, c1, _ = np.polyfit(xs, ys, 2)
     if c2 < 0 and xs[0] <= -c1 / (2 * c2) <= xs[-1]:
         g = -c1 / (2 * c2)
         pts[g] = solve(g)
-    cold = [(r['W'], g) for g, r in pts.items() if r['n'] < N_RATE]
+    cold = [(r['W0'], g) for g, r in pts.items() if r['n'] < N_COLD]
     g = max(cold)[1] if cold else d2sm
     final = pts[g] if search is None else E.steady(fc, s, d2=g, **kw)
     return g, final, d2sm
@@ -153,10 +163,11 @@ def _multilevel_task(args):
     sm = E.simple(popt, 1 / beff)
     row = [int(cfg['line'][1]), cfg['Fe'], cfg['gp'], sign, len(lv),
            three['W'] * om, three['n'], raw['W'] * om, raw['n'],
-           d2sm, d2, opt['W'] * om, opt['n'], sm['W'] * om, sm['n'], beff]
+           d2sm, d2, opt['W'] * om, opt['n'], sm['W'] * om, sm['n'], beff,
+           three['W0'] * om, opt['W0'] * om, opt['P0']]
     log('multilevel', key, cfg['line'], "F'=%d gp=%d sign %+d" % (cfg['Fe'], cfg['gp'], sign),
         '3-level W %.0f n %.3f | raw W %.0f n %.3f | d2 %.2f: W %.0f n %.3f'
-        % tuple(row[5:9] + row[10:13]))
+        % tuple(row[5:9] + row[10:13]), '| W0 3-level %.0f ML %.0f P0 %.4f' % tuple(row[16:19]))
     return key, row
 
 
@@ -167,7 +178,8 @@ def multilevel():
     for key in KEYS:
         save(f'lines_ml_{key}.dat',
              ['line', 'Fe', 'gp', 'sign', 'K', 'W3', 'n3', 'Wraw', 'nraw', 'd2sm', 'd2opt',
-              'Wopt', 'nopt', 'WSMopt', 'nSMopt', 'beff'], [r for k, r in res if k == key])
+              'Wopt', 'nopt', 'WSMopt', 'nSMopt', 'beff', 'W03', 'W0opt', 'P0opt'],
+             [r for k, r in res if k == key])
 
 
 DELTAS = (1.0, 2.0, 3.0, 5.0, 8.0, 12.0)
@@ -181,9 +193,11 @@ def _delta_task(args):
     d2, opt, _ = optimise_d2(fc, cfg, Delta_G=DG)
     row = [ic, int(cfg['line'][1]), cfg['Fe'], cfg['gp'], DG,
            three['W'] * om, three['n'], d2, opt['W'] * om, opt['n'],
-           int(three['n'] < N_RATE), int(opt['n'] < N_RATE)]
+           int(three['n'] < N_RATE), int(opt['n'] < N_RATE),
+           three['W0'] * om, opt['W0'] * om, opt['P0']]
     log('delta', key, cfg['line'], "F'=%d gp=%d Delta %.0f G" % (cfg['Fe'], cfg['gp'], DG),
-        '3-level W %.0f n %.3f | ML d2 %.2f W %.0f n %.3f' % tuple(row[5:10]))
+        '3-level W %.0f n %.3f | ML d2 %.2f W %.0f n %.3f' % tuple(row[5:10]),
+        '| W0 3-level %.0f ML %.0f P0 %.4f' % tuple(row[12:15]))
     return key, row
 
 
@@ -195,11 +209,58 @@ def delta():
     for key in KEYS:
         save(f'lines_delta_{key}.dat',
              ['config', 'line', 'Fe', 'gp', 'DeltaG', 'W3', 'n3', 'd2opt', 'Wopt', 'nopt',
-              'ok3', 'okopt'],
+              'ok3', 'okopt', 'W03', 'W0opt', 'P0opt'],
              [r for k, r in res if k == key])
 
 
-STUDIES = {'effective': effective, 'multilevel': multilevel, 'delta': delta}
+IMP_CFGS = (('D1', 2, 1), ('D1', 1, 2), ('D2', 2, 1), ('D2', 1, 1))
+IMP_EPS = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0)                 # eps / eta_perp
+IMP_S = (0.3, 1.0, 3.0)
+IMP_D2 = np.linspace(-0.6, 0.6, 9)                       # error around the optimum
+IMP_NUREL = np.linspace(0.7, 1.3, 7)
+
+
+def _imperf_task(args):
+    line, Fe, gp, sign, d2opt, kind, x = args
+    fc = E.paper_cases(line)['A']
+    lv = E.excited_manifold(line, Fe, gp)
+
+    def me(s, **kw):
+        kw.setdefault('d2', d2opt)
+        return E.solve_me(E.params(fc, s=s, N=NME, Delta_G=DELTA_G, levels=lv, sign=sign, **kw))
+    if kind == 0:
+        etap = E.gfac(1) * fc['x0a']
+        W, s, n = max((r['W'], s, r['n']) for s, r in ((s, me(s, eps=x * etap)) for s in IMP_S))
+    elif kind == 1:
+        s = 1.0
+        r = me(s, d2=d2opt + x)
+        W, n = r['W'], r['n']
+    else:                                   # lasers fixed: d2 in actual units is d2opt / nu_rel
+        s = 1.0
+        r = me(s, d2=d2opt / x, nu_rel=x)
+        W, n = r['W'] * x, r['n']
+    row = [int(line[1]), Fe, gp, sign, kind, x, W * fc['om'], n, s]
+    log('imperfections', line, "F'=%d gp=%d sign %+d kind %d x %.2f" % (Fe, gp, sign, kind, x),
+        'W %.0f n %.3f' % (row[6], n))
+    return row
+
+
+def imperfections():
+    ml = load('lines_ml_A.dat')
+    tasks = []
+    for line, Fe, gp in IMP_CFGS:
+        for sign in (1.0, -1.0):
+            r = ml[(ml['line'] == int(line[1])) & (ml['Fe'] == Fe) & (ml['gp'] == gp)
+                   & (ml['sign'] == sign)][0]
+            for kind, xs in ((0, IMP_EPS), (1, IMP_D2), (2, IMP_NUREL)):
+                tasks += [(line, Fe, gp, sign, float(r['d2opt']), kind, float(x)) for x in xs]
+    with ProcessPoolExecutor(WORKERS) as ex:
+        rows = list(ex.map(_imperf_task, tasks))
+    save('lines_imperf_A.dat', ['line', 'Fe', 'gp', 'sign', 'kind', 'x', 'W', 'n', 's'], rows)
+
+
+STUDIES = {'effective': effective, 'multilevel': multilevel, 'delta': delta,
+           'imperfections': imperfections}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

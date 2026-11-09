@@ -115,25 +115,20 @@ def liouvillian_eliminated(p):
     return L.tocsc(), d, b
 
 
-def banded_generator(p, B=6):
-    """Generator of the eliminated master equation restricted to the coherences
-    rho_(a,n),(b,m) with |n - m| <= B: d x/dt = M x for the kept elements x.
-
-    Every term X rho Y restricted to the kept set S is the element-wise product
-    X[r_s, r_s'] * Y^T[c_s, c_s'], so M (dimension ~ 4 N (2B + 1)) is assembled
-    from dense 2N x 2N operators, in row blocks to bound the temporaries.
-    Returns (M, r, c, n_of): kept (row, col) ground indices and the Fock number
-    of each ground index.
-    """
-    H, Cs, b = effective_ops(p)
-    N = p['N']
-    n_of = np.tile(np.arange(N), 2)                     # Fock number of each ground index
+def banded_assemble(H, Cs, na, N, B):
+    """Generator on the coherences |n - m| <= B for H and jumps Cs (dense or sparse) on
+    (na internal levels) x (N Fock states). Every term X rho Y restricted to the kept set S is the
+    element-wise product X[r_s, r_s'] * Y^T[c_s, c_s'], so M (dimension ~ na^2 N (2B + 1)) is
+    assembled in row blocks to bound the temporaries. Returns (M, r, c, n_of): kept (row, col)
+    indices and the Fock number of each index."""
+    n_of = np.tile(np.arange(N), na)                    # Fock number of each index
     r, c = np.nonzero(np.abs(n_of[:, None] - n_of[None, :]) <= B)   # kept (row, col)
     S = r.size
-    K = sum((C.getH() @ C) for C in Cs).toarray()
-    G = -1j * H.toarray() - 0.5 * K                     # rho -> G rho + rho G^dag + jumps
+    H = H.toarray() if sp.issparse(H) else H
+    Cd = [C.toarray() if sp.issparse(C) else C for C in Cs]
+    K = sum(C.conj().T @ C for C in Cd)
+    G = -1j * H - 0.5 * K                               # rho -> G rho + rho G^dag + jumps
     Gc = G.conj()
-    Cd = [C.toarray() for C in Cs]
     Cc = [x.conj() for x in Cd]
     M = np.empty((S, S), complex)
     step = max(1, int(2e7 // S))                        # rows per block (bounded temporaries)
@@ -146,6 +141,14 @@ def banded_generator(p, B=6):
             blk += Cj[np.ix_(rs, r)] * Ccj[np.ix_(cs, c)]
         M[sl] = blk
     return M, r, c, n_of
+
+
+def banded_generator(p, B=6):
+    """Generator of the eliminated master equation restricted to the coherences
+    rho_(a,n),(b,m) with |n - m| <= B: d x/dt = M x for the kept elements x.
+    Returns (M, r, c, n_of), see banded_assemble."""
+    H, Cs, b = effective_ops(p)
+    return banded_assemble(H, Cs, 2, p['N'], B)
 
 
 def solve_banded(p, B=6, rate=True):
@@ -196,36 +199,47 @@ def solve_banded(p, B=6, rate=True):
                 dim=S, rho=rho)
 
 
-def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):
-    """Time evolution of <n> in the banded eliminated master equation from the
-    state sum_n pops[n] |g_p,n><g_p,n| (pops of length <= N). Fixed-step BDF2,
-    (3 - 2hM) y_k+1 = 4 y_k - y_k-1, with one dense in-place LU (memory: one
-    S x S matrix); the start y_-1 = y_0 - h M y_0 keeps second order overall
-    (y_-1 = y_0 would add a constant time lag, a global first-order error).
+def banded_evolve_states(p, pops_list, tmax, B=4, h=0.25, n_out=60):
+    """Time evolution of <n> and P0 from the states sum_n pops[n] |g_p,n><g_p,n|, for
+    each pops in pops_list (length <= N), in the banded eliminated master equation.
+    Fixed-step BDF2, (3 - 2hM) y_k+1 = 4 y_k - y_k-1, with one dense in-place LU
+    (memory: one S x S matrix); the start y_-1 = y_0 - h M y_0 keeps second order
+    overall (y_-1 = y_0 would add a constant time lag, a global first-order error).
     h in units of 1/nu_r: BDF2 is L-stable, the fast internal rate is only
-    Gamma_n ~ nu_r/3 after the elimination. Returns times and <n>(t)."""
+    Gamma_n ~ nu_r/3 after the elimination. Returns times, <n>, P0, the last two
+    of shape (states, times). P0 sums n = 0 over both ground levels."""
     from scipy.linalg import lu_factor, lu_solve
     M, r, c, n_of = banded_generator(p, B)
     S = r.size
     diag = np.nonzero(r == c)[0]
     nvec = np.zeros(S)
     nvec[diag] = n_of[r[diag]]
-    y = np.zeros(S, complex)
-    for n, pn in enumerate(pops):
-        y[int(np.nonzero((r == n) & (c == n))[0][0])] = pn
+    p0vec = np.zeros(S)
+    p0vec[diag[n_of[r[diag]] == 0]] = 1.0
+    y = np.zeros((S, len(pops_list)), complex)
+    for m, pops in enumerate(pops_list):
+        for n, pn in enumerate(pops):
+            y[int(np.nonzero((r == n) & (c == n))[0][0]), m] = pn
     ym = y - h * (M @ y)
     M *= -2 * h
     M[np.diag_indices(S)] += 3.0
     lu = lu_factor(M, overwrite_a=True, check_finite=False)
     nsteps = int(np.ceil(tmax / h))
     every = max(1, nsteps // n_out)
-    ts, vals = [0.0], [float(np.real(nvec @ y))]
+    ts, ns, ps = [0.0], [np.real(nvec @ y)], [np.real(p0vec @ y)]
     for k in range(1, nsteps + 1):
         ym, y = y, lu_solve(lu, 4 * y - ym)
         if k % every == 0:
             ts.append(k * h)
-            vals.append(float(np.real(nvec @ y)))
-    return np.array(ts), np.array(vals)
+            ns.append(np.real(nvec @ y))
+            ps.append(np.real(p0vec @ y))
+    return np.array(ts), np.array(ns).T, np.array(ps).T
+
+
+def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):
+    """<n>(t) from one initial state: see banded_evolve_states. Returns times, <n>."""
+    t, n, _ = banded_evolve_states(p, [pops], tmax, B=B, h=h, n_out=n_out)
+    return t, n[0]
 
 
 def banded_fock_drift(p, n0s, B=4, h=0.05, t1=100, t2=400):

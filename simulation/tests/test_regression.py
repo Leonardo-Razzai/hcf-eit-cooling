@@ -225,6 +225,28 @@ def test_lines_multilevel_study():
     assert np.all(dl['okopt'] == (dl['nopt'] < 0.2))
 
 
+# ---------------------------------------------------------------- reduced description
+def test_reduced_case_reproduces_case_A():
+    A = E.paper_cases()['A']
+    R = E.reduced_case(A['nu_wrec'], Gamma_nu=A['Gamma'] / A['om'], x0a=A['x0a'])
+    for kw in (dict(s=1.0), dict(s=0.2, eps=0.02, d2=0.1)):
+        a, r = E.solve_me(E.params(A, N=12, **kw)), E.solve_me(E.params(R, N=12, **kw))
+        assert np.isclose(a['W'], r['W'], rtol=1e-12) and np.isclose(a['n'], r['n'], rtol=1e-12)
+
+
+def test_reduced_parameters_drop_out():
+    """Only nu_r/omega_rec matters: Gamma/nu_r (x4) and x0/a (x2), also for eps/eta_perp."""
+    ref = E.solve_me(E.params(E.reduced_case(2.0), s=1.0, N=12))
+    for c in (E.reduced_case(2.0, Gamma_nu=3200.0), E.reduced_case(2.0, x0a=0.012)):
+        r = E.solve_me(E.params(c, s=1.0, N=12))
+        assert np.isclose(r['W'], ref['W'], rtol=5e-3) and np.isclose(r['n'], ref['n'], rtol=5e-3)
+    w = []
+    for x0a in (0.006, 0.012):
+        c = E.reduced_case(2.0, x0a=x0a)
+        w.append(E.solve_me(E.params(c, s=1.0, N=12, eps=1.5 * E.gfac(1) * x0a))['W'])
+    assert np.isclose(w[0], w[1], rtol=5e-3)
+
+
 # ---------------------------------------------------------------- eliminated / banded ME
 def test_eliminated_me_matches_full():
     """Adiabatic elimination of |e> (Delta = 3 Gamma): < 1 % in n_ss and W."""
@@ -335,4 +357,44 @@ def test_rates_match_direct_time_integration():
         y = U @ y
     assert np.isclose(1 / (tn / (1 - r['n'])), r['W'], rtol=1e-3)
     assert np.isclose(1 / (tp / r['P0']), r['W0'], rtol=1e-3)
+
+
+def test_w0_equals_integrated_p0_from_time_evolution():
+    N = 12
+    p = E.params(E.paper_cases()['B'], s=0.3, N=N)
+    r = E.solve_banded(p, B=N)
+    t, n, P0 = E.banded_evolve_states(p, [[0.0, 1.0]], 400.0, B=N, h=0.05, n_out=8000)
+    tau = np.trapezoid(r['P0'] - P0[0], t) / r['P0']
+    assert np.isclose(1 / tau, r['W0'], rtol=2e-3)
+    assert np.isclose(P0[0, -1], r['P0'], rtol=1e-3)
+
+
+# ---------------------------------------------------------------- Zeeman
+def test_zeeman_solver_reduces_to_three_levels():
+    from eitsim import zeeman as Z
+    for bp in (0.5, 5 / 6):
+        p = E.params(E.paper_cases()['B'], s=1.0, N=12, bp=bp)
+        ref = E.solve_banded(p, B=4)
+        q = dict(p, om=E.paper_cases()['B']['om'])
+        r = Z.solve(Z.structure_three_level(bp), q, B=4)
+        assert np.isclose(r['n'], ref['n'], rtol=1e-8) and np.isclose(r['P0'], ref['P0'], rtol=1e-8)
+
+
+def test_zeeman_decay_sum_rule():
+    """Each excited sublevel decays at exactly Gamma, with the branching ratios of atoms.py."""
+    from eitsim import zeeman as Z
+    for Fe, gp in ((1, 2), (2, 1)):
+        st = Z.structure_lambda('D1', Fe, gp, {0: 1.0}, {0: 1.0})
+        tot = sum(np.abs(D)**2 for D, u, w in st['groups']).sum(axis=0)
+        assert np.allclose(tot, 1.0)
+        toP = sum(np.abs(D[:st['nP']])**2 for D, u, w in st['groups']).sum(axis=0)
+        assert np.allclose(toP, E.branching('D1', Fe, gp))
+
+
+def test_zeeman_dark_state_counting():
+    """F=2 -> F'=1: at least two probe-dark combinations, for any polarisation."""
+    from eitsim import zeeman as Z
+    for pol in ({0: 1.0}, {1: 1.0}, {1: 1 / np.sqrt(2), -1: 1 / np.sqrt(2)}):
+        g = Z.field_matrix('D1', 2, [(1, m) for m in (-1, 0, 1)], pol)
+        assert np.linalg.matrix_rank(g) <= 3
 
