@@ -9,11 +9,11 @@ A HOM can play three roles, and they behave very differently.
 
 | Metric | HOM as signal or control | HOM as the trap (dark trap) |
 |---|---|---|
-| Storage time | no direct gain | **large potential gain** |
+| Storage time | no direct gain | **potential gain,** ≈ 5–7× beyond a lowered red lattice |
 | Retrieval efficiency | gain ∝ 1/OD, only if OD is small and the mode conversion is excellent | indirect |
 | Bandwidth | gain ∝ OD; control power also falls | none |
 
-The largest possible advantage is the **dark trap**, not storing the light in a HOM. It is also the riskiest.
+The largest possible advantage is the **dark trap**, not storing the light in a HOM. It is also the riskiest, and a simply lowered red lattice gets much of the way without any HOM.
 Separately, signal and control in *different* modes may give a practical gain in noise.
 
 ## 1. Why LP0m, and not LP11, for the signal
@@ -61,8 +61,8 @@ The gain must pay for mode conversion, in and out. With fibre-to-HOM conversion 
 **So at OD of about 30 the gain needs better than ≈ 96–97 % conversion per pass; above about 100 it is not worth it.** In a
 small core or a long column there is no efficiency case. The P₀⁴ ceiling is independent of this.
 
-Other costs: a LP₀₁ admixture in a control beam makes on-axis stripes along z (period 0.9 mm for LP₀₂), of ±2√(p g) in
-amplitude for power fraction p. In a signal it is a loss. Loss per metre scales at least as u², though 1 cm tolerates a lot;
+Other costs: a LP₀₁ admixture in a control beam makes on-axis stripes along z (period 0.9 mm for LP₀₂), of ±2√(p/g) in
+intensity for power fraction p (≈ ±4 % for LP₀₂, p = 10⁻³). In a signal it is a loss. Loss per metre scales at least as u², though 1 cm tolerates a lot;
 many low-loss fibres strip HOMs by design, so LP₀m may simply not be guided in the best fibres.
 
 ## 3. Bandwidth
@@ -108,9 +108,10 @@ lattice depth U₀/k_B = 530 µK:
 | Blue 760 nm, dark | 0.25 | 0.055 | 50 | 0.25 |
 | Blue 532 nm, dark | 0.016 | 0.007 | 3 | 0.016 |
 
-**Read this carefully.** Only lowering the red lattice by ×100 already matches the 760 nm dark trap, and it needs no HOM. The
-clear gain comes at 532 nm (≈ 65× less heating, ≈ 500× less shift sensitivity), or in combination. In a dark trap the heating in
-quanta does not depend on depth, and shift sensitivity falls as ν. Lowering ν_z reduces scattering further.
+**Read this carefully.** Only lowering the red lattice by ×100 already matches the 760 nm dark trap, and it needs no HOM. Against that
+lowered lattice, 532 nm gains only **≈ 7× in heating and ≈ 5× in shift sensitivity** (65× and 500× against the full-depth lattice). The dark trap gains
+more when combined with its own lowering: in a dark trap the heating in quanta does not depend on depth, and shift sensitivity falls as ν,
+and lowering ν_z reduces scattering further. Against a lowered lattice, the case for a dark trap is real but not overwhelming.
 
 A 3D ground-state atom would then be limited by other things: magnetic noise, trap noise and, possibly first of all, background gas in the fibre.
 
@@ -139,7 +140,7 @@ four-wave-mixing noise. With signal and control in orthogonal modes:
 
 | Idea | Advantage | Confidence | Next step |
 |---|---|---|---|
-| Dark HOM trap, 532 nm | storage time | estimate is strong; feasibility unknown | fibre feasibility; full η(T) |
+| Dark HOM trap, 532 nm | storage time, ≈ 5–7× beyond a lowered lattice, plus lower h | moderate; feasibility unknown | fibre feasibility; full η(T) |
 | Lowered red lattice (no HOM) | storage time | high | **use as the baseline** |
 | LP₀m signal | efficiency, bandwidth | good, but only for low OD and T ≳ 0.97 | fix κ; realistic T |
 | Signal and control in different modes | noise | unknown | FWM calculation |
