@@ -20,7 +20,7 @@ integrated waveguides (Xing & Mehta 2025; arXiv:2512.10900). So the claim is spe
 **Weak points of this claim, to fix first:**
 1. **Only one radial axis is simulated, and an LP₁₁ lobe pattern addresses one axis.** Without the second axis there is no radial ground state.
    Theory (9 Nov 2026, `notes/anomalous-cooling/two_axes_theory.md` on `universal`): one probe cools one motional mode, so a single scalar OAM beam is not enough. Recoil
-   heats both axes, so h → about 2h, and a cold state needs h < 1/2. Case A with b_p = 1/2 becomes marginal, which favours a ≲ 10 µm and b_p = 5/6.
+   heats both axes, so h → about 2h, and a cold state needs h < 1/2. At ν_z = 300 kHz, case A with b_p = 1/2 becomes marginal. **The limits scale as a/ν_z:** a deeper lattice relaxes them (costs: power ∝ ν_z²a², purity ∝ 1/(aν_z), excited-state light shift). Cool deep, store shallow.
    TE₀₁/TM₀₁ may cool both modes with one beam (to be checked with the Zeeman model).
 2. Hyperfine-averaged Λ: Zeeman dark states of the best configuration.
 3. Real-fibre modes: TE₀₁/TM₀₁/HE₂₁ structure, polarisation, beating along z.
@@ -123,7 +123,7 @@ Candidate definitions:
 
    with constraints: loading and atom number, wall distance, LP₁₁ existence and loss at 795 nm, cooling power.
 
-Expectation, not a result: OD pushes towards a ≈ 7–10 µm, the range between our two cases. Case A was
+Expectation, not a result: OD pushes towards a ≈ 7–10 µm, the range between our two cases; h does not fix a by itself, because ν_z can compensate (h ∝ a/(b_p ν_z)). Case A was
 never optimised. Needs fibre input (loss, purity, loading) that the simulations cannot give.
 
 ### D1 vs D2 (case A, s = 1, all excited levels, δ_e selected on W₀) [done, on `universal`]
