@@ -49,18 +49,24 @@ backward eta = 0.90 needs OD = 93
 backward eta = 0.95 needs OD = 201
 backward eta = 0.99 needs OD = 1096
 
-== 4. Optical depth of a column, single occupancy (OD = N sigma / A_eff)
-sigma = r (3 lam^2 / 2 pi), r = 0.250; lattice period 532 nm
- a(um)  L(mm)   fill        N  OD(r=1)       OD    eta_b
-  15.0     10    1.0    18797     29.8      7.4    0.404
-  15.0     10    0.5     9398     14.9      3.7    0.225
-  15.0     50    0.5    46992     74.4     18.6    0.646
-   7.5     10    0.5     9398     59.5     14.9    0.591
-   5.0     10    0.5     9398    134.0     33.5    0.768
-   3.5     10    0.5     9398    273.4     68.4    0.869
-   3.5      3    0.5     2820     82.0     20.5    0.669
-   3.5      1    0.5      940     27.3      6.8    0.380
-   3.5     10    1.0    18797    546.9    136.7    0.929
+== 4. Optical depth of a column, single occupancy: OD = sigma rho_s, rho_s = N / A_eff
+sigma = r (3 lam^2 / 2 pi) = 0.3018 r um^2, i.e. OD per atom/um^2; r = 0.250; lattice period 532 nm
+normalised, f = 1: rho_s per cm of column and OD per cm (r = 1 and this r)
+ a(um) A_eff(um2)   rho_s(um-2/cm)   OD/cm(r=1)     OD/cm(r)
+  15.0      190.5             98.7         29.8          7.4
+   7.5       47.6            394.7        119.1         29.8
+   5.0       21.2            888.0        268.0         67.0
+   3.5       10.4           1812.3        546.9        136.7
+ a(um)  L(mm)   fill        N      rho_s  OD(r=1)       OD    eta_b
+  15.0     10    1.0    18797       98.7     29.8      7.4    0.404
+  15.0     10    0.5     9398       49.3     14.9      3.7    0.225
+  15.0     50    0.5    46992      246.7     74.4     18.6    0.646
+   7.5     10    0.5     9398      197.3     59.5     14.9    0.591
+   5.0     10    0.5     9398      444.0    134.0     33.5    0.768
+   3.5     10    0.5     9398      906.1    273.4     68.4    0.869
+   3.5      3    0.5     2820      271.8     82.0     20.5    0.669
+   3.5      1    0.5      940       90.6     27.3      6.8    0.380
+   3.5     10    1.0    18797     1812.3    546.9    136.7    0.929
 
 == 5. Backward retrieval, hyperfine phase mismatch
 Delta k L = 2 (omega_hf / c) L = 2.86 rad per cm

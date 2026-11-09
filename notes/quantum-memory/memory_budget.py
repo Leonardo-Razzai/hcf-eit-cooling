@@ -171,16 +171,25 @@ def efficiency_table():
 
 
 def geometry_table(r_sig):
-    say('\n== 4. Optical depth of a column, single occupancy (OD = N sigma / A_eff)')
-    say('sigma = r (3 lam^2 / 2 pi), r = %.3f; lattice period %.0f nm' % (r_sig, LAM_L / 2 * 1e9))
+    say('\n== 4. Optical depth of a column, single occupancy: OD = sigma rho_s, rho_s = N / A_eff')
     sig0 = 3 * LAM_S**2 / (2 * np.pi)
-    say('%6s %6s %6s %8s %8s %8s %8s' % ('a(um)', 'L(mm)', 'fill', 'N', 'OD(r=1)', 'OD', 'eta_b'))
+    say('sigma = r (3 lam^2 / 2 pi) = %.4f r um^2, i.e. OD per atom/um^2; r = %.3f; lattice period %.0f nm' % (
+        sig0 * 1e12, r_sig, LAM_L / 2 * 1e9))
+    say('normalised, f = 1: rho_s per cm of column and OD per cm (r = 1 and this r)')
+    say('%6s %10s %16s %12s %12s' % ('a(um)', 'A_eff(um2)', 'rho_s(um-2/cm)', 'OD/cm(r=1)', 'OD/cm(r)'))
+    for a in (15, 7.5, 5, 3.5):
+        A = a_eff(a * 1e-6)
+        rho = 0.01 / (LAM_L / 2) / (A * 1e12)
+        say('%6.1f %10.1f %16.1f %12.1f %12.1f' % (a, A * 1e12, rho, rho * sig0 * 1e12, rho * sig0 * 1e12 * r_sig))
+    say('%6s %6s %6s %8s %10s %8s %8s %8s' % ('a(um)', 'L(mm)', 'fill', 'N', 'rho_s', 'OD(r=1)', 'OD', 'eta_b'))
     for a, L, f in ((15, 10, 1), (15, 10, .5), (15, 50, .5), (7.5, 10, .5), (5, 10, .5),
                     (3.5, 10, .5), (3.5, 3, .5), (3.5, 1, .5), (3.5, 10, 1)):
         N = f * L * 1e-3 / (LAM_L / 2)
-        od1 = N * sig0 / a_eff(a * 1e-6)
+        A = a_eff(a * 1e-6)
+        od1 = N * sig0 / A
         od = od1 * r_sig
-        say('%6.1f %6.0f %6.1f %8.0f %8.1f %8.1f %8.3f' % (a, L, f, N, od1, od, retrieval(od / 2)[0]**2))
+        say('%6.1f %6.0f %6.1f %8.0f %10.1f %8.1f %8.1f %8.3f' % (a, L, f, N, N / (A * 1e12), od1, od,
+                                                                retrieval(od / 2)[0]**2))
 
 
 def mismatch_table():
