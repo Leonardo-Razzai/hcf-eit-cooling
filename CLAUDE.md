@@ -192,6 +192,7 @@ Internal units: **angular radial trap frequency ν_r = 1**. Physical rates = val
 | `eit.py` | Λ-system parameters `params(fc, s, Delta_G, m, eps, xs, d2, nu_rel, bp, N)` → dimensionless dict; emission-pattern quadrature `NODES/WEIGHTS/ALPHA`; Fano profile `fano` |
 | `operators.py` | oscillator operators, functions of x̂ via the eigenbasis of the truncated b+b†, probe/coupling profiles and recoil operators |
 | `master_equation.py` | `liouvillian`, `factorize`, `steady_state`, `relax_rate`, `solve_me`, BDF2 `evolve`, `fock_drift` |
+| `zeeman.py` | all ground sublevels, eliminated and banded: `structure_lambda`, `structure_zeeman_lambda`, `solve` |
 | `rate_models.py` | simple model `simple`, `unified`, generalised rate model `grm_matrix`, `grm_steady_state`, `thermal`, `CSAT = 2.25` |
 
 Conventions and gotchas:
@@ -257,6 +258,8 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
+- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. Next: both axes, real mode polarisations.
+- **Prior work:** carrier-free EIT at a node is Xing & Mehta, PR Applied 24, 014034 (2025), and the heavy-tail law is Dechant et al. (2015, 2016). Do not present either as new; see `notes/paper_draft_ideas.md`.
 - **Both radial axes (theory and chain done; `notes/anomalous-cooling/two_axes_theory.md`).** One probe cools one motional mode; recoil heats both axes, so a cold state needs h < 1/2. h = 0.188 ζ/b_p with ζ = k_L a ω_rec/ν_z: the limits on a scale with ν_z. Numbers in the key-results table are for ONE axis.
 - **Case-A convergence fix (done).** The case-A
   master-equation results at N = 20 (key results table, Figs 3, 4, 5a, GRM calibration) are not

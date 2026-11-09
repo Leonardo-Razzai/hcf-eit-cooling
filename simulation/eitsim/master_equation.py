@@ -115,25 +115,20 @@ def liouvillian_eliminated(p):
     return L.tocsc(), d, b
 
 
-def banded_generator(p, B=6):
-    """Generator of the eliminated master equation restricted to the coherences
-    rho_(a,n),(b,m) with |n - m| <= B: d x/dt = M x for the kept elements x.
-
-    Every term X rho Y restricted to the kept set S is the element-wise product
-    X[r_s, r_s'] * Y^T[c_s, c_s'], so M (dimension ~ 4 N (2B + 1)) is assembled
-    from dense 2N x 2N operators, in row blocks to bound the temporaries.
-    Returns (M, r, c, n_of): kept (row, col) ground indices and the Fock number
-    of each ground index.
-    """
-    H, Cs, b = effective_ops(p)
-    N = p['N']
-    n_of = np.tile(np.arange(N), 2)                     # Fock number of each ground index
+def banded_assemble(H, Cs, na, N, B):
+    """Generator on the coherences |n - m| <= B for H and jumps Cs (dense or sparse) on
+    (na internal levels) x (N Fock states). Every term X rho Y restricted to the kept set S is the
+    element-wise product X[r_s, r_s'] * Y^T[c_s, c_s'], so M (dimension ~ na^2 N (2B + 1)) is
+    assembled in row blocks to bound the temporaries. Returns (M, r, c, n_of): kept (row, col)
+    indices and the Fock number of each index."""
+    n_of = np.tile(np.arange(N), na)                    # Fock number of each index
     r, c = np.nonzero(np.abs(n_of[:, None] - n_of[None, :]) <= B)   # kept (row, col)
     S = r.size
-    K = sum((C.getH() @ C) for C in Cs).toarray()
-    G = -1j * H.toarray() - 0.5 * K                     # rho -> G rho + rho G^dag + jumps
+    H = H.toarray() if sp.issparse(H) else H
+    Cd = [C.toarray() if sp.issparse(C) else C for C in Cs]
+    K = sum(C.conj().T @ C for C in Cd)
+    G = -1j * H - 0.5 * K                               # rho -> G rho + rho G^dag + jumps
     Gc = G.conj()
-    Cd = [C.toarray() for C in Cs]
     Cc = [x.conj() for x in Cd]
     M = np.empty((S, S), complex)
     step = max(1, int(2e7 // S))                        # rows per block (bounded temporaries)
@@ -146,6 +141,14 @@ def banded_generator(p, B=6):
             blk += Cj[np.ix_(rs, r)] * Ccj[np.ix_(cs, c)]
         M[sl] = blk
     return M, r, c, n_of
+
+
+def banded_generator(p, B=6):
+    """Generator of the eliminated master equation restricted to the coherences
+    rho_(a,n),(b,m) with |n - m| <= B: d x/dt = M x for the kept elements x.
+    Returns (M, r, c, n_of), see banded_assemble."""
+    H, Cs, b = effective_ops(p)
+    return banded_assemble(H, Cs, 2, p['N'], B)
 
 
 def solve_banded(p, B=6, rate=True):

@@ -368,3 +368,33 @@ def test_w0_equals_integrated_p0_from_time_evolution():
     assert np.isclose(1 / tau, r['W0'], rtol=2e-3)
     assert np.isclose(P0[0, -1], r['P0'], rtol=1e-3)
 
+
+# ---------------------------------------------------------------- Zeeman
+def test_zeeman_solver_reduces_to_three_levels():
+    from eitsim import zeeman as Z
+    for bp in (0.5, 5 / 6):
+        p = E.params(E.paper_cases()['B'], s=1.0, N=12, bp=bp)
+        ref = E.solve_banded(p, B=4)
+        q = dict(p, om=E.paper_cases()['B']['om'])
+        r = Z.solve(Z.structure_three_level(bp), q, B=4)
+        assert np.isclose(r['n'], ref['n'], rtol=1e-8) and np.isclose(r['P0'], ref['P0'], rtol=1e-8)
+
+
+def test_zeeman_decay_sum_rule():
+    """Each excited sublevel decays at exactly Gamma, with the branching ratios of atoms.py."""
+    from eitsim import zeeman as Z
+    for Fe, gp in ((1, 2), (2, 1)):
+        st = Z.structure_lambda('D1', Fe, gp, {0: 1.0}, {0: 1.0})
+        tot = sum(np.abs(D)**2 for D, u, w in st['groups']).sum(axis=0)
+        assert np.allclose(tot, 1.0)
+        toP = sum(np.abs(D[:st['nP']])**2 for D, u, w in st['groups']).sum(axis=0)
+        assert np.allclose(toP, E.branching('D1', Fe, gp))
+
+
+def test_zeeman_dark_state_counting():
+    """F=2 -> F'=1: at least two probe-dark combinations, for any polarisation."""
+    from eitsim import zeeman as Z
+    for pol in ({0: 1.0}, {1: 1.0}, {1: 1 / np.sqrt(2), -1: 1 / np.sqrt(2)}):
+        g = Z.field_matrix('D1', 2, [(1, m) for m in (-1, 0, 1)], pol)
+        assert np.linalg.matrix_rank(g) <= 3
+
