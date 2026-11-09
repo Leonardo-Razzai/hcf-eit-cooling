@@ -57,7 +57,7 @@ A fixed Δ also scales as ε^(−1/2) up to a logarithm, **so the gain is only l
 From n̄₀ = 30 the master equation needs ≈ 21 ms to P₀ = 0.9, the one-variable model ≈ 1 ms. The late rate is only ≈ 0.08 W₀.
 So the time is spent draining hot atoms, not in the last phonon. Estimate:
 
-  T_II ≈ n_c/R_sat, n_c = 2(ν_r/Γ_n)²/s;  T_III ≈ ln(n₀/n_c)/(K s), K ≈ 200 s⁻¹ (R ≈ K s n at s = 1, n = 30–200).
+  T_II ≈ n_c/R_sat, n_c = 2(ν_r/Γ_n)²/s;  T_III ≈ ln(n₀/n_c)/(K s), K ≈ c R_sat/18 ≈ 200 s⁻¹ (R ≈ R_sat(1 + c n/n_c), c ≈ 1.3–1.9 at s = 1, n = 50–200).
 
 **Both fall as 1/s,** so the bottleneck is the plateau: at higher s it shrinks, and the fast channel takes over.
 
@@ -70,7 +70,7 @@ So the time is spent draining hot atoms, not in the last phonon. Estimate:
 | 10 | 1.8 | 1.7 | not run |
 
 The estimate is 1.5× high but has the right ratio (1.23 against 1.22). **Above s = 1 it is an extrapolation:** drift data stop at s = 1,
-and friction may peak (once Ω_R√n ≫ ν_r the atom follows the dark state adiabatically and scatters less, as in gray molasses).
+and an earlier worry of a friction peak (adiabatic dark-state following) is not supported: passage through the node gets more diabatic as √(n/n_c) (note, fast-channel derivation). Measure it anyway.
 
 **A warning for naive ramps.** Lowering s raises n_c, so atoms still at n ~ 10–100 fall back onto the slow plateau. A ramp that follows
 P₀ alone could strand the tail. This is why the problem needs P(n), not one variable.

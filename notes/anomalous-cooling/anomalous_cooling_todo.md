@@ -268,3 +268,11 @@ He 2017 full text; last 13 % of Bartolotta. Consider contacting the Barkai group
 - N-sensitivity of n_ss appears only at large h and 6 Gamma (up to +44 %), near zero at h < 1/3.
 - Band: P0 stable (B = 4 vs 8, 3e-4 or better for bp >= 1/2); W0 within 0.6 %, except bp = 1/6 corner (6 %, P0 < 0.55). Thermal nbar_0 = 30: P0 within 0.1 %, <n> within 3 % (B = 4 vs 6).
 
+## Fast channel: derived, not only hypothesised (9 Nov 2026)
+
+Note, "Derivation of the fast channel". The eliminated H is gray molasses by construction. Golden rule on theta_dot gives exactly n s Gamma_n/2 (the sideband rate);
+strong coupling gives R = R_sat (1 + c n/n_c), measured c = 1.3-1.9 for n = 50-200, s = 1. So sign test, Delta scan and semiclassical calculation are now confirmations, not tests of the picture.
+Sign flip predicts a capture range, R_sat (1 - c n/n_c).
+
+Open: dip at s n ~ 8 (0.69-0.75 of the base rate, collapses in s n); value of c; onset shape; high-s limit. Cheap confirmation if wanted: one Fock-drift scan at Delta < 0, one at another Delta.
+
