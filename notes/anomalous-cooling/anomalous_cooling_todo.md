@@ -276,3 +276,12 @@ Sign flip predicts a capture range, $R_{\rm sat}(1 - cn/n_c)$.
 
 Open: dip at $sn \sim 8$ (0.69-0.75 of the base rate, collapses in s n); value of c; onset shape; high-s limit. Cheap confirmation if wanted: one Fock-drift scan at $\Delta < 0$, one at another $\Delta$.
 
+
+## Mode purification by the atomic column: deferred (9 Nov 2026)
+
+Theory in `notes/mode_filter_theory.md`. Not a priority for now.
+
+- [ ] $\gamma_p(\epsilon)$ from the steady 1D master equation: does the carrier heat the atoms? Decides the clamp.
+- [ ] Absorption coefficient directly from the atomic polarisation projected on LP₀₁: test ${\rm OD}_{\rm eff}$.
+- [ ] Same for the Zeeman schemes, where $\delta_{\rm e}$ moves by 0.45–0.75 $\nu_r$.
+- [ ] Propagation $y(z)$, $P_0(z)$, time dependence by slices: hot-stage gain in $s_{\max}$.
