@@ -14,8 +14,8 @@ rotation). Only the addressed axis loses phonons, recoil acts on both.
   validate  1D chain against the master-equation map     -> results/two_axes_validate.dat
   steady    steady states, one axis and both, on the map -> results/two_axes_steady.dat (4 workers)
   thermal   time to P0 from thermal states, both axes     -> results/two_axes_thermal.dat
-  exact     eliminated ME on (n_x, n_y), N = 8 per axis, against the chain
-                                                         -> results/two_axes_exact.dat (~1 h)
+  exact     eliminated ME on (n_x, n_y), N = 6 per axis, against the chain at the same N; switching
+            time tau; slow alternation needed, tau ~ 10/Gn  -> results/two_axes_exact.dat (~15 min)
 
 Usage: python two_axes.py [validate] [steady] [thermal] [exact]
 """
@@ -159,7 +159,123 @@ def steady():
                                  'edge', 't_end'], rows)
 
 
-STUDIES = {'validate': validate, 'steady': steady}
+def thermal():
+    """Time to P00 >= 0.5, 0.8, 0.9 of the steady value from thermal n_x = n_y = nbar_0, both axes."""
+    pc = E.paper_cases()
+    rows = []
+    for nw, bp, DG, s, lab in ((pc['A']['eta_sp']**-2, 1 / 2, 3.0, 1.0, 'A 1/2'), (pc['A']['eta_sp']**-2, 5 / 6, 3.0, 1.0, 'A 5/6'),
+                               (3.0, 5 / 6, 3.0, 1.0, 'nu=3 5/6'), (pc['B']['eta_sp']**-2, 1 / 2, 3.0, 1.0, 'B 1/2')):
+        for nb in (3.0, 10.0, 30.0):
+            N = 160
+            th = E.thermal(nb, N)
+            P, tr = evolve_2d(nw, bp, DG, s, N, 0.5, 0.5, np.outer(th, th), 6000.0, out=5.0)
+            P00 = tr[:, 3]
+            end = P00[-1]
+            ts = [tr[np.argmax(P00 >= f * end), 0] if (P00 >= f * end).any() else np.nan for f in (0.5, 0.8, 0.9)]
+            rows.append([nw, bp, nb, end, tr[-1, 1]] + ts)
+            log('thermal', lab, 'nbar0 %g' % nb, 'P00(end) %.4f nx(end) %.3f; t(0.5, 0.8, 0.9 P00) in 1/nu_r: %.0f %.0f %.0f' % (end, tr[-1, 1], *ts))
+    save('two_axes_thermal.dat', ['nu_wrec', 'bp', 'nbar0', 'P00_end', 'nx_end', 't50', 't80', 't90'], rows)
+
+
+def exact_2d(nw, bp, DG, s, N=6, tmax=600.0, dt=0.1, tau=32.0, only_x=False, recoil_y=True, quiet=False):
+    """Eliminated master equation on (n_x, n_y): the x and y probes alternate, L_x for tau and
+    L_y for tau, with 1/Gn << tau << 1/W; RK4 for the dense 2 N^2 x 2 N^2 density matrix.
+    Averaging the two Liouvillians instead would add the probes coherently in H: a single
+    probe at 45 degrees at half amplitude, which is not alternation (it does not cool)."""
+    import scipy.sparse as sp
+    from eitsim.operators import profile_ops
+    fc = E.reduced_case(nw)
+    p = E.params(fc, s=s, N=N, bp=bp, Delta_G=DG)
+    b, w, V = oscillator(N)
+    fp, fcp = profile_ops(p, w, V)
+    fp, fcp = fp.toarray(), fcp.toarray()
+    I = np.eye(N)
+    n1 = np.diag(np.arange(N, dtype=float))
+    Nn = np.kron(n1, I) + np.kron(I, n1)
+    d = 2 * N * N
+    Zero = np.zeros((N * N, N * N), complex)
+    Hg = np.block([[Nn, Zero], [Zero, Nn - p['d2'] * np.eye(N * N)]])
+    ck = 1.0 / (-p['D'] - 0.5j * p['G'])
+    fc2 = np.kron(fcp, fcp)
+    As = []
+    for fp2 in (np.kron(fp, I), np.kron(I, fp)):
+        As.append(np.hstack([0.5 * p['Wp'] * fp2, 0.5 * p['Wc'] * fc2]))        # N^2 x 2 N^2
+    # emission along (u_x, u_y): dipole along z, sin^2(theta) = 4/5, four azimuths (u and -u are equivalent)
+    us = [np.sqrt(0.8) * np.array([np.cos(ph), np.sin(ph)]) for ph in (np.pi / 8, 3 * np.pi / 8, 5 * np.pi / 8, 7 * np.pi / 8)]
+    eta = p['eta_sp']
+    stages = []
+    Zr = np.zeros_like(As[0])
+    for Am in As:
+        H = Hg - ck.real * (Am.conj().T @ Am)
+        Cs = []
+        for ux, uy in us:
+            Dx = (V * np.exp(1j * eta * ux * w)) @ V.conj().T
+            Dy = (V * np.exp(1j * eta * uy * w)) @ V.conj().T if recoil_y else np.eye(N)
+            DA = np.kron(Dx, Dy) @ Am
+            for j, bj in ((0, bp), (1, 1 - bp)):
+                if bj:
+                    blk = [DA, Zr] if j == 0 else [Zr, DA]
+                    Cs.append(np.sqrt(p['G'] * bj / 4) * ck * np.vstack(blk))
+        G = -1j * H - 0.5 * sum(C.conj().T @ C for C in Cs)
+        stages.append((G, G.conj().T, Cs, [C.conj().T for C in Cs]))
+
+    def rhs(r, st):
+        G, Gd, Cs, Cd = st
+        out = G @ r + r @ Gd
+        for C, Ch in zip(Cs, Cd):
+            out += C @ r @ Ch
+        return out
+    th = E.thermal(0.3, N)
+    r = np.zeros((d, d), complex)
+    idx = np.arange(N * N)
+    r[idx, idx] = np.kron(th, th)
+    trace = []
+    nsteps = int(tmax / dt)
+    per = int(tau / dt)
+    for k in range(nsteps):
+        st = stages[0 if only_x else (k // per) % 2]            # L_x for tau, then L_y for tau
+        k1 = rhs(r, st)
+        k2 = rhs(r + 0.5 * dt * k1, st)
+        k3 = rhs(r + 0.5 * dt * k2, st)
+        k4 = rhs(r + dt * k3, st)
+        r = r + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+        if k % (2 * per) == 2 * per - 1:
+            pop = np.real(np.diag(r))
+            pp = (pop[:N * N] + pop[N * N:]).reshape(N, N)
+            x, y = pp.sum(axis=1), pp.sum(axis=0)
+            trace.append((pp[0, 0], 0.5 * (x[0] + y[0]), 0.5 * (np.arange(N) @ x + np.arange(N) @ y)))
+            if not quiet:
+                log('exact', 'nu %.2f bp %.2f t %.0f' % (nw, bp, (k + 1) * dt), 'P00 %.5f P0x %.5f nx %.5f trace %.6f' % (*trace[-1], pop.sum()))
+            x0 = x[0]
+    return (trace[-1], trace[-2], x0 if only_x else None, np.arange(N) @ x if only_x else None)
+
+
+def exact():
+    """Exact 2D master equation at N = 6 per axis against the chain at the same N: switching time
+    tau at one point, then slow alternation at larger h. The one-axis limit of this code gives the
+    1D master equation (0.97207 against 0.97211 in P0)."""
+    rows = []
+    B = E.paper_cases()['B']['eta_sp']**-2
+    A = E.paper_cases()['A']['eta_sp']**-2
+    N = 6
+    runs = [(B, 1 / 2, tau, tm) for tau, tm in ((4.0, 300.0), (8.0, 300.0), (16.0, 400.0), (32.0, 600.0), (64.0, 800.0))]
+    runs += [(5.0, 1 / 2, 32.0, 800.0), (A, 5 / 6, 32.0, 800.0), (3.0, 1 / 2, 32.0, 1000.0)]
+    for nw, bp, tau, tm in runs:
+        DG, s = 3.0, 1.0
+        (P00, P0x, nx), prev, _, _ = exact_2d(nw, bp, DG, s, N=N, tmax=tm, tau=tau, quiet=True)
+        p1 = chain_1d(nw, bp, DG, s, N)
+        P2, tr = evolve_2d(nw, bp, DG, s, N, 0.5, 0.5, np.outer(p1, p1), 12000.0, tol=1e-4, out=100.0)
+        x = P2.sum(axis=1)
+        r1 = E.solve_banded(E.params(E.reduced_case(nw), s=s, N=N, bp=bp, Delta_G=DG), B=N)
+        h = E.ALPHA / (bp * nw)
+        rows.append([nw, bp, h, tau, N, P00, P0x, nx, abs(P0x - prev[1]), P2[0, 0], x[0], np.arange(N) @ x, r1['P0'], r1['n'], p1[0]])
+        log('exact nu %.2f bp %.2f h %.3f tau %g:' % (nw, bp, h, tau), 'ME P00 %.4f P0x %.4f nx %.4f | chain P00 %.4f P0x %.4f nx %.4f | 1D ME P0 %.4f, chain %.4f'
+            % (P00, P0x, nx, P2[0, 0], x[0], rows[-1][11], r1['P0'], p1[0]))
+    save('two_axes_exact.dat', ['nu_wrec', 'bp', 'h', 'tau', 'N', 'P00_me', 'P0x_me', 'nx_me', 'dP0x_last', 'P00_chain', 'P0x_chain', 'nx_chain',
+                                'P0_1D_me', 'n_1D_me', 'P0_1D_chain'], rows)
+
+
+STUDIES = {'validate': validate, 'steady': steady, 'thermal': thermal, 'exact': exact}
 
 if __name__ == '__main__':
     for name in sys.argv[1:]:

@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 import style
 from style import MM, WDOUBLE, CA, CB, CG, CL, CO, letter
@@ -40,6 +41,20 @@ def grid(q, DG, s, largest_N=True):
     return Z
 
 
+def key(fig, lines=True, markers=True, ncol=6):
+    """Shared legend: what the lines and the markers on the map panels mean."""
+    hs, ls = [], []
+    if lines:
+        for lab, st in ((r'$h=1/3$', ':'), (r'$h=1/2$', '--'), (r'$h=1$', '-')):
+            hs.append(Line2D([], [], color='k', ls=st, lw=0.7))
+            ls.append(lab)
+    if markers:
+        for lab, mk in ((r"Case A, $b_p=1/2$ (D1 $F'=2$)", 'o'), (r"Case A, $b_p=5/6$ (D1 $F'=1$)", 's'), (r'Case B, $b_p=1/2$', '^')):
+            hs.append(Line2D([], [], marker=mk, ls='', mfc='white', mec='k', ms=3.5, mew=0.6))
+            ls.append(lab)
+    fig.legend(hs, ls, loc='outside upper center', ncol=ncol, fontsize=6)
+
+
 def decorate(ax):
     """h lines and the real configurations."""
     x = np.geomspace(EDGE_NU[0], EDGE_NU[-1], 200)
@@ -65,7 +80,7 @@ def panel(fig, ax, Z, label, norm=None, cmap='Blues'):
 
 def fig_map():
     from matplotlib.colors import LogNorm
-    fig, ax = plt.subplots(2, 4, figsize=(WDOUBLE, 92 * MM), constrained_layout=True)
+    fig, ax = plt.subplots(2, 4, figsize=(WDOUBLE, 98 * MM), constrained_layout=True)
     for k, DG in enumerate((3.0, 6.0)):
         x = grid(lambda r: 1 - r['P0'], DG, 1.0)
         panel(fig, ax[k, 0], x, r'$1-P_0$', LogNorm(3e-3, 0.45))
@@ -79,6 +94,7 @@ def fig_map():
         ax[k, 0].text(0.0, 1.02, r'   $\Delta=%g\Gamma$, $s=1$' % DG, transform=ax[k, 0].transAxes, va='bottom')
     for a, l in zip(ax.ravel(), 'abcdefgh'):
         letter(a, l)
+    key(fig)
     fig.savefig(OUT / 'map.pdf')
     fig.savefig(OUT / 'map.png')
     plt.close(fig)
@@ -91,7 +107,7 @@ def tail_ratio_model(h, nx):
 
 
 def fig_collapse():
-    fig, ax = plt.subplots(1, 2, figsize=(WDOUBLE, 66 * MM), constrained_layout=True)
+    fig, ax = plt.subplots(1, 2, figsize=(WDOUBLE, 70 * MM), constrained_layout=True)
     cols = dict(zip(np.round(BP, 3), (CG, CB, CA, CL, CO)))
     mks = dict(zip(np.round(BP, 3), 'vs^Do'))
     for a, DG in zip(ax, (3.0, 6.0)):
@@ -122,13 +138,15 @@ def fig_collapse():
         a.text(0.0, 1.02, r'   $\Delta=%g\Gamma$, $s=1$' % DG, transform=a.transAxes, va='bottom')
     letter(ax[0], 'a')
     letter(ax[1], 'b')
+    hs = [Line2D([], [], color=CG, ls=st, lw=0.5) for st in (':', '--', '-')]
+    fig.legend(hs, [r'$h=1/3$', r'$h=1/2$', r'$h=1$'], loc='outside upper center', ncol=3, fontsize=6, title=None)
     fig.savefig(OUT / 'collapse.pdf')
     fig.savefig(OUT / 'collapse.png')
     plt.close(fig)
 
 
 def fig_target():
-    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 56 * MM), constrained_layout=True)
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 62 * MM), constrained_layout=True)
     from matplotlib.colors import LogNorm
     for a, tgt, l in zip(ax, (0.95, 0.98, 0.99), 'abc'):
         Z = np.full((BP.size, NU.size), np.nan)
@@ -140,6 +158,7 @@ def fig_target():
         panel(fig, a, Z, r'best $W_0/\nu_r$', LogNorm(0.008, 0.11))
         a.text(0.0, 1.02, r'   $P_0\geq%g$' % tgt, transform=a.transAxes, va='bottom')
         letter(a, l)
+    key(fig)
     fig.savefig(OUT / 'target.pdf')
     fig.savefig(OUT / 'target.png')
     plt.close(fig)

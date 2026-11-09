@@ -17,6 +17,7 @@ venv/
 *.synctex.gz
 paper/manuscript/main.pdf
 paper/background_report/report.pdf
+paper/background_report/core_facts.pdf
 simulation/docs/code_guide.pdf
 notes/anomalous-cooling/anomalous_cooling.pdf
 

@@ -570,7 +570,7 @@ In short, the larger mode count of a bigger core pays off only when fibre loss i
 \label{sec:nanf}
 Nested antiresonant nodeless fibres (NANFs) and their double- and triple-nested successors are the lowest-loss hollow-core fibres available. NANFs designed for windows around 660, 850 and \SI{1060}{nm} reach losses comparable to or below those of solid silica fibre, e.g.\ \SI{1.4}{dB/km} at \SI{864}{nm} and \SI{0.5}{dB/km} at \SI{1064}{nm}~\cite{sakr2020}. They are also built to be effectively single-mode. The nested tubes phase-match and strip HOMs, with HOM extinction ratios up to $5\times10^4$~\cite{gao2024}. Measured LP$_{11}$ losses in a four-fold truncated double-nested fibre were 0.43 and \SI{6.5}{dB/m} at \SI{1550}{nm} in two samples~\cite{gao2024}. We found no LP$_{11}$ loss measured at \SI{795}{nm}. Scaling the extinction ratio of $10^2$--$10^4$ to an LP$_{01}$ loss of a few dB/km suggests roughly 0.1 to some tens of dB/m, but this has to be measured for the actual fibre.
 
-How do NANFs fit the framework of Sec.~\ref{sec:coresize}? Only LP$_{11}$ is usable. The node ceiling is kept as long as $\epsilon(L)\le2.8\,\etaeff$, which gives an excess-loss budget for LP$_{11}$:
+(The purity limit $2.8\,\etaeff$ used below is the simple-model estimate; the master equation halves the rate at $\epsilon\approx1.3\,\etaeff$, Sec.~\ref{sec:soft}, so these budgets are optimistic by about 6.7\,dB.) How do NANFs fit the framework of Sec.~\ref{sec:coresize}? Only LP$_{11}$ is usable. The node ceiling is kept as long as $\epsilon(L)\le2.8\,\etaeff$, which gives an excess-loss budget for LP$_{11}$:
 \begin{equation}
   (\alpha_{11}-\alpha_{01})L\ \lesssim\ 2\ln\frac{2.8\,\etaeff}{\epsilon_0}.
   \label{eq:nanfbudget}
@@ -673,6 +673,134 @@ Both schemes share the geometric factor $G_{1m}x_0/a$, and both can use the node
 \end{itemize}
 
 %=====================================================================
+\section{Cooling in a soft trap: results of the converged simulations}
+\label{sec:soft}\hypertarget{d:soft}{}
+%=====================================================================
+The sections above are analytic. This section collects what the converged master-equation studies add. Status tags: [numerics], computed; [model], analytic estimate; [hypothesis], not established. All numbers are for an ideal closed $\Lambda$ system, without Zeeman structure, unless stated. Summary with the key equations only: \href{core_facts.pdf}{\texttt{core\_facts.pdf}}.
+
+\subsection{Reduced description and the control parameter}
+\label{sec:zeta}\hypertarget{d:zeta}{}
+Only $\nu_r/\omega_{\rm rec}$, $b_p$, $\Delta/\Gamma$ and $s$ matter: $\Gamma/\nu_r$ and $x_0/a$ drop out to $<0.3\%$. Rates scale with $\nu_r$. The recoil per removed phonon is
+\begin{equation}
+  h=\kappa\alpha\eta_{\rm sp}^2=\frac{\alpha}{b_p}\frac{\omega_{\rm rec}}{\nu_r},\qquad \alpha=\langle u_x^2\rangle=0.397 .
+\end{equation}
+For a lattice in LP$_{01}$, with mode radius $w=0.67a$, $\nu_r/\nu_z=\sqrt2/(k_Lw)$, with $k_L=2\pi/\lambda_L$. Since the depth, and so $\nu_z$, can be raised, the core radius does not fix $h$ by itself. The control parameter is $a/\nu_z$, or in dimensionless form
+\begin{equation}
+  \zeta\equiv k_La\,\frac{\omega_{\rm rec}}{\nu_z},\qquad \frac{\nu_r}{\omega_{\rm rec}}=\frac{2.11}{\zeta},\qquad h=0.188\,\frac{\zeta}{b_p},
+  \label{eq:zeta}
+\end{equation}
+with $\nu_z/\omega_L=2\sqrt{U_0/E_L}$, $E_L=\hbar\omega_L$ being the lattice recoil. Case A at $\nu_z=\SI{300}{kHz}$ has $\zeta=1.07$ (D1), case B has $0.25$. A second independent number is the core size in cooling wavelengths, $ka$: the gradient coupling is
+\begin{equation}
+  \etaeff=\frac{G_{11}}{ka}\sqrt{\frac{\zeta}{2.11}},
+\end{equation}
+so at fixed $\zeta$ a larger core is harder on mode purity, $\epsilon_c\simeq1.3\,\etaeff$. The costs of raising $\nu_z$ are: beam power $\propto\nu_z^2a^2$ ($\approx\SI{0.14}{W}$ per beam at $a=\SI{15}{\micrometre}$, $\SI{300}{kHz}$, from the polarisability; an estimate), lattice scattering $\propto\nu_z^2$, tighter purity and a larger excited-state light shift ($U_0/h\approx\SI{120}{MHz}\approx20\Gamma$ at \SI{6}{mK}), which is not in the model and probably sets the ceiling. A smaller core improves $h$, purity, optical depth and power together. A deeper lattice improves only $h$.
+
+\subsection{Numerics}
+\hypertarget{d:numerics}{}
+With $\eta_{\rm sp}\approx0.7$ the full master equation is not converged at $N=20$ (case A, $s=1$: $n_{\rm ss}=0.133\to0.1545$, $W=1319\to1614\,$s$^{-1}$), and $N\gtrsim90$ is out of reach. We eliminate the excited manifold (effective operators~\cite{reiter2012}) and keep coherences $|n-m|\le B$, with a dense LU. Errors: $<0.5\%$ against the full equation at $\Delta=3\Gamma$; $B=4$--6 stable for $P_0$ also for hot states. The cut-offs depend on $\eta_{\rm sp}$, $s$, $b_p$ and $\Delta$ (\texttt{simulation/numerics.toml}). Implementation and evidence are in the code guide.
+
+\subsection{Which rate}
+\label{sec:W0}\hypertarget{d:W0}{}
+From $\ket{g_p,1}$, $\langle n\rangle$ falls and then rises slowly as recoil fills the tail, so with core and tail parts
+\begin{equation}
+  \frac{1-n_{\rm ss}}{W}=\int_0^\infty(\langle n\rangle-n_{\rm ss})\,dt\simeq\frac{1-n_{\rm core}}{W_c}-\frac{n_{\rm tail}}{\lambda}.
+\end{equation}
+The negative term makes $W$ depend on $N$, and gives a pole and a sign change near $n_{\rm ss}\approx0.2$. The rate of the ground-state population,
+\begin{equation}
+  W_0^{-1}=\frac{1}{P_0^{\rm ss}}\int_0^\infty\big(P_0^{\rm ss}-P_0(t)\big)dt,
+\end{equation}
+is stable: case A, $s=1$, $N=20$, 40, 120: $W=1319$, 1544, 1614, $W_0=2188$, 2220, 2225\,s$^{-1}$ [numerics]. The two differ by $\approx1.2$ even at weak probe, for a reason not yet established. $W_0$ is meaningful only for cold states ($P_0\gtrsim0.85$, $n_{\rm ss}<1$). It is the time scale of the last phonon, not the preparation time: from thermal states the times are many times $1/W_0$ (Sec.~\ref{sec:prep}).
+
+\subsection{Three regimes of the removal rate, and one formula}
+\label{sec:regimes}\hypertarget{d:regimes}{}
+Eliminating the excited state gives a dark state at zero energy and a bright state shifted by $\delta_B(x)=\nu_r(1+\tan^2\theta)$ with $\tan\theta=gx$, $gx_0=(\Gamma_n/\nu_r)\sqrt{s/8}$. Motion couples them through $\dot\theta\simeq gv$. This is gray molasses by construction. At weak coupling, $\dot\theta$ oscillates at $\nu_r$, resonant with $\delta_B(0)=\nu_r$, and the golden rule with $v_0^2=4x_0^2\nu_r^2n$ gives $(gv_0)^2/\Gamma_n=ns\Gamma_n/2$, \emph{exactly the red-sideband rate}. With $(1-h)$ it predicts 45 and 447\,s$^{-1}$ at $n=1$, $s=0.01$, 0.1, against the stored drift of 43 and 386\,s$^{-1}$. At strong coupling each cycle removes the hill. Together,
+\begin{equation}
+  R(n)\simeq R_{\rm sat}\,\frac{c_{\rm sat}\,sn}{1+c_{\rm sat}\,sn}\Big(1+c\,\frac{n}{n_c}\Big),\qquad n_c=\frac{2(\nu_r/\Gamma_n)^2}{s}\simeq\frac{2(\Delta/\Gamma)^2}{s},
+  \label{eq:Rn}
+\end{equation}
+with $c$ of order 1 (measured 1.3--1.9 for $n=50$--200, $s=1$, $R_{\rm sat}=2\times10^3\,$s$^{-1}$), and diffusion $D/n$ changing by only 1.8 over $n=20$--200: more energy per cycle, not more cycles. At the node $\dot\theta_{\max}/\delta_B(0)=\sqrt{n/n_c}$, so the passage gets less adiabatic with $n$, and no drop of friction by dark-state following is expected [model]. Flipping the sign of $\Delta$ and retuning to the red sideband should give $R\simeq R_{\rm sat}(1-cn/n_c)$, a capture range [model, not simulated]. Not explained: a dip to $\approx0.7$ of the plateau near $sn\approx8$, which collapses in $sn$. Also not derived: $c$ and the sharp onset.
+
+\subsection{Heavy-tailed Fock statistics}
+\label{sec:tail}\hypertarget{d:tail}{}
+A saturated, roughly constant removal rate with energy diffusion $D\simeq hnR$ gives $v/D\simeq-(1-h)/(hn)$ and the Fokker--Planck tail
+\begin{equation}
+  P(n)\propto n^{-1/h}\,e^{-n/n_x},\qquad n_x\sim hn_c ,
+\end{equation}
+with a measured scale about twice larger. At $s=0.1$, the slope is $-2.34$ against $-2.48$ for $30\le n\le200$; the form built from the measured $v$ and $D$ reproduces the tail for $n\gtrsim5$. Below that it fails, as single jumps are comparable with $n$. In case A at $s=0.1$, $3\times10^{-4}$ of the atoms ($n>10$) carry 27\% of $\langle n\rangle$ and 89\% of $\langle n^2\rangle$, while $P_0=0.987$.
+
+Without a cut-off, $\langle n^2\rangle$ diverges for $h\ge1/3$, $\langle n\rangle$ for $h\ge1/2$, and no stationary state exists for $h\ge1$. The fast channel makes these crossovers, of width $\delta h\simeq h^2/\ln[2(\Delta/\Gamma)^2]$ [model]. Check: ${\rm Var}(n)\propto N^{0.54}$ against $N^{3-1/h}=N^{0.5}$ at $s=0.1$, case A.
+
+\textbf{This tail law is not new.} Sisyphus cooling in a harmonic trap has $P(E)\propto E^{-1/D}$, with the mean diverging at $D>1/2$ and no stationary state at $D>1$~\cite{dechant2015,dechant2016}, for the same reason. What we did not find elsewhere, in a targeted search: this in resolved-sideband ground-state cooling, with $h$ set by the trap and $b_p$; coexistence with $P_0>0.95$ and a tail from $n\approx3$ (for Sisyphus, above $\sim10^3E_r$); the cut-off and its consequences; the failure of $W$. Carrier-free EIT at a node is known for ions~\cite{xing2025}.
+
+\subsection{Map in $(\nu_r/\omega_{\rm rec},\,b_p)$}
+\label{sec:map}\hypertarget{d:map}{}
+Figure~\ref{fig:map}: master equation, $\nu_r/\omega_{\rm rec}=1$--15, $b_p=1/6$--5/6, $\Delta=3\Gamma$, $6\Gamma$, $s=0.3$, 1, 3 [numerics]. The tail measure $\langle n\rangle/(1-P_0)$ at equal $h$ by different routes agrees within about 1--30\% for $h\gtrsim0.4$ (Fig.~\ref{fig:collapse}). $1-P_0$ and $W_0$ do not collapse: they differ by factors 2--4 at equal $h$, larger $b_p$ being better. No sharp thresholds are visible. Best rates on the case-A trap, three levels: $P_0\ge0.99$: 536 ($b_p=1/2$) and 1743\,s$^{-1}$ ($b_p=5/6$), on a coarse grid of settings. The finer D1/D2 scan gives $\approx2\times$ at this target.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/universal/map.pdf}
+\caption{One radial axis, master equation, $s=1$: $1-P_0$; $W_0/\nu_r$ (blank where $P_0<0.85$ or $n_{\rm ss}\ge1$); tail measure; change of $n_{\rm ss}$ from $N=120$ to 250. Upper row $\Delta=3\Gamma$, lower row $6\Gamma$.}
+\label{fig:map}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{../../simulation/results/universal/collapse.pdf}
+\caption{Tail measure against $h$ for all routes on the map. Solid: the closed form with $n_x=2hn_c$; low by 1.5--2$\times$ at $h\approx0.3$--0.8, and high for $b_p=1/6$, $h>1$.}
+\label{fig:collapse}
+\end{figure}
+
+\subsection{Preparation time}
+\label{sec:prep}\hypertarget{d:prep}{}
+Banded evolution of one axis at $s=1$, time to $P_0\ge0.9$ [numerics]: case A, $b_p=1/2$: 5.8, 14.2, 20.8\,ms from $\bar n_0=3$, 10, 30, where the GRM gives 5.4, 18.0, 47.1\,ms; $b_p=5/6$: 2.5, 6.9, 12.7\,ms; case B: 0.78, 2.1, 3.5\,ms. So the GRM is right at low $\bar n_0$ and too slow when hot, by 2.3$\times$ (A) and 1.7$\times$ (B) at about \SI{10}{\micro K}: the fast channel shows up in the dynamics. The cooling time is sublinear in temperature, not linear as stated from the GRM. $P_0$ agrees within 0.1\% between $B=4$ and 6 at $\bar n_0=30$; $\langle n\rangle$ within 3\%.
+
+\paragraph{Optimal $s$ ramp [model].} With $\dot{\bm P}=Q(s)\bm P$, time-optimal control gives $s^*(t)={\rm argmax}\,\bm\lambda^{\rm T}Q(s)\bm P$, $\dot{\bm\lambda}=-Q^{\rm T}\bm\lambda$: the best $s$ depends on all of $P(n)$. For the cold end, with $x=1-P_0$, $x_{\rm ss}=a(1+\beta s)$, $\lambda=\Lambda_0s/(1+s/s_0)$, one finds
+\begin{equation}
+  s^*(x)=s_0\Big[\sqrt{1+\frac{x/a-1}{\beta s_0}}-1\Big],
+\end{equation}
+with a gain of only 1.03--1.8 over the best constant $s$. The larger potential is the hot stage: time goes as $T\sim1/s$, since $n_c\propto1/s$; above $s=1$ this is extrapolated. Simulations deferred. $s_{\max}\lesssim8(\Delta/3\Gamma)^2(\etaeff/\epsilon)^2$.
+
+\subsection{Both radial axes}
+\label{sec:2d}\hypertarget{d:2d}{}
+\textbf{One probe cools one motional mode.} Near the node $f\simeq c_xx+c_yy$. On the red sideband only the annihilation part is resonant, so the probe couples to $c_xa+c_yb$, and the orthogonal mode is dark. Hence LP$_{11}$ cools one axis, and a scalar OAM beam $x+iy$ cools only one circular mode $a_-=(a+ib)/\sqrt2$: absorbing $l=+1$ while removing energy can only remove an $L=-1$ quantum. Options: alternating lobes; a rotating pattern, $W\ll\omega_{\rm rot}\ll\Gamma_n$; trap anisotropy, $W\ll|\nu_x-\nu_y|\lesssim\Gamma_n$, with lobes at 45$^\circ$; two incoherent OAM beams. All give $\approx W/2$ per axis. A \textbf{vector vortex} (TE$_{01}$, TM$_{01}$; $J=0$) has $\sigma^\pm\propto x\pm iy$, so one beam could cool both modes, if the two polarisations drive independent Raman paths; this needs the Zeeman model. Averaging two Liouvillians is not alternation: it adds the probes coherently in $H$, and does not cool. So switching must be slow compared with $1/\Gamma_n$.
+
+\textbf{Recoil couples the axes.} A cycle removes a quantum from one mode and heats both axes, so when both are saturated
+\begin{equation}
+  v=-\frac R2(1-2h),\quad D=hnR\quad\Rightarrow\quad P(n)\propto n^{-1/(2h)},\qquad n_{\rm core}=\xi\frac{1+2h}{1-2h},\quad\xi=\Big(\frac{\Gamma}{4\Delta}\Big)^2 .
+\end{equation}
+\textbf{A cold state needs $h<1/2$, not $h<1$}, that is $\zeta<2.66\,b_p$; a clean tail, $2h<1/3$, needs $\zeta<0.89\,b_p$. At $\nu_z=\SI{300}{kHz}$ these are $a<\SI{19}{\micrometre}$ and \SI{6}{\micrometre} for $b_p=1/2$, and \SI{31}{\micrometre} and \SI{10}{\micrometre} for $b_p=5/6$; they scale with $\nu_z$. $\alpha_x+\alpha_y=0.8$ here; it is 0.6--0.67 for other dipole patterns, which softens the doubling.
+
+\textbf{2D rate chain [numerics, model].} $P(n_x,n_y)$, with the red and blue rates and the fast channel of Eq.~\eqref{eq:Rn} and the exact recoil kernel on both axes, time-shared; no parameter beyond those fixed in 1D. In 1D it reproduces $1-P_0$ of the map within 10\% for $h\lesssim0.4$ (median 1.02), overestimates $\langle n\rangle$ by 1.2--1.6$\times$ at $h\approx0.4$ and fails above $h\approx0.6$, so $P_0$ is reliable and $\langle n\rangle$ is an upper bound. Steady states, both axes, $s=1$:
+
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+ & $h$ & $P_0$, 1D & $P_{00}$, 2D, $3\Gamma$ & $\langle n_x\rangle$, 2D, $3\Gamma$ & $P_{00}$, 2D, $6\Gamma$\\
+\midrule
+Case A, $b_p=1/2$ & 0.40 & 0.950 & 0.755 & 2.2 & 0.941\\
+Case A, $b_p=5/6$ & 0.24 & 0.975 & 0.927 & 0.10 & 0.982\\
+$\nu_r/\omega_{\rm rec}=3$, $b_p=5/6$ & 0.16 & 0.979 & 0.946 & 0.045 & 0.987\\
+$\nu_r/\omega_{\rm rec}=5$, $b_p=5/6$ & 0.10 & 0.981 & 0.956 & 0.029 & 0.989\\
+Case B, $b_p=5/6$ & 0.06 & 0.982 & 0.961 & 0.023 & 0.990\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The floor ratio follows the formula above (1.77 against 1.75 at $h=0.24$; 1.41 at $h=0.16$). Above $h\approx0.5$, $P_{00}$ falls strongly ($\approx0.5$ at $h=0.57$, $3\Gamma$), though those runs are not converged and are near the range where the chain fails. Time to $0.9$ of the final $P_{00}$, case A, $b_p=5/6$: 10, 22, 32\,ms from $\bar n_0=3$, 10, 30. The two-axis $P_{00}$ of case A, $b_p=1/2$, lies at $2h\approx0.8$, near where the chain fails, so it is indicative only.
+
+\textbf{Exact check [numerics].} Eliminated master equation on $(n_x,n_y)$, $N=6$ per axis, against the chain at the same $N$, $\Delta=3\Gamma$, $s=1$. With one axis the code gives the 1D result (0.97207 against 0.97211). For slow alternation: $P_{00}=0.933$ (chain 0.938) at $h=0.09$; 0.919 (0.924) at $h=0.16$; 0.927 (0.931) for case A, $b_p=5/6$; 0.893 (0.898) at $h=0.26$. Larger $h$ cannot be tested at this $N$. \textbf{Switching must be slow:} at $h=0.09$, $P_{0x}=0.777$, 0.896, 0.955, 0.964, 0.964 for stage length $\tau\nu_r=4$, 8, 16, 32, 64, so $\tau\gtrsim10/\Gamma_n$, $\approx\SI{0.7}{ms}$ in case A [numerics, one point; the mechanism is not analysed].
+
+\subsection{D1 against D2}
+\hypertarget{d:lines}{}
+Case A, all excited levels, $\delta_{\rm e}$ selected on $W_0$, $\Delta=3\Gamma$, $s=1$, both interference signs [numerics]: D1 $F'=2$: $W_0=2.2\times10^3\,$s$^{-1}$, $P_0=0.953$--0.955, within 1\% of three levels. D1 $F'=1$, probe on $F=2$ ($b_p=5/6$): 3.2--$3.6\times10^3\,$s$^{-1}$, $P_0=0.974$--0.979. D2 $F'=2$: 2.1--$2.2\times10^3\,$s$^{-1}$, $P_0=0.941$--0.955; at large $\Delta$ the effective $b_p$ falls, so the tail grows. D2 $F'=1$: 2.0--$4.2\times10^3\,$s$^{-1}$, by interference sign; stops cooling near $8\Gamma$. For $P_0=0.99$: D1 $F'=1$ at $5\Gamma$, $1.9\times10^3\,$s$^{-1}$; D1 $F'=2$ near $6\Gamma$, $\approx1.0\times10^3\,$s$^{-1}$. The main risk for D1 $F'=1$ is the Zeeman dark states of $F=2\to F'=1$, not yet simulated.
+
+\subsection{Spin-wave memory [model]}
+\hypertarget{d:memory}{}
+An atom in $\ket n$ acquires the phase $2\pi\epsilon_nnT$, with $\epsilon_n=\delta_{\rm diff}\hbar\nu_r/2U_0$. The ensemble coherence for two equal axes is $|\phi(T)|^2$, with $\phi=\sum_nP(n)e^{2\pi i\epsilon_nnT}$. At short $T$ the loss is $(2\pi\epsilon_nT)^2{\rm Var}(n)$; at long $T$, $|\phi|^2\to P_0^2$, without further decay, so retrieval efficiency is capped near $P_0^4$. Limits: lattice scattering ($\approx4\,$s$^{-1}$ at \SI{530}{\micro K}, heating $\approx0.47$ radial quanta s$^{-1}$ per axis in case A), and \textbf{lattice-intensity variation along the column at an antinode: 1\% gives $\approx\SI{8}{Hz}$}. Radial cooling does not remove the latter. So cool deep and store shallow: adiabatic lowering conserves $n$; lowering by 100$\times$ gives $\approx0.05$ quanta s$^{-1}$ per axis and \SI{0.08}{Hz} per 1\%.
+
+\paragraph{Higher-order modes.} An LP$_{11}$ signal on the node has $\text{OD}\approx0.01$: useless. LP$_{0m}$ raises the on-axis intensity by $g=J_1^2(u_{01})/J_1^2(u_{0m})=2.33$, 3.66, 4.99, 6.32 ($m=2$--5) for cold atoms, which also raises bandwidth $\propto g$, but helps efficiency only at low OD, with conversion $\gtrsim0.97$ per pass. A blue-detuned dark trap in a donut mode would reduce scattering and shift sensitivity, by only $\approx5$--$7\times$ beyond a lowered red lattice at \SI{532}{nm}, and lowers $h$ by 1.94 at equal depth.
+
+%=====================================================================
 \section{Conclusions}
 %=====================================================================
 \begin{enumerate}
@@ -683,6 +811,8 @@ Both schemes share the geometric factor $G_{1m}x_0/a$, and both can use the node
 \item Bigger cores transmit more modes ($N\propto a^3/\lambda^2L$), but the node scheme needs only $\etaeff/\epsilon\gtrsim0.35$. Loss enters through the growth of LP$_{01}$ contamination, and the best mode loses $\approx6.5$\,dB over the fibre section. With kagome-quality loss the smallest core with LP$_{11}$/LP$_{12}$ wins; with capillary-like loss the optimum is $a\approx25$--\SI{45}{\micrometre} at 10--100 times lower rate. Launch purity and cladding mode filtering matter more than the loss-limited mode count.
 \item Nested antiresonant fibres are suitable for an LP$_{11}$ probe over cm--dm sections (LP$_{11}$ excess-loss budget $\approx5$--\SI{16}{dB}), and their HOM stripping cleans the lattice beam. They rule out higher LP$_{1m}$, however. A purpose-built two-mode antiresonant fibre at 795/\SI{1064}{nm} would be the ideal platform; related few-mode and mode-selective designs exist but have not been made for these wavelengths.
 \item Spontaneous emission inside the core is free-space-like: guided fraction $10^{-3}$--$10^{-2}$, wall-induced change of $\Gamma$ of a few per cent, and dipole-pattern recoil (Sec.~\ref{sec:emission}). The fibre acts collectively. Cooling photons are resonant with the narrow EIT line of the other atoms, but reabsorption lowers the rate by only $\lesssim3\%$ because $\Gamma_n<\nu_r$. In small cores with $\gtrsim10^4$ atoms the probe photon budget matters.
+\item Converged simulations (Sec.~\ref{sec:soft}): the removal rate follows one formula from sideband cooling to a Sisyphus-like fast channel; the Fock distribution is heavy-tailed, controlled by $h=0.188\,\zeta/b_p$, $\zeta=k_La\,\omega_{\rm rec}/\nu_z$; the limits on the core radius scale with $\nu_z$.
+\item One probe cools one motional mode, and recoil couples the radial axes, so a cold state in two dimensions needs $h<1/2$ (Sec.~\ref{sec:2d}).
 \item Raman sideband cooling uses the same geometric coupling and reaches comparable ceilings. It can address axial and radial modes at once, at the price of more lasers and more recoil per removed phonon.
 \end{enumerate}
 
