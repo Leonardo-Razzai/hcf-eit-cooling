@@ -358,3 +358,13 @@ def test_rates_match_direct_time_integration():
     assert np.isclose(1 / (tn / (1 - r['n'])), r['W'], rtol=1e-3)
     assert np.isclose(1 / (tp / r['P0']), r['W0'], rtol=1e-3)
 
+
+def test_w0_equals_integrated_p0_from_time_evolution():
+    N = 12
+    p = E.params(E.paper_cases()['B'], s=0.3, N=N)
+    r = E.solve_banded(p, B=N)
+    t, n, P0 = E.banded_evolve_states(p, [[0.0, 1.0]], 400.0, B=N, h=0.05, n_out=8000)
+    tau = np.trapezoid(r['P0'] - P0[0], t) / r['P0']
+    assert np.isclose(1 / tau, r['W0'], rtol=2e-3)
+    assert np.isclose(P0[0, -1], r['P0'], rtol=1e-3)
+

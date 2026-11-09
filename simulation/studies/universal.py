@@ -17,7 +17,19 @@ x0/a drop out (fibre.reduced_case). Rates and times are in units of nu_r and
            trap-frequency mismatch (s = 0.2)
                                         -> results/universal_robust.dat   (~5 min)
 
-Usage: python universal.py [steady] [drift] [capture] [robust]   (default: all)
+  thermal  is 1/W0 the relevant time? Banded evolution of <n>, P0 from Fock |1> and thermal
+           states nbar_0 = 1, 3, 10, 30 (N = 400, band 4)
+                                        -> results/universal_thermal.dat   (~1 h)
+
+  map      steady state on the plane (nu_r/omega_rec, bp), Delta = 3, 6 Gamma, s = 0.3, 1, 3:
+           n_ss, P0, W, W0 and the spread of n; N = 120, band 6 (N = 60 for eta_sp <= 0.4),
+           and N = 250, band 4 at s = 1 as a test of the tail
+                                        -> results/universal_map.dat  (~1.5 h, 4 workers)
+  mapband  band 4, 6, 8 at the corners of the map (eta_sp = 1)
+                                        -> results/universal_mapband.dat
+
+Usage: python universal.py [steady] [drift] [capture] [robust] [thermal] [map] [mapband]
+       (default: all)
 """
 import sys
 from concurrent.futures import ProcessPoolExecutor
@@ -170,7 +182,86 @@ def robust():
     save('universal_robust.dat', ['kind', 'nu_wrec', 'bp', 'x', 'W', 'n', 's'], rows)
 
 
-STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust}
+# ---------------------------------------------------------------- thermal states
+NBAR0 = (1.0, 3.0, 10.0, 30.0)
+THERMAL_CFG = (('A, bp=1/2, s=1', 0, 0.5, 1.0, 400, 3000.0),
+               ('A, bp=5/6, s=1', 0, 5 / 6, 1.0, 400, 2000.0),
+               ('A, bp=1/2, s=0.3', 0, 0.5, 0.3, 400, 4000.0),
+               ('B, bp=1/2, s=1', 1, 0.5, 1.0, 300, 1000.0))
+
+
+def thermal():
+    cases = (E.paper_cases()['A'], E.paper_cases()['B'])
+    rows, summary = [], []
+    for ic, (lab, ik, bp, s, N, tmax) in enumerate(THERMAL_CFG):
+        c = cases[ik]
+        p = E.params(c, s=s, N=N, bp=bp)
+        st = E.solve_banded(p, B=4)
+        states = [np.array([0.0, 1.0])] + [E.thermal(nb, N) for nb in NBAR0]
+        tt, n, P0 = E.banded_evolve_states(p, states, tmax, B=4, h=0.5, n_out=300)
+        for m, nb in enumerate((-1.0,) + NBAR0):
+            rows += [[ic, nb, x, y, z] for x, y, z in zip(tt / c['om'], n[m], P0[m])]
+            tp = [first_crossing(tt, -P0[m], -f * st['P0']) for f in (0.5, 1 - np.exp(-1), 0.9)]
+            summary.append([ic, nb, bp, s, st['P0'], st['n'], st['W'], st['W0']] + list(tp))
+            log('thermal', lab, 'nbar0 %g' % nb, 't(P0 = 0.5, 0.63, 0.9 P0ss) x W0: %s'
+                % ', '.join('%.2f' % (x * st['W0']) for x in tp),
+                'P0(end)/P0ss %.3f' % (P0[m, -1] / st['P0']))
+    save('universal_thermal.dat', ['config', 'nbar0', 't_s', 'n', 'P0'], rows)
+    save('universal_thermal_summary.dat', ['config', 'nbar0', 'bp', 's', 'P0ss', 'nss', 'W', 'W0',
+                                           't50', 't63', 't90'], summary)
+
+
+# ---------------------------------------------------------------- map (bp, nu_r/omega_rec)
+def map_nu():
+    pc = E.paper_cases()
+    return (1.0, 1.4, pc['A']['eta_sp']**-2, 3.0, 5.0, pc['B']['eta_sp']**-2, 15.0)
+
+
+MAP_BP = (1 / 6, 1 / 3, 1 / 2, 2 / 3, 5 / 6)
+MAP_DELTA = (3.0, 6.0)
+MAP_S = (0.3, 1.0, 3.0)
+
+
+def _map_row(nw, bp, DG, s, N, B):
+    r = E.steady(case(nw), s, cut=(N, B), Delta_G=DG, bp=bp)
+    k = np.arange(N)
+    sig = np.sqrt(max(r['P'] @ k**2 - (r['P'] @ k)**2, 0.0))
+    h = E.ALPHA / (bp * nw)
+    log('map', 'nu/wrec %.2f bp %.3f h %.2f D %g s %g N %d' % (nw, bp, h, DG, s, N),
+        'n %.4f P0 %.4f W %.4f W0 %.4f' % (r['n'], r['P0'], r['W'], r['W0']))
+    return [nw, bp, h, DG, s, N, B, r['n'], r['P0'], r['W'], r['W0'], sig, r['pgc']]
+
+
+def _map_task(a):
+    return _map_row(*a)
+
+
+def map_study():
+    tasks = []
+    for nw in map_nu():
+        stiff = nw**-0.5 <= 0.4
+        for bp in MAP_BP:
+            for DG in MAP_DELTA:
+                for s in MAP_S:
+                    tasks.append((nw, bp, DG, s, 60 if stiff else 120, 6))
+                if not stiff:
+                    tasks.append((nw, bp, DG, 1.0, 250, 4))    # test of the tail
+    with ProcessPoolExecutor(WORKERS) as ex:
+        rows = list(ex.map(_map_task, tasks))
+    save('universal_map.dat', ['nu_wrec', 'bp', 'h', 'DeltaG', 's', 'N', 'band', 'n', 'P0', 'W', 'W0',
+                               'sigma', 'pgc'], rows)
+
+
+def mapband():
+    rows = []
+    for nw, bp, s in ((1.0, 1 / 6, 3.0), (1.0, 1 / 2, 3.0), (1.0, 5 / 6, 3.0), (1.0, 1 / 2, 0.3)):
+        for B in (4, 6, 8):
+            rows.append(_map_row(nw, bp, 3.0, s, 120, B))
+    save('universal_mapband.dat', ['nu_wrec', 'bp', 'h', 'DeltaG', 's', 'N', 'band', 'n', 'P0', 'W', 'W0',
+                                   'sigma', 'pgc'], rows)
+
+
+STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust, 'thermal': thermal, 'map': map_study, 'mapband': mapband}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:
