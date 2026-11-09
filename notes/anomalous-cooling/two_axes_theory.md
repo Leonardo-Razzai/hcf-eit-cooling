@@ -41,12 +41,12 @@ The other limit: x hot and saturated, y cold, where y tracks R(n_y) = R_x h/(1�
 | 7 | 5/6 | 0.11 | 0.23 | 0.13 | 1.3 | 0.98 | 0.99 |
 | 10 | 1/2 | 0.27 | 0.54 | 0.37 | 1.9 | 0.96 | 0.99 |
 | 10 | 5/6 | 0.16 | 0.32 | 0.19 | 1.4 | 0.97 | 0.99 |
-| 15 | 1/2 | 0.40 | 0.81 | 0.67 | 3.9 | 0.88 | 0.97 |
+| 15 | 1/2 | 0.40 | 0.81 | 0.68 | 4.0 | 0.88 | 0.97 |
 | 15 | 5/6 | 0.24 | 0.48 | 0.32 | 1.7 | 0.96 | 0.99 |
 | 21 | 1/2 | 0.56 | 1.1 | 1.3 | no cold state | | |
-| 21 | 5/6 | 0.34 | 0.68 | 0.51 | 3.2 | 0.93 | 0.98 |
+| 21 | 5/6 | 0.34 | 0.68 | 0.51 | 2.6 | 0.93 | 0.98 |
 
-Weak probe, core only, so upper bounds on P₀: no s dependence, no tail. **Case A with b_p = 1/2 (the current paper) moves into the window where the mean is set by the cut-off,** and the floor rises almost 4×.
+Weak probe, core only, so upper bounds on P₀: no s dependence, no tail. **Case A with b_p = 1/2 (the current paper) moves into the window where the mean is set by the cut-off,** and the floor rises 4×.
 With 2h: h₂ < 1/3 needs a < 10 µm for b_p = 5/6 and 6 µm for b_p = 1/2.
 
 **Consequences.** The argument for small a and large b_p gets much stronger. It agrees with the expectation of a ≈ 7–10 µm from optical depth.
