@@ -89,3 +89,19 @@ Cooling begins with a hot column, where the filter is strong, so downstream atom
 - A hot-stage bonus for small cores.
 - Not a replacement for probe purity: it fails where purity matters most.
 - A deliberate filter section without the coupling beam would have ${\rm OD} = d/[4(\Delta/\Gamma)^2]$ off resonance, but it is hard to arrange in one fibre.
+
+## Other routes to mode purity (literature check, 9 Nov 2026)
+
+Requirement: LP$_{01}$ below about $-31$ to $-40$ dB at the atoms, nW power, one wavelength, narrow two-photon linewidth. Short searches; numbers mostly from abstracts. Ranking is my own.
+
+| Mechanism | Reported | Fit |
+|---|---|---|
+| **Polarisation rejection of the unconverted part** (q-plate or geometric-phase metasurface: converted light flips spin; a polariser removes the rest) | standard for such plates, numbers to check | **best first step**: removes the zero order, cheap |
+| **Active nulling:** a weak phase-locked LP$_{01}$ cancels the residual; the atoms or a mode decomposition as sensor | SLM mode control common; no closed-loop nulling paper found | **strong**: tunable; handles launch errors |
+| **Fundamental-mode stripping in the fibre** (gas in selected cladding tubes, resonant with LP$_{01}$) | $> 40$ dB over 2.7 m at 1550 nm; LP$_{11}$ loss 2.46 dB/m | best fibre route: can make $\alpha_d < 0$; needs a 795 nm design, and gas beside a UHV core |
+| **Long-period grating** to cladding modes | $\approx -32$ dB in a patent | solid fibre, before the HCF; the splice sets the final purity |
+| **Mode-cleaner cavity** tuned to the mode | LG33 purity 51 % to 99 %; TEM01 suppression $\sim 10^5$–$10^6$ in GEO 600 | excellent beam, but launching into the fibre limits it |
+| Small-core or adiabatic filter sections, couplers | $\approx -24$ dB LP$_{01}$ for a coupler | modest |
+| **Mode-selective gain** (Raman in H$_2$ HCF; rare-earth gain with shaped doping or LP$_{11}$ pump) | Raman: LP$_{11}$ pulses of 8 µJ; purity can fall (84 % to 78 % with gain); rare-earth modal gain differences $\sim 1$–2 dB | **poor**: too little selectivity, adds noise, shifts or broadens the light |
+
+Purity at the atoms is set by the last element: launch, splice, and growth along the column. External filters do not fix in-fibre coupling, so low $\alpha_d$ in the atom section matters most.
