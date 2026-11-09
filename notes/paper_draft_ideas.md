@@ -1,0 +1,265 @@
+# Paper draft: ideas and structure
+
+Working document for the author and collaborators. **Nothing here is final.**
+Status tags: **[done]** computed and converged; **[model]** analytic estimate, not simulated;
+**[to do]** not computed yet; **[decide]** needs a decision.
+
+## Working thesis
+
+A single-mode hollow-core fibre lets a higher-order probe mode cool the soft radial motion of lattice
+atoms from a node. Because the trap is soft, the cooling is not ordinary sideband cooling: recoil gives
+the Fock distribution a heavy tail, set by one number, h = (α/b_p)(ω_rec/ν_r). This changes which
+quantities can be trusted, which configuration is best, and what a quantum memory should be optimised for.
+
+The paper would have three layers:
+
+1. **General:** how models fail, a map in (b_p, ν_r/ω_rec), anomalous statistics.
+2. **⁸⁷Rb:** best core radius, D1 vs D2, Zeeman structure.
+3. **Application:** cm-long ground-state column in a fibre as a spin-wave memory.
+
+Possible titles:
+- *Anomalous recoil statistics and radial ground-state cooling of atoms in a hollow-core fibre*
+- *Radial EIT cooling at a guided-mode node: from heavy-tailed recoil statistics to long-lived fibre quantum memories*
+
+## 1. Introduction
+
+- Cm-long atom columns in a guided mode: large optical depth without a cavity. Axial motion can be
+  ground-state cooled, radial motion cannot be reached by co-propagating beams.
+- The idea: coupling in LP₀₁, probe in LP₁₁, atoms on the node. Carrier-free, the fibre analogue of an
+  ion at a standing-wave node (Cirac 1992).
+- Do not repeat Morigi or Cirac. State at once what is new: the soft-trap regime.
+
+## 2. Models, from simplest to numerics (universal)
+
+Everything in reduced form: rates in units of ν_r; only ν_r/ω_rec, b_p, Δ/Γ and s matter (Γ/ν_r and x₀/a
+drop out, < 0.3 %).
+
+| Level | Model | Gets right | Fails where | Status |
+|---|---|---|---|---|
+| 0 | Sideband rate equation (Morigi) | weak-probe core, with κ = 1/b_p | s ≳ 0.1; n_ss up to 5× low, W up to 40 % high | [done] |
+| 1 | Add saturation of the red sideband, recoil per cycle h | rate scale, threshold h = 1 | no tail, no Raman splitting | [done] |
+| 2 | Generalised rate model (c_sat = 2.25) | drift at n ≲ 15, b_p = ½ | b_p ≠ ½, near threshold, drift above n ≈ 15 | [done] |
+| 3 | Fokker–Planck from v(n), D(n) | tail for n ≳ 5, exponent ≈ 1/h | n ≲ 5, where single jumps ≈ n | [done] with measured v, D |
+| 4 | Markov chain with exact recoil kernel and measured R(n) | should reach N of several thousand and thresholds | not built | [to do] |
+| 5 | Eliminated, banded master equation | everything in the closed Λ, N up to ≈ 550 | band in regime III checked only up to n̄₀ = 10 | [done] |
+| 6 | Full master equation | reference | N ≲ 60 | [done] |
+
+**Main figure:** one quantity (P₀, ⟨n⟩ or the drift) against s or n for all levels, with a shaded region
+where each stops being valid. Avoid re-deriving the standard theory.
+
+**A new point for this section: which rate?** W from ⟨n⟩ depends on N and has a pole near n_ss ≈ 0.2. W₀
+from P₀ does not. At case A, s = 1: W = 1319 → 1614 s⁻¹ and W₀ = 2188 → 2225 s⁻¹ from N = 20 to 120.
+The two measure different things; W₀/W ≈ 1.2 at weak probe has no agreed explanation yet. W₀ is meaningful
+only for cold states (P₀ ≳ 0.85). [done, on `universal`] **[to do]:** does 1/W₀ give the time from thermal
+states? (Study running.)
+
+### The cooling map
+
+Plane (ν_r/ω_rec, b_p), with h = 1/3, 1/2 and 1 drawn on it and the real configurations marked. Grid chosen:
+ν_r/ω_rec = 1, 1.4, 1.97 (case A), 3, 5, 8.6 (case B), 15; b_p = 1/6, 1/3, 1/2, 2/3, 5/6; Δ = 3, 6 Γ;
+s = 0.3, 1, 3. **[to do; study written, queued on `universal`.]**
+
+Panels: P₀; W₀/ν_r; ⟨n⟩/(1−P₀) (tail diagnostic); N-sensitivity; t_prep(P₀*) if the thermal study supports it.
+
+Atoms other than Rb enter as points on this map only (Sr later). Only b_p = 1/6, 1/2 and 5/6 exist for Rb;
+1/3 and 2/3 are there to show the map is continuous.
+
+## 3. Anomalous cooling (main physics result)
+
+- **Three regimes of removal rate against s·n:** R ∝ n (s n < 1); saturated plateau; a fast, Sisyphus-like
+  channel above s n = 2(ν_r/Γ_n)². The curves collapse against s n. [done, numerics] The Sisyphus reading is a
+  hypothesis; supporting it: from n = 20 to 200 at s = 1 the drift grows 17×, the diffusion per quantum only 1.8×.
+  **[to do]** the sign-of-Δ test, the Δ scan of the onset, the semiclassical friction.
+- **Power-law tail,** P(n) ∝ n^(−1/h): measured −2.34 against −2.48 at s = 0.1. [done]
+- **Three thresholds, four windows:** h = 1/3 (variance), 1/2 (mean), 1 (ground-state cooling). They are
+  crossovers, of width δh ≈ h²/ln(2(Δ/Γ)²). [model] Variance grows as N^0.54 against the predicted N^0.5 in case A. [done]
+- **Above h = 1,** the fast channel may give a hot steady state, ⟨n⟩ ≈ (h−1)n_c, not a runaway. [model; scaling
+  not confirmed: 3.8 vs 2.69 at s = 1, 0.76 vs 1.44 at s = 5]
+- **Why it is fibre-relevant:** the soft trap puts the crossovers inside the thermal population; the hill is
+  the smooth mode profile, not λ/2; the node keeps low n carrier-free.
+- **Novelty is not yet established.** Full-text check of Phatak 2024, Bartolotta 2024, He 2017 is still needed
+  before any such claim. Bardou 1994 is the analogy, not the same system.
+
+**Figure:** drift collapse, tail with the fit, window map with data points.
+
+## 4. ⁸⁷Rb: best core radius and D1 vs D2
+
+### What "best core radius" should mean [decide]
+
+Scalings for ⁸⁷Rb D1, ν_z = 300 kHz. [model]
+
+| a (µm) | ν_r (kHz) | h (b_p = ½) | h (b_p = 5/6) | OD, 1 atom/site, 1 cm, two-level | ε (Hz per quantum) |
+|---|---|---|---|---|---|
+| 3.5 | 30.6 | 0.09 | 0.06 | ≈ 550 | 1.1 |
+| 7 | 15.3 | 0.19 | 0.11 | ≈ 140 | 0.55 |
+| 10 | 10.7 | 0.27 | 0.16 | ≈ 70 | 0.39 |
+| 15 | 7.15 | 0.40 | 0.24 | ≈ 30 | 0.26 |
+| 21 | 5.1 | 0.56 | 0.34 | ≈ 15 | 0.18 |
+| 31 | 3.5 | 0.83 | 0.50 | ≈ 7 | 0.13 |
+
+OD scales from the background report (16 at a = 15 µm for N = 10⁴) with ≈ 1.9×10⁴ sites per cm. The real Λ
+line strength will lower it. ε is the differential light shift per radial quantum per axis.
+
+Candidate definitions:
+
+1. **Largest a with a clean tail:** h < 1/3, so a ≈ 21 µm for b_p = 5/6. Simple, but ignores the application.
+2. **Fastest t_prep(P₀*):** favours small a at fixed depth, since rates ∝ ν_r and h falls. No interior optimum
+   from cooling alone; a is limited by loading.
+3. **Maximum memory efficiency at a target storage time** under fibre constraints. **Recommended:**
+
+   η_mem(a; T) = η_RW(OD(a)) × |φ(T)|⁴ × e^(−2T/τ_other)
+
+   with constraints: loading and atom number, wall distance, LP₁₁ existence and loss at 795 nm, cooling power.
+
+Expectation, not a result: OD pushes towards a ≈ 7–10 µm, the range between our two cases. Case A was
+never optimised. Needs fibre input (loss, purity, loading) that the simulations cannot give.
+
+### D1 vs D2 (case A, s = 1, all excited levels, δ_e selected on W₀) [done, on `universal`]
+
+| Configuration | W₀ at 3Γ (s⁻¹, both signs) | P₀ at 3Γ | Note |
+|---|---|---|---|
+| D1 F′=2 (present paper) | 2.2×10³ | 0.953–0.955 | robust; within 1 % of three levels |
+| D1 F′=1, probe on F=2 | 3.2–3.6×10³ | 0.974–0.979 | b_p = 5/6, h = 0.24 |
+| D2 F′=2 | 2.1–2.2×10³ | 0.941–0.955 | b_eff falls at large Δ; tail worsens (h ≈ 0.57 at 12Γ) |
+| D2 F′=1, probe on F=1 | 2.0–4.2×10³ | 0.947–0.974 | factor 2 by interference sign, stops near 8Γ |
+
+For P₀ = 0.99 (sign +1): D1 F′=1 at 5Γ, W₀ ≈ 1.9×10³ s⁻¹; D1 F′=2 near 6Γ, ≈ 1.0×10³ s⁻¹.
+**D1 F′=1 is the candidate, subject to Section 5.**
+
+Rerun all of this at the chosen a. Rb imperfections (mode purity, two-photon error, ν_r mismatch) are still at
+N = 20 and must be redone. **[to do]**
+
+## 5. Zeeman structure and repumping [to do; the main open risk]
+
+All results above use a hyperfine-averaged Λ.
+
+**Why it may matter.** F=2→F′=1 is an F→F−1 transition. For a fixed polarisation it has Zeeman dark states
+(for example |2,±2⟩ for π light), independent of motion, which accumulate population and stop the cooling.
+b_p = 5/6 then no longer describes the cycle. D1 F′=1 is at least closed in the hyperfine sense: both grounds
+are in the Λ. [standard argument; to be worked out for our polarisations]
+
+**Questions:**
+- Which polarisations do LP₀₁ and LP₁₁ give at the node? LP₁₁ is a near-degenerate TE₀₁/TM₀₁/HE₂₁ family; its
+  polarisation structure in a real fibre must be included.
+- Does the gradient-only coupling still have a useful dark state among the Zeeman sublevels?
+- Interference signs through F′=1, 2, now computed instead of bracketed.
+
+**Options for destabilising dark states (compare, then choose):**
+1. Weak repumper on F=2→F′=2, off-resonant from the cooling Λ. Costs extra scattering, raising κ and h.
+2. Transverse magnetic field: Larmor mixing faster than the pumping. Cheap, but it shifts the two-photon resonance.
+3. Mixed or switched polarisation.
+4. Microwave or RF mixing between sublevels.
+
+Figure of merit: P₀ and t_prep including the extra photons. A repumper raises κ, so it moves the point on the
+map. That is a useful link between the sections.
+
+**Numerics.** 8 ground sublevels. The banded system has S ≈ 64 N(2B+1) unknowns, dense:
+N = 30, B = 3 → 1.3×10⁴ (≈ 3 GB, feasible); N = 60, B = 4 → 3.5×10⁴ (≈ 19 GB, too large here).
+Since b_p = 5/6 has a light tail, try N ≈ 30 first, with a convergence check. Beyond that: Krylov solver or
+quantum trajectories. `zeeman_coupling` already exists. Also include both radial axes at least by alternating stages.
+
+Reference for ion tripod schemes: Lechner et al. 2016. Dark-state destabilisation: Berkeland & Boshier 2002 (from memory; verify).
+
+## 6. Application: spin-wave memory in a cm-long column
+
+**The honest position: we have not shown that this outperforms existing memories.** What follows is the
+argument and what must be computed.
+
+### State of the art
+
+| Memory | Efficiency | Lifetime | Notes |
+|---|---|---|---|
+| Yang 2016, 3D lattice, ring cavity | 76(5) % | 0.22(1) s (1/e) | best joint result found; cavity finesse 52 |
+| Bao 2012, ring cavity | 73(2) % | 3.2(1) ms | |
+| Hsiao 2018, EIT in dense cold gas | 92.0(1.5) % | time-bandwidth 1200 | coherent pulses |
+| Wang 2019, cold Rb, EIT | > 85 %, fidelity > 99 % | not extracted | single-photon polarisation qubits |
+| PRL 2025, spin-wave compaction | 94.6 % reported | not extracted | taken from an APS synopsis; original not read |
+| Dudin 2013, 1D lattice | low (to confirm) | "time scale of a minute" (light storage) | abstract not retrieved |
+| Peters 2019/2020, cold atoms in HCF | to extract | short (free fall) | SNR 59 at single-photon level |
+
+Lifetime × efficiency is the gap: the best efficiencies and the best lifetimes are in different experiments.
+
+### What the fibre can offer
+
+1. **No cavity:** high OD from confinement, so bandwidth is not limited by a cavity linewidth (9.2 MHz in Yang 2016),
+   which also leaves room for temporal multimode storage. Fibre-coupled output, no free-space mode matching.
+2. **Motional state:** in the ground state the radial light-shift dephasing disappears as a *decay*. [model]
+   Coherence |φ(T)|² → ≈ P₀² for T ≳ 1/(2ε) and stays there, so the efficiency is capped at ≈ P₀⁴, not reduced further.
+   P₀ = 0.99 gives 0.96, P₀ = 0.954 gives 0.83. **So the P₀ gain from D1 F′=1 directly matters.**
+3. **Long-wavelength spin wave:** co-propagating Λ beams, no motional dephasing from axial transfer.
+
+### What limits it [model unless stated; all to check]
+
+- **Lattice photon scattering, likely the real limit.** At U₀/k_B = 530 µK, about 4 s⁻¹. Rayleigh events preserve the
+  hyperfine coherence (Ozeri 2005) but kick the atom: ≈ 0.45 radial quanta s⁻¹ per axis in case A. So P₀ decays
+  within ≈ 1 s, and the coherence with it. **Our ground state would not last unless the trap is lowered.**
+- **Adiabatic lowering after cooling.** n is conserved, ε ∝ √(U₀), scattering ∝ U₀, heating in quanta ∝ √(U₀).
+  A factor 100 in depth leaves ≈ 550 lattice recoil energies: heating ≈ 0.045 quanta s⁻¹ per axis, ~20 s scale. **Idea to simulate.**
+- Second radial axis (not simulated) and axial cooling (assumed, from Raman sideband).
+- Magnetic field noise: clock states or magic field. Lattice intensity and pointing noise. Background gas inside
+  the fibre (a poor vacuum conductance): **may be the actual limit; check the fibre experiments.**
+- Collisions if > 1 atom per site, hence the OD limit used above.
+- Inhomogeneity along the column, in particular from fibre loss.
+
+### What to compute
+
+- η_RW(OD) for the Λ used (Gorshkov 2007): the 1/OD scaling and forward vs backward retrieval.
+- Full η_mem(T) at several a and depths, with heating. **Claim only what this shows.**
+- Target that would be a real advance: **η ≳ 80 % with τ ≳ 1 s, no cavity,** which would beat Yang 2016 in both.
+  A fair comparison must state the conditions, as these benchmarks differ in protocol and in what they call efficiency.
+- Interferometry and clocks: a shorter section at most. T_QPN ≈ 0.4–0.5 s in case A; relevant only at long T.
+
+## Proposed figures
+
+1. Scheme and regimes (keep existing Figs 1, 2).
+2. Model hierarchy against numerics.
+3. **Cooling map.**
+4. Anomalous: collapse, tail, windows.
+5. Best a; D1 vs D2.
+6. Zeeman: with and without repumper.
+7. Memory: η_mem(T) against benchmarks.
+
+Fig. 4 of the current paper (robustness) can go in compact form with Fig. 5 or in Methods.
+
+## Work list, in order
+
+1. Thermal test of 1/W₀ (running). Map (queued).
+2. Chain model for thresholds; Δ scan and sign-of-Δ test of the fast channel.
+3. Literature full-text check on the anomalous part. **Do this early: it decides how to present Section 3.**
+4. Zeeman model, D1 F′=1. **This can overturn the choice of configuration, so before polishing Section 4.**
+5. Decide the definition of best a, with fibre input.
+6. Memory model, including lattice scattering and lowering.
+7. Rb imperfections at converged N.
+
+## Where to publish
+
+**Recommendation: PRX Quantum,** with **Nature Communications** as the higher-risk first attempt only if the memory
+section ends with a quantitative, defensible advantage.
+
+- **PRX Quantum:** open access, quantum science and technology, accepts theory; room for the model comparison and the
+  full Zeeman and memory analysis. A cold-atom cooling study framed around a memory fits, if the memory link is strong.
+- **Nature Communications:** the manuscript is already in this layout. It needs a broad claim; a theory proposal with
+  no experiment and several models would have to lead with the memory or the anomalous statistics.
+- **Physical Review Letters:** if the anomalous statistics turn out to be new, a short letter on that alone is an
+  alternative, with this paper as the long companion (Phys. Rev. A or PRX Quantum).
+- **Nature Physics / Nature Photonics:** unlikely without an experiment.
+
+The choice depends on two results we do not have: whether the anomalous effect is new, and whether the memory beats the
+benchmarks. Decide after work-list items 3 and 6. **Splitting** is a real option: the current plan is close to two papers.
+
+## Open questions for the author
+
+- One paper, or a letter on anomalous statistics plus a long paper?
+- How much of the present manuscript's two-fibre comparison to keep, given the move to the universal map?
+- Fibre input for "best a": which fibres are realistic, and what loading is achievable?
+- Is an experimental collaborator available? It strongly affects journal options.
+
+## Reference status
+
+Verified on Crossref (DOI, title): Yang 2016 Nat. Photon. 10, 381; Bao 2012 Nat. Phys. 8, 517; Dudin 2013 PRA 87, 031801;
+Hsiao 2018 PRL 120, 183602; Wang 2019 Nat. Photon. 13, 346; Gorshkov 2007 PRL 98, 123601; Ozeri 2005 PRL 95, 030403;
+Lechner 2016 PRA 93, 053401; 2025 PRL "Near-perfect broadband quantum memory enabled by intelligent spin-wave
+compaction" (10.1103/kbwj-md9n).
+
+Numbers taken from arXiv abstracts: Yang (1511.00407), Hsiao (1605.08519), Wang (2004.03123), Peters SNR (1906.05771);
+Bao from an arXiv listing. **Still to verify:** Dudin efficiency and lifetime, the 2025 PRL figures, Berkeland & Boshier 2002.
