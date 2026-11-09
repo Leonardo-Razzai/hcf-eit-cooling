@@ -254,6 +254,12 @@ Fig. 4 of the current paper (robustness) can go in compact form with Fig. 5 or i
 6. Fast-channel confirmations ($\Delta < 0$, $\Delta$ scan); Rb imperfections at converged N.
 7. Read: Roghani & Helm 2008; find the Waterloo paper.
 
+### Later additions
+
+- **Map:** add ions and tweezers as extra points on $\nu_r/\omega_{\rm rec}$ (author's decision, 9 Nov 2026).
+- **Mode filter by the column:** `mode_filter_theory.md`. Nearly transparent when cold; possibly a hot-stage bonus.
+- **Full 2D Zeeman master equation:** only later, on a cluster if needed.
+
 ## Where to publish
 
 **Recommendation: PRX Quantum,** if both axes and Zeeman hold and the memory section is quantitative.
