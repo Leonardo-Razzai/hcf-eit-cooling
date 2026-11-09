@@ -160,6 +160,8 @@ Study scripts (run from `simulation/studies/`):
   `OPENBLAS_NUM_THREADS=4`).
 - `convergence.py` → `results/convergence/`: evidence for `numerics.toml` (elimination, band, N, tail, drift,
   time evolution, D1/D2 checks, W against W0); `plotting/convergence_plots.py` plots it.
+- `universal.py [thermal|map|mapband]` → `universal_thermal*.dat` (⟨n⟩, P₀ from thermal states, ~1.5 h), `universal_map.dat` (plane (b_p, ν_r/ω_rec), ~1 h,
+  4 workers), `universal_mapband.dat`; plots by `plotting/universal_plots.py` in `results/universal/`. Older subcommands (steady, drift, capture, robust) still use N = 20.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 

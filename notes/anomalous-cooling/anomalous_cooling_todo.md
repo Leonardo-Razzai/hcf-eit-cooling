@@ -257,3 +257,14 @@ consequences; LP11 radial EIT in a hollow-core fibre.
 **Still to read:** Roghani & Helm 2008 full text (may contain Fock distributions); Waterloo transverse-cooling result in HCF (Anderson et al., DAMOP 2024);
 He 2017 full text; last 13 % of Bartolotta. Consider contacting the Barkai group.
 
+## Map in (bp, nu_r/omega_rec) (9 Nov 2026)
+
+`results/universal_map.dat`, plots in `results/universal/` (`map`, `collapse`, `target`). Nu_r/omega_rec = 1-15, bp = 1/6-5/6, Delta = 3, 6 Gamma, s = 0.3, 1, 3.
+
+- **Partial collapse in h.** <n>/(1-P0) at equal h by different routes agrees within about 1-30 % for h >~ 0.4 (3.33 vs 3.39 at h = 0.40, 3 Gamma), less well at
+  small h, where it measures the core (1.97 vs 1.36 at h = 0.16). 1-P0 and W0 do not collapse (factors 2-4): they depend on bp and nu_r separately.
+- **No sharp threshold,** a smooth rise through h = 1/3, 1/2, 1, steeper at 6 Gamma. Consistent with crossovers; the map does not resolve the widths.
+- Closed form with n_x = 2 h n_c is low by about 1.5-2x at h ~ 0.3-0.8, and high for bp = 1/6, h > 1.
+- N-sensitivity of n_ss appears only at large h and 6 Gamma (up to +44 %), near zero at h < 1/3.
+- Band: P0 stable (B = 4 vs 8, 3e-4 or better for bp >= 1/2); W0 within 0.6 %, except bp = 1/6 corner (6 %, P0 < 0.55). Thermal nbar_0 = 30: P0 within 0.1 %, <n> within 3 % (B = 4 vs 6).
+
