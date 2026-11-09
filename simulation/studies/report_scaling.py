@@ -1,16 +1,18 @@
 """Numbers and plot data for the background report (pure Python, no numpy).
 
-Self-contained scaling estimates (not using eitsim): capillary LP_lm modes,
+Self-contained scaling estimates (not using eitsim; constants from scipy.constants): capillary LP_lm modes,
 87Rb D1 Lambda system, core-size / fibre-length trade-off, NANF loss budget.
 Writes pgfplots tables to simulation/results/report/ (read by
 paper/background_report/report.tex) and prints the tables used in the text.
 """
 import math, os
 
+import scipy.constants as sc
+
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results", "report")
 
-HBAR = 1.054571817e-34
-M_RB = 1.44316060e-25          # 87Rb mass [kg]
+HBAR = sc.hbar
+M_RB = 1.44316060e-25          # 87Rb mass [kg]; kept so that results/report reproduces
 GAMMA = 2 * math.pi * 5.746e6  # D1 natural linewidth [rad/s]
 LAM_D1 = 794.98e-9
 K_D1 = 2 * math.pi / LAM_D1
@@ -193,7 +195,7 @@ KAP_CAP = 2 * (NU_SIL**2 + 1) / (2 * math.sqrt(NU_SIL**2 - 1)) / (4 * math.pi**2
 A15_CAP = KAP_CAP * u01**2 * LAM_D1**2 / 15e-6**3     # bare silica capillary, ~350 dB/m
 A15_IC = 0.070 / DB * (20 / 15) ** 3                  # kagome: 70 dB/km at 40 um core diameter
 T_INIT = 10e-6        # radial temperature at the start of radial cooling
-KB = 1.380649e-23
+KB = sc.k
 
 
 def best_mode(a, L, eps0, A15, umax=None, capture=True):

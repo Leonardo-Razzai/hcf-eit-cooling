@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import scipy.constants as sc
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -458,7 +459,7 @@ def lines():
 
 def memory():
     """Thermal spread of the differential light shift vs radial occupation."""
-    h = 6.62607015e-34
+    h = sc.h
     kl = 2 * np.pi / 1064e-9
     U0 = E.M_RB * (2 * np.pi * 300e3)**2 / (2 * kl**2)          # J
     delta0 = 800.0                                               # Hz
