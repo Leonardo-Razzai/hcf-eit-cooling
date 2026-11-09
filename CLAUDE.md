@@ -282,6 +282,8 @@ Conventions and gotchas:
   h = 1/2 for ⟨n⟩, h = 1 for a steady state), rounded by physical cut-offs (sideband resolution,
   Bessel non-linearity, anharmonicity, trap depth). Full plan, evidence and to-do list:
   **`notes/anomalous-cooling/`** (theory note `anomalous_cooling.tex`, to-do `anomalous_cooling_todo.md`). Nothing there is established yet.
+- **Optimal s ramp (deferred).** Theory in `notes/anomalous-cooling/s_ramp_theory.md`; simulation steps in
+  `anomalous_cooling_todo.md`. Do not start them unprompted: ask the author after the map and band checks.
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
   F=2→F′=1, interference signs, tensor light shift of 5P₃/₂, leakage increases κ) and both

@@ -234,3 +234,12 @@ Next, when simulations resume (cost order):
 - [ ] Banded evolution for t_prep(P_0*) with P_0(t) output: (Delta, s, bp) and ramps.
 - [ ] Derive n_x semiclassically.
 
+## Optimal s ramp: deferred simulations (9 Nov 2026)
+
+Theory in `s_ramp_theory.md`. **Do not start these unprompted: ask the author first,** after the map and the band checks.
+
+- [ ] Drift and diffusion from Fock states at s = 3, 5, 10 (`convergence.py rates` extended, ~6 min per s): does the friction peak?
+- [ ] Master equation at constant s = 3, 5 from nbar_0 = 30: tests the 1/s estimate of the hot stage.
+- [ ] Chain for P(n) with the exact kernel and tabulated R(n,s); solve the Pontryagin problem by forward-backward sweeps.
+- [ ] Validate the ramp as piecewise-constant s in the banded ME; write it as a recipe in nu_r/omega_rec, bp, Delta/Gamma, nbar_0, P0*.
+
