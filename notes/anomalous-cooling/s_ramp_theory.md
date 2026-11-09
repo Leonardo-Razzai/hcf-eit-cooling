@@ -1,5 +1,45 @@
 # Optimal s ramp: theory (9 Nov 2026)
 
+## Results of steps 1–3 (9 Nov 2026; `studies/ramp.py`, `convergence.py rates_hi`, `universal.py hotstage`)
+
+Case A, $b_p = 1/2$, $\Delta = 3\Gamma$, one axis.
+
+**Step 1: drift from Fock states at high s.** The removal rate keeps growing with s at moderate n (n0 = 30: 14, 20, 36×10³ s⁻¹ at s = 3, 5, 10) and saturates
+or falls at n ≳ 100. **No friction peak is seen.** At n = 1 the drift changes sign for s ≥ 5 (+104, +437 s⁻¹): the mean rises while $P_0$ grows, because recoil builds
+the tail. **Caveat:** at s = 5 the high-n drift is not converged in the coherence band (band 4 against 6 differs by up to 2× for n ≥ 30), while capture times agree within 1 %.
+
+**Step 2: constant s from $\bar n_0 = 30$ (master equation).** t($P_0$ = 0.5) = 8.7, 7.1, 4.1, 3.0 ms at s = 0.3, 1, 3, 5. **Faster with s, but about as $s^{-0.5}$, not 1/s:**
+the estimate of the table below is 1.2–1.5× high and its s scaling too strong. Higher s also lowers the final $P_0$ (0.89 at s = 3, 0.84 at s = 5).
+
+**Step 3: chain and optimal control.** Population chain $\dot P = Q(s)P$: the GRM Franck–Condon recoil kernel, each Fock column scaled so that its drift equals the master-equation drift
+for n ≥ 5, and the calibrated GRM saturation below (where the drift mixes removal and tail building). Checked against the master equation from $\bar n_0 = 30$ at constant s:
+
+| s | t($P_0$ = 0.5, 0.7, 0.8), ME (ms) | chain (ms) | final $P_0$, ME / chain |
+|---|---|---|---|
+| 0.3 | 8.7, 16.5, 23.7 | 8.3, 13.5, 17.8 | 0.974 / 0.978 |
+| 1 | 7.0, 11.3, 14.5 | 7.0, 10.8, 13.7 | 0.954 / 0.954 |
+| 3 | 4.1, 6.1, 7.9 | 3.7, 5.4, 7.0 | 0.891 / 0.897 |
+| 5 | 3.0, 4.6, 6.4 | 2.8, 4.3, 5.9 | 0.844 / 0.852 |
+
+The chain is within 5 % at s = 1 and 10–25 % fast elsewhere. Minimum-time s(t) by forward–backward (Pontryagin) sweeps over 30 stages and 13 values of s:
+
+| $\bar n_0$ | $P_0^*$ | best constant s: time | ramp, $s \le 10$ | $s \le 5$ | $s \le 3$ | two stages ($s_{\max}$, then s = 1), $s_{\max}$ = 10, 5, 3 |
+|---|---|---|---|---|---|---|
+| 30 | 0.5 | s = 10: 2.4 ms | 2.3 ms | 2.8 | 3.7 | — |
+| 30 | 0.8 | s = 5: 6.0 ms | 4.3 ms (1.4×) | 5.1 | 6.6 | 4.3, 5.1, 6.6 ms |
+| 30 | 0.9 | s = 2: 13.5 ms | 6.3 ms (2.1×) | 7.2 (1.9×) | 9.1 (1.5×) | 6.4, 7.2, 9.3 ms |
+| 10 | 0.9 | s = 2: 10.5 ms | 5.1 ms (2.0×) | — | — | — |
+
+**Findings.**
+1. **The optimum is bang-bang:** $s_{\max}$ for the first 60–75 % of the time (hot stage), a short intermediate step, then s ≈ 1 → 0.7 (cold stage). This is the candidate protocol below.
+2. **A two-stage protocol is within 2 % of the optimum.** Switch at 3.9, 5.2, 7.1 ms for $s_{\max}$ = 10, 5, 3 ($P_0^*$ = 0.9). A full control solution is not needed.
+3. **The gain is large only for targets near or below the high-s floor:** 2× at $P_0^*$ = 0.9, 1.4× at 0.8, none at 0.5. It comes from using a high s that alone could not reach the target.
+4. **It depends on $s_{\max}$**, and $s_{\max}$ is set by mode purity ($s \lesssim 4$ for $\epsilon = 0.03$) and by the validity of the chain at high s.
+
+**Limits.** One axis; $b_p = 1/2$ only; chain calibrated on drift data that are not band-converged at high n and s; the chain is 10–25 % optimistic at constant s.
+**Step 4** (validate the two-stage protocol in the banded master equation, one LU per stage) is cheap and decides whether the gain is real.
+
+
 Analytic reasoning, tested only against stored results (`rate_p0.dat`, `rates_vs_n.dat`, `universal_thermal*.dat`).
 No ramp has been simulated. Fits are for case A, $\Delta = 3\Gamma$.
 

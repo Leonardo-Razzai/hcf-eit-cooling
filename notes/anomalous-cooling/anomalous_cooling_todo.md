@@ -236,11 +236,11 @@ Next, when simulations resume (cost order):
 
 ## Optimal s ramp: deferred simulations (9 Nov 2026)
 
-Theory in `s_ramp_theory.md`. **Do not start these unprompted: ask the author first,** after the map and the band checks.
+Theory and results in `s_ramp_theory.md`. Steps 1–3 done with the author's approval; **ask before step 4.**
 
-- [ ] Drift and diffusion from Fock states at $s = 3$, 5, 10 (`convergence.py rates` extended, ~6 min per s): does the friction peak?
-- [ ] Master equation at constant $s = 3$, 5 from $\bar n_0 = 30$: tests the 1/s estimate of the hot stage.
-- [ ] Chain for P(n) with the exact kernel and tabulated R(n,s); solve the Pontryagin problem by forward-backward sweeps.
+- [x] Drift and diffusion from Fock states at $s = 3$, 5, 10 (`convergence.py rates` extended, ~6 min per s): does the friction peak?
+- [x] Master equation at constant $s = 3$, 5 from $\bar n_0 = 30$: tests the 1/s estimate of the hot stage.
+- [x] Chain for P(n) with the exact kernel and tabulated R(n,s); solve the Pontryagin problem by forward-backward sweeps. Result: two stages, 2× at $P_0^*$ = 0.9 (see `s_ramp_theory.md`).
 - [ ] Validate the ramp as piecewise-constant s in the banded ME; write it as a recipe in $\nu_r/\omega_{\rm rec}$, $b_p$, $\Delta/\Gamma$, $\bar n_0$, $$$P_0$$^*$.
 
 ## Literature check (9 Nov 2026): result
