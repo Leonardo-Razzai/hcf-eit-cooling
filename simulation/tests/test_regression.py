@@ -398,3 +398,16 @@ def test_zeeman_dark_state_counting():
         g = Z.field_matrix('D1', 2, [(1, m) for m in (-1, 0, 1)], pol)
         assert np.linalg.matrix_rank(g) <= 3
 
+
+
+def test_species_branching_and_points():
+    sys.path.insert(0, str(SIM / 'studies'))
+    import species
+    from sympy import Rational, S
+    assert abs(species.d1_branching(Rational(3, 2), 1, 2) - 5 / 6) < 1e-12
+    assert abs(species.best_d1_bp(S(1))[0] - 8 / 9) < 1e-12
+    assert abs(species.best_d1_bp(Rational(7, 2))[0] - 3 / 4) < 1e-12
+    d = np.genfromtxt(RESULTS / 'species_points.txt', dtype=None, encoding=None, names=True, usecols=(0, 2, 3, 4))
+    r = d[d['name'] == '87Rb_fibreA'][0]
+    assert abs(r['nu_wrec'] - E.paper_cases()['A']['nur'] / species.wrec(86.9092, 794.979e-9)) < 1e-3
+    assert abs(r['h'] - E.ALPHA / (5 / 6 * r['nu_wrec'])) < 1e-4
