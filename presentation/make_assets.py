@@ -524,7 +524,7 @@ def rb_figure():
     """Rate against ground-state population: hyperfine Lambda configurations (Delta scan) and the
     cost of the Zeeman structure (remixing schemes), case A."""
     om = E.paper_cases()['A']['om']
-    fig, ax = plt.subplots(2, 1, figsize=(6.4, 8.2), sharex=True)
+    fig, ax = plt.subplots(2, 1, figsize=(7.4, 8.6), sharex=True)
     d = load('lines_delta_A.dat')
     cfgs = (((1, 1, 2), SKY, "D1 F'=1, probe F=2"), ((1, 2, 1), PROBE, "D1 F'=2"),
             ((2, 2, 1), COUPL, "D2 F'=2"), ((2, 1, 1), ATOM, "D2 F'=1, probe F=1"))
@@ -555,7 +555,10 @@ def rb_figure():
     ax[1].set_xlabel(r'population outside the ground state, $1-P_0$')
     ax[1].set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
     ax[1].set_title('b   all 8 ground sublevels: best rate at each $P_0$ (dotted: $P_0$ = 0.97)', loc='left', fontsize=12)
-    ax[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=10.5)
+    hs, ls = ax[1].get_legend_handles_labels()
+    hs += [Line2D([], [], marker='.', ls='', color=GREY, ms=9, alpha=0.6), Line2D([], [], color=GREY, lw=2.2)]
+    ls += [r'dots: single runs of that scheme ($\delta_e$, $s$, remixing, polarisation)', 'lines: best rate reached at each $P_0$']
+    ax[1].legend(hs, ls, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=10.5)
     ax[1].set_xlim(1.5e-3, 0.16)
     ax[1].set_ylim(50, 1.5e4)
     ax[0].set_ylim(300, 3e4)
