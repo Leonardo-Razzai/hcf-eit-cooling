@@ -278,6 +278,17 @@ async function main() {
   cite(s, "Rate chain on P(n_x, n_y), checked against the exact 2D master equation (0.927 vs 0.931)");
   s.addNotes("Open symbols: one axis; filled: both axes, cooled by alternating the LP11 orientation. Below h of one third the second axis costs a factor of about two in the excited population; above one half the two-dimensional ground state is lost at three Gamma. A larger detuning helps. A single scalar vortex beam does not cool both modes; a vector mode might, which is still open.");
 
+  // ============================================================ 12b axis switching
+  s = content("Results");
+  s.addText("Both axes: how fast can the probe orientation switch?", { placeholder: "title" });
+  await img(s, "switch.png", MX, 1.35, W - 2 * MX, 4.35, { name: "axis switching" });
+  text(s, bullets([
+    ["Stage length: ", "each LP₁₁ orientation must stay on for τ ≳ 5/Γ_n, longer than the lifetime of the narrow dressed state; faster switching never lets the dark state form, and P₀₀ collapses (0.19 at τ Γ_n = 0.3)"],
+    ["Window: ", "τ Γ_n ≈ 5–15, i.e. 0.3–1 ms in case A and 0.08–0.23 ms in case B; the 2D rate peaks there at ≈ 0.2 of the one-axis W₀ and falls for longer stages, while the idle axis heats"],
+    ["Model: ", "exact 2D master equation with recoil on both axes, N = 6 per axis (indicative), s = 1, Δ = 3Γ; W₀₀ defined like W₀, from |1,1⟩"],
+  ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 13 });
+  s.addNotes("Alternating the LP11 orientation, x for a time tau and then y for tau. Left: steady-state population of the two-dimensional ground state against the stage length in units of the narrow linewidth; dotted lines show two independent axes. Right: the two-dimensional ground-state rate relative to the one-axis rate, shown only where the state is cold. Each switch interrupts the dark-state dynamics, so a stage must last several narrow-line lifetimes; but a stage much longer than the cooling time leaves the idle axis heating from recoil. The optimum is a few times the narrow-line lifetime. N = 6 per axis truncates the tail, so the numbers are indicative.");
+
   // ============================================================ 13 capture
   s = content("Results");
   s.addText("Cooling from 10 µK: time grows with temperature", { placeholder: "title" });
