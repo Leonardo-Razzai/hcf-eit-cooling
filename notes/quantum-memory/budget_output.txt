@@ -1,0 +1,215 @@
+
+== 1. D1 lambda schemes: signal and control branching ratios r
+check: sum r(F'=1 m=1 -> F=2) = 0.8333 (5/6), r(|1',1> -> |2,2>) = 0.5000 (1/2)
+quantisation axis along the fibre (axial B): only sigma+- are available, no pi
+r = 1 is a closed two-level transition; OD scales with r_signal
+g -> s               via, pol        r_sig  r_ctl control on g? (FWM)
+|1,+0>->|2,+0>       F'=1 m=-1     0.083  0.083   0.333
+|1,+0>->|2,+0>       F'=1 m=+1     0.083  0.083   0.333
+|1,+0>->|2,+0>       F'=2 m=-1     0.250  0.250   0.333
+|1,+0>->|2,+0>       F'=2 m=+1     0.250  0.250   0.333
+|2,+0>->|1,+0>       F'=1 m=-1     0.083  0.083   0.333
+|2,+0>->|1,+0>       F'=1 m=+1     0.083  0.083   0.333
+|2,+0>->|1,+0>       F'=2 m=-1     0.250  0.250   0.333
+|2,+0>->|1,+0>       F'=2 m=+1     0.250  0.250   0.333
+|1,-1>->|2,+1>       F'=1 m=+0     0.083  0.250   0.500
+|1,-1>->|2,+1>       F'=2 m=+0     0.083  0.250   0.500
+|2,+1>->|1,-1>       F'=1 m=+0     0.250  0.083   0.167
+|2,+1>->|1,-1>       F'=2 m=+0     0.250  0.083   0.167
+|2,+2>->|1,+0>       F'=1 m=+1     0.500  0.083   0.000
+|2,+2>->|1,+0>       F'=2 m=+1     0.167  0.250   0.000
+
+== 2. Retrieval kernel checks
+d=10   flat spin wave eta 0.75090, Eq.(30) 0.75090
+d=50   flat spin wave eta 0.88745, Eq.(30) 0.88745
+d=200  flat spin wave eta 0.94362, Eq.(30) 0.94362
+d=20   (1-eta_r) d = 2.14  (Gorshkov: about 2.9 at large d)
+d=50   (1-eta_r) d = 2.41  (Gorshkov: about 2.9 at large d)
+d=100  (1-eta_r) d = 2.55  (Gorshkov: about 2.9 at large d)
+d=200  (1-eta_r) d = 2.65  (Gorshkov: about 2.9 at large d)
+d=400  (1-eta_r) d = 2.72  (Gorshkov: about 2.9 at large d)
+
+== 3. Optimal efficiency against d = OD/2
+    OD      d    eta_r   backward    forward
+    10    5.0   0.6968     0.4855     0.3903
+    20   10.0   0.8142     0.6629     0.5259
+    30   15.0   0.8647     0.7477     0.6035
+    50   25.0   0.9115     0.8308     0.6953
+    80   40.0   0.9412     0.8859     0.7697
+   100   50.0   0.9519     0.9060     0.8008
+   150   75.0   0.9667     0.9346     0.8497
+   200  100.0   0.9745     0.9497     0.8785
+   300  150.0   0.9826     0.9655     0.9114
+   500  250.0   0.9893     0.9787     0.9418
+  1000  500.0   0.9945     0.9891     0.9682
+backward eta = 0.50 needs OD = 11
+backward eta = 0.70 needs OD = 24
+backward eta = 0.80 needs OD = 41
+backward eta = 0.90 needs OD = 93
+backward eta = 0.95 needs OD = 201
+backward eta = 0.99 needs OD = 1096
+
+== 4. Optical depth from the atom number: OD = sigma N kappa / A_eff
+sigma = r (3 lam^2 / 2 pi) = 0.3018 r um^2; kappa = mode-column overlap (1 for a thin column)
+ a(um) A_eff(um2)     OD/1e4 (r=1)     OD/1e4 clock OD/1e4 stretched
+   3.5       10.4            290.9             72.7            145.5
+   5.0       21.2            142.6             35.6             71.3
+   7.5       47.6             63.4             15.8             31.7
+  10.0       84.7             35.6              8.9             17.8
+  15.0      190.5             15.8              4.0              7.9
+atoms needed (kappa = 1), clock r = 1/4 / stretched r = 1/2:
+ a(um)       eta=0.80 (OD 41)       eta=0.90 (OD 93)      eta=0.95 (OD 201)
+   3.5      5.6e+03 / 2.8e+03      1.3e+04 / 6.4e+03      2.8e+04 / 1.4e+04
+   5.0      1.1e+04 / 5.7e+03      2.6e+04 / 1.3e+04      5.7e+04 / 2.8e+04
+   7.5      2.6e+04 / 1.3e+04      5.9e+04 / 2.9e+04      1.3e+05 / 6.4e+04
+  10.0      4.6e+04 / 2.3e+04        1e+05 / 5.2e+04      2.3e+05 / 1.1e+05
+  15.0        1e+05 / 5.1e+04      2.4e+05 / 1.2e+05      5.1e+05 / 2.5e+05
+overlap kappa against the radial rms size of the column (per axis):
+ a(um)    0.1 um    0.3 um      1 um      2 um      3 um
+   3.5     0.995     0.959     0.660     0.390     0.323
+   7.5     0.999     0.991     0.905     0.692     0.507
+  15.0     1.000     0.998     0.975     0.905     0.804
+what sets the radial size (nu_z = 300 kHz at u = 1; lowering keeps n, so a thermal size grows as u^-1/4):
+  a= 3.5 u=1     ground state 0.04 um (kappa 0.999); from 10 uK 0.16 um (kappa 0.988)
+  a= 3.5 u=0.01  ground state 0.14 um (kappa 0.991); from 10 uK 0.51 um (kappa 0.889)
+  a=15.0 u=1     ground state 0.09 um (kappa 1.000); from 10 uK 0.69 um (kappa 0.988)
+  a=15.0 u=0.01  ground state 0.29 um (kappa 0.998); from 10 uK 2.18 um (kappa 0.889)
+column length: mean atoms per lattice site N d / L (d = 532 nm), for N = 1e4, 3e4, 1e5:
+  L =  1 mm: 5.32, 15.96, 53.20
+  L =  3 mm: 1.77, 5.32, 17.73
+  L = 10 mm: 0.53, 1.60, 5.32
+  L = 30 mm: 0.18, 0.53, 1.77
+
+== 5. Backward retrieval, hyperfine phase mismatch
+Delta k L = 2 (omega_hf / c) L = 2.86 rad per cm
+    OD  L(cm)      phi     back  back(0)  forward
+    50    0.3     0.86    0.825    0.831    0.695
+    50    1.0     2.86    0.768    0.831    0.695
+    50    3.0     8.59    0.510    0.831    0.695
+   100    0.3     0.86    0.903    0.906    0.801
+   100    1.0     2.86    0.872    0.906    0.801
+   100    3.0     8.59    0.710    0.906    0.801
+   300    0.3     0.86    0.964    0.965    0.911
+   300    1.0     2.86    0.954    0.965    0.911
+   300    3.0     8.59    0.892    0.965    0.911
+
+== 6. Temporal modes (spectrum of the kernel K): modes with total efficiency above a level
+Each eigenvalue lambda_j of K is the retrieval efficiency of one axial spin wave;
+with backward retrieval the total efficiency of that mode is lambda_j^2.
+    OD      d   N(0.5)   N(0.7)   N(0.9) N(0.7)/sqrt(d)
+    30     15        1        1        0       0.26
+   100     50        2        1        1       0.14
+   300    150        3        2        1       0.16
+  1000    500        6        4        2       0.18
+  3000   1500       10        7        4       0.18
+
+== 7. Erasure: a spin wave that is not phase matched only sees the control as a pump
+Spectator survival per access = exp(-2 h / (1 + dt^2)), h for 95% of the attainable retrieval.
+check at dt=0, flat S, d=20: eta(h large) = 0.8227, Eq.(30) 0.8227
+check at dt=0, flat S, d=150: eta(h large) = 0.9348, Eq.(30) 0.9349
+    OD Delta/Gam         dt   eta_read       h_95      survive   accesses/2
+    30        0          0      0.796       15.1     8.05e-14          0.7
+    30        5         10      0.782       44.4     4.15e-01          1.2
+    30       20         40      0.793      294.6     6.92e-01          2.3
+    30       50        100      0.793     1600.2     7.26e-01          2.5
+    30      100        200      0.793     6400.2     7.26e-01          2.5
+    30      300        600      0.793    57600.2     7.26e-01          2.5
+   100        0          0      0.887       46.5     4.08e-41          0.7
+   100        5         10      0.880       75.0     2.26e-01          0.9
+   100       20         40      0.857      219.0     7.61e-01          2.9
+   100       50        100      0.867     1188.1     7.89e-01          3.3
+   100      100        200      0.869     4608.1     7.94e-01          3.4
+   100      300        600      0.869    41040.1     7.96e-01          3.4
+   300        0          0      0.935      139.5    6.79e-122          0.7
+   300        5         10      0.936      171.0     3.38e-02          0.7
+   300       20         40      0.907      256.5     7.26e-01          2.5
+   300       50        100      0.877      488.0     9.07e-01          7.5
+   300      100        200      0.892     1760.0     9.16e-01          8.2
+   300      300        600      0.895    15120.0     9.19e-01          8.6
+
+== 8. Control photons per access: N_c = 2 h A / sigma_c = (h/d) N (r_s / r_c)
+a=15.0 N=10000    d=2.0     h=5.9     N_c=3.00e+04  energy 7.5 fJ; 100 ns pulse: 75 nW
+a=15.0 N=100000   d=19.8    h=59.4    N_c=3.00e+05  energy 75.0 fJ; 100 ns pulse: 750 nW
+a=3.5  N=10000    d=36.4    h=109.1   N_c=3.00e+04  energy 7.5 fJ; 100 ns pulse: 75 nW
+a=3.5  N=100000   d=363.7   h=1091.0  N_c=3.00e+05  energy 75.0 fJ; 100 ns pulse: 750 nW
+
+== 9. Noise per read [order-of-magnitude]
+Residual s population p: incoherent photons d p. FWM spin-wave probability: (h/d) d^2 (Gamma/omega_hf)^2 / 2 r_ratio
+(Gamma/omega_hf)^2 = 7.07e-07
+    OD      d         p=1e-3         p=1e-4    FWM (h/d=3)
+    30     15       1.50e-02       1.50e-03       2.39e-04
+   100     50       5.00e-02       5.00e-03       2.65e-03
+   300    150       1.50e-01       1.50e-02       2.39e-02
+  1000    500       5.00e-01       5.00e-02       2.65e-01
+  3000   1500       1.50e+00       1.50e-01       2.39e+00
+
+== 10. Lattice at depth fraction u, case A geometry (a = 15 um, nu_z = 300 kHz at u = 1)
+       u   U(uK) nu_z(kHz)    nu_r     E_L    J(Hz)    scat   up_r/s   up_z/s    ddiff eps_r(Hz) eps_z(Hz)
+   1.000   532.5    300.0    7149    5472  1.6e-58    4.15    0.467   0.0338    758.5     0.244    10.254
+   0.300   159.8    164.3    3916    1642  7.6e-30    1.25    0.256   0.0185    227.5     0.134     5.616
+   0.100    53.3     94.9    2261     547  2.5e-15    0.42    0.148   0.0107     75.8     0.077     3.243
+   0.030    16.0     52.0    1238     164  1.6e-06    0.12    0.081   0.0059     22.8     0.042     1.776
+   0.010     5.3     30.0     715      55  3.5e-02    0.04    0.047   0.0034      7.6     0.024     1.025
+   0.005     2.7     21.2     505      27  1.6e+00    0.02    0.033   0.0024      3.8     0.017     0.725
+   0.003     1.6     16.4     392      16  1.1e+01    0.01    0.026   0.0019      2.3     0.013     0.562
+   0.001     0.5      9.5     226       5  1.5e+02    0.00    0.015   0.0011      0.8     0.008     0.324
+u=0.01: horizontal fibre sag g/omega_r^2 = 0.49 um; m g a = 1.54 uK vs depth 5.33 uK; vertical m g d / h = 1136 Hz
+
+== 11. Thermal against ground state: can a 10 uK sample follow the lattice down?
+Adiabatic lowering keeps n, so T scales as sqrt(u) and k_B T / U as 1/sqrt(u).
+T0=10 uK u=1.00  T= 10.00 uK  k_BT/U=0.019  thermal radial shift spread 14.24 Hz
+T0=10 uK u=0.10  T=  3.16 uK  k_BT/U=0.059  thermal radial shift spread 4.50 Hz
+T0=10 uK u=0.01  T=  1.00 uK  k_BT/U=0.188  thermal radial shift spread 1.42 Hz
+T0=50 uK u=1.00  T= 50.00 uK  k_BT/U=0.094  thermal radial shift spread 71.22 Hz
+T0=50 uK u=0.10  T= 15.81 uK  k_BT/U=0.297  thermal radial shift spread 22.52 Hz
+T0=50 uK u=0.01  T=  5.00 uK  k_BT/U=0.939  thermal radial shift spread 7.12 Hz
+10 uK, u=1: x_rms = 0.69 um, 1/e^2 field radius w = 10.1 um, mean intensity loss 2 x^2 / w^2 * 2 = 1.88 %
+
+== 12. Lattice intensity along the column from an admixture of LP02 at 1064 nm
+on-axis field ratio squared g = 2.33, beat period 0.68 mm at a = 15 um
+power admixture p=1e-02: intensity +-30.5 %, shift +-231.5 Hz at u=1, +-2.315 Hz at u=0.01
+power admixture p=1e-03: intensity +-9.6 %, shift +-73.2 Hz at u=1, +-0.732 Hz at u=0.01
+power admixture p=1e-04: intensity +-3.1 %, shift +-23.1 Hz at u=1, +-0.231 Hz at u=0.01
+power admixture p=1e-05: intensity +-1.0 %, shift +-7.3 Hz at u=1, +-0.073 Hz at u=0.01
+
+== 13. Pressure inside the core: molecular flow with wall outgassing q (open at both ends)
+p = 3 q L^2 / (8 a^2 v), L = fibre length; q and species are assumptions (H2, q = 1e-8 Pa m/s)
+ a(um)   L(mm)   p (torr)  tau_bg(s) OD per 1e4 (r=1/2)
+  15.0      40    1.1e-07       0.18            7.9
+  15.0      20    2.8e-08       0.70            7.9
+  15.0      10    7.1e-09       2.82            7.9
+   7.5      10    2.8e-08       0.70           31.7
+   3.5      10    1.3e-07       0.15          145.5
+   3.5       3    1.2e-08       1.70          145.5
+   3.5       1    1.3e-09      15.33          145.5
+   5.0       2    2.6e-09       7.82           71.3
+
+== 14. Fibre bending modes shake the trap [hazard estimate]
+ndot = m omega^3 S_x(f) / (4 hbar), S_x one-sided in m^2/Hz (Savard 1997, converted)
+nu_r =    715 Hz: 0.1 quanta/s needs sqrt(S_x) < 56.78 pm/rtHz
+nu_r =   7150 Hz: 0.1 quanta/s needs sqrt(S_x) < 1.80 pm/rtHz
+nu_r =  30600 Hz: 0.1 quanta/s needs sqrt(S_x) < 0.20 pm/rtHz
+OD 125 um clamped span 10 mm: f1 =   6365 Hz, x_rms(300 K) = 3 pm, width f1/Q (Q=1e4); if nu_r = f1: 0.21 quanta/s; off resonance: 1.3e-08 /s
+OD 125 um clamped span 30 mm: f1 =    707 Hz, x_rms(300 K) = 16 pm, width f1/Q (Q=1e4); if nu_r = f1: 0.07 quanta/s; off resonance: 4.4e-09 /s
+OD 250 um clamped span 10 mm: f1 =  12730 Hz, x_rms(300 K) = 1 pm, width f1/Q (Q=1e4); if nu_r = f1: 0.052 quanta/s; off resonance: 3.3e-09 /s
+OD 250 um clamped span 30 mm: f1 =   1414 Hz, x_rms(300 K) = 4 pm, width f1/Q (Q=1e4); if nu_r = f1: 0.017 quanta/s; off resonance: 1.1e-09 /s
+
+== 15. eta(T): lifetime and term at T for scenarios (eta_0 = 1)
+heat = motional dephasing from lattice scattering (radial axes^4, axial^2); inh = rms intensity 1 % along the column
+scenario                      T_1/e(s)      heat       inh        bg  at T_1/e
+deep, no compensation            0.021     1.000     0.357     0.989
+deep, compensation 1 %           1.277     0.990     0.690     0.528
+deep, echo                       0.897     0.563     1.000     0.639
+u=.1, no compensation            0.202     0.995     0.396     0.904
+u=.01, no compensation           1.277     0.991     0.690     0.528
+u=.01, 0.1 % intensity           1.963     0.981     0.991     0.375
+u=.01, echo                      1.963     0.981     1.000     0.375
+u=.01, echo, tau_bg=10 s         7.123     0.726     1.000     0.491
+u=.01, echo, tau_bg=100 s       10.946     0.396     1.000     0.896
+
+== 16. Ground-state purity ceiling, P0 per axis, without echo at long T
+P0 = 0.900 per radial axis: long-T ceiling P0^4 = 0.656
+P0 = 0.950 per radial axis: long-T ceiling P0^4 = 0.815
+P0 = 0.970 per radial axis: long-T ceiling P0^4 = 0.885
+P0 = 0.990 per radial axis: long-T ceiling P0^4 = 0.961
+P0 = 0.999 per radial axis: long-T ceiling P0^4 = 0.996

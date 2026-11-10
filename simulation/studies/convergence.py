@@ -47,7 +47,7 @@ plotting/convergence_plots.py into the same folder. One process, sequential.
          runs away or has a pole                  -> rate_p0.dat (~30 min)
 
 Usage: python convergence.py [elim] [band] [nconv] [tail] [matrices] [weak] [rates] [tailshape]
-       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta] [lines_nconv_d2] [lines_d2scan] [rate0] [rate0_b]
+       [evolution] [lines_elim] [lines_nconv] [lines_nconv_delta] [lines_nconv_d2] [lines_d2scan] [rate0] [rate0_b] [rates_hi]
 """
 import sys
 
@@ -369,11 +369,26 @@ def rate0_b():
     save('rate_p0_B.dat', ['s', 'N', 'band', 'n', 'P0', 'W', 'W0'], rows)
 
 
+def rates_hi():
+    """Drift and diffusion from Fock states at high saturation (case A, bp = 1/2, banded):
+    does the fast channel keep growing with s? Band 4 and 6 at N = 260 for one s."""
+    fc = CASES['A']
+    n0s = [5, 8, 12, 20, 30, 50, 80, 120, 160, 200]
+    rows = []
+    for s, B in ((3.0, 4), (5.0, 4), (10.0, 4), (5.0, 6)):
+        p = E.params(fc, s=s, N=260)
+        out = E.banded_fock_drift(p, n0s, B=B)
+        for n0, (dr, dv) in zip(n0s, out):
+            rows.append([s, B, n0, dr * fc['om'], dv * fc['om']])
+        log('rates_hi s %g B %d' % (s, B), 'drift /s', ' '.join('%.0f' % (r[3]) for r in rows[-len(n0s):]))
+    save('rates_hi.dat', ['s', 'band', 'n0', 'drift', 'diffusion'], rows)
+
+
 STUDIES = {'elim': elim, 'band': band, 'nconv': nconv, 'tail': tail, 'matrices': matrices,
            'weak': weak, 'rates': rates, 'tailshape': tailshape, 'evolution': evolution,
            'lines_elim': lines_elim, 'lines_nconv': lines_nconv,
            'lines_nconv_delta': lines_nconv_delta, 'lines_nconv_d2': lines_nconv_d2,
-           'lines_d2scan': lines_d2scan, 'rate0': rate0, 'rate0_b': rate0_b}
+           'lines_d2scan': lines_d2scan, 'rate0': rate0, 'rate0_b': rate0_b, 'rates_hi': rates_hi}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

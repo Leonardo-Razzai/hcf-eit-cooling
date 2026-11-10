@@ -5,15 +5,18 @@ with J_l(u_lm) = 0. The LP01 lattice is approximated by a Gaussian with waist
 w = 0.67 a for the radial trap frequency.
 """
 import numpy as np
+import scipy.constants as sc
 from scipy.special import jv, jn_zeros
 
 from .atoms import LINES
 
-# physical constants (SI)
-HBAR = 1.054571817e-34
-KB = 1.380649e-23
+# physical constants (SI, CODATA via scipy.constants)
+HBAR = sc.hbar
+KB = sc.k
 
 # 87Rb mass and D1 line (Steck, Rubidium 87 D line data; all lines in atoms.py)
+# Steck's tabulated kg value (86.909180531 u converted with an older CODATA u; 1.7e-7 above the
+# CODATA 2022 conversion). Kept so that stored results reproduce; the difference is physically irrelevant.
 M_RB = 1.443160648e-25
 LAM_D1 = LINES['D1']['lam']
 GAMMA = LINES['D1']['Gamma']

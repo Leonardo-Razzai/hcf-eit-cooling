@@ -92,7 +92,7 @@ def structure_lambda(line, Fe, gp, pol_p, pol_c, axis='perp', K=6, fes=None, off
                         D[j, k] = zeeman_coupling(line, F, m, Fk, me, q) / np.sqrt(norm)
             u, w = pattern_nodes(q, axis, K)
             groups.append((D, u, w))
-    return dict(ground=ground, excited=excited, nP=nP, gP=gP, gC=gC, eps=eps, groups=groups, line=line, Fe=Fe, gp=gp,
+    return dict(gq=[q for _ in fes for q in (-1, 0, 1)], ground=ground, excited=excited, nP=nP, gP=gP, gC=gC, eps=eps, groups=groups, line=line, Fe=Fe, gp=gp,
                 gF=np.array([G_F[F] for F, _ in ground]), mF=np.array([m for _, m in ground]), FF=np.array([F for F, _ in ground]))
 
 
@@ -114,7 +114,7 @@ def structure_zeeman_lambda(line='D1', Fe=2, K=6):
 
 def structure_three_level(bp):
     """The closed three-level Lambda written as a structure (tests)."""
-    return dict(ground=[('p', 0), ('c', 0)], excited=[('e', 0)], nP=1, gP=np.ones((1, 1), complex), gC=np.ones((1, 1), complex),
+    return dict(gq=[0, 0], ground=[('p', 0), ('c', 0)], excited=[('e', 0)], nP=1, gP=np.ones((1, 1), complex), gC=np.ones((1, 1), complex),
                 eps=np.zeros(1), groups=[(np.array([[np.sqrt(bp)], [0.0]]), NODES, WEIGHTS),
                                          (np.array([[0.0], [np.sqrt(1 - bp)]]), NODES, WEIGHTS)],
                 gF=np.zeros(2), mF=np.zeros(2), FF=np.zeros(2))
@@ -131,7 +131,7 @@ def _final_sets(st):
     return list(sets.values())
 
 
-def ops(st, p, b_vec=(0.0, 0.0), repump=()):
+def ops(st, p, b_vec=(0.0, 0.0), repump=(), labels=False):
     """H and jump operators on (ground sublevels) x (Fock), excited levels eliminated.
 
     b_vec = (L_z, L_x): Larmor frequencies along zQ and across it, H_Z = g_F (2 L) . F, so that
@@ -177,8 +177,8 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=()):
                 A[:, i * N:(i + 1) * N] = 0.5 * p['Wc'] * np.conj(st['gC'][i - st['nP'], k]) * fcpl
         Ak.append(A)
         H = H - c[k].real * (A.conj().T @ A)
-    Cs = []
-    for D, u, wg in st['groups']:
+    Cs, lab = [], []
+    for ig, (D, u, wg) in enumerate(st['groups']):
         for uk, wk in zip(u, wg):
             Dk = (V * np.exp(1j * p['eta_sp'] * uk * w)) @ V.conj().T
             for jj in _final_sets(st):
@@ -190,6 +190,7 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=()):
                         used = True
                 if used:
                     Cs.append(C)
+                    lab.append(st['gq'][ig])
     for rp in repump:
         cr = 1.0 / (-(rp['detuning']) - 0.5j * p['G'])
         ARs = []
@@ -200,7 +201,7 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=()):
                     A[:, i * N:(i + 1) * N] = 0.5 * rp['W'] * np.conj(rp['gm'][i, k]) * fcpl
             ARs.append(A)
             H = H - cr.real * (A.conj().T @ A)
-        for D, u, wg in st['groups']:
+        for ig, (D, u, wg) in enumerate(st['groups']):
             for uk, wk in zip(u, wg):
                 Dk = (V * np.exp(1j * p['eta_sp'] * uk * w)) @ V.conj().T
                 for jj in _final_sets(st):
@@ -212,7 +213,8 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=()):
                             used = True
                     if used:
                         Cs.append(C)
-    return H, Cs
+                        lab.append(st['gq'][ig])
+    return (H, Cs, lab) if labels else (H, Cs)
 
 
 def solve(st, p, B=3, b_vec=(0.0, 0.0), repump=(), rate=True):
@@ -256,6 +258,62 @@ def solve(st, p, B=3, b_vec=(0.0, 0.0), repump=(), rate=True):
         out['W'] = -(1 - out['n']) / ny
         out['W0'] = out['P0'] / p0y
     return out
+
+
+def fock_response(st, p, n0s, B=2, b_vec=(0.0, 0.0), repump=(), h=0.1, t1=4.0, t2=10.0):
+    """For the effective 2D chain: from a Fock state n0 with the steady internal state, the phonon
+    drift d<n>/dt and the photon rate per polarisation, between t1 and t2 (implicit Euler), per atom
+    still in n0, with t1 after the internal transient (about 1/Gamma_n) and t2 short against the decay.
+    Returns drift[n0], rate[n0, q index (-1, 0, 1)], the steady state, and P(n)."""
+    from scipy.linalg import lu_factor, lu_solve
+    N = p['N']
+    na = len(st['ground'])
+    H, Cs, lab = ops(st, p, b_vec, repump, labels=True)
+    M, r, c, n_of = banded_assemble(H, Cs, na, N, B)
+    S = r.size
+    diag = np.nonzero(r == c)[0]
+    Kq = [sum((C.conj().T @ C for C, q in zip(Cs, lab) if q == qq), np.zeros((na * N, na * N), complex)) for qq in (-1, 0, 1)]
+    K_vec = [X[c, r] for X in Kq]                       # Tr(X rho) = sum X[c, r] rho[r, c]
+    del Cs
+    i0 = int(np.nonzero((r == 0) & (c == 0))[0][0])
+    A = M.copy()
+    A[i0, :] = 0.0
+    A[i0, diag] = 1.0
+    lu0 = lu_factor(A, overwrite_a=True, check_finite=False)
+    rhs = np.zeros(S, complex)
+    rhs[i0] = 1.0
+    x = lu_solve(lu0, rhs, check_finite=False)
+    del lu0, A
+    pops = np.real(x[diag])
+    idx = r[diag]
+    lev = idx // N
+    pint = np.array([pops[lev == a].sum() for a in range(na)])
+    nvec = n_of[idx].astype(float)
+    Pf = np.array([pops[n_of[idx] == m].sum() for m in range(N)])
+    ss_rate = np.array([np.real(v @ x) for v in K_vec])
+    M *= -h
+    M[np.diag_indices(S)] += 1.0
+    lu = lu_factor(M, overwrite_a=True, check_finite=False)
+    y = np.zeros((S, len(n0s)), complex)
+    for jj, n0 in enumerate(n0s):
+        for a in range(na):
+            y[int(np.nonzero((r == a * N + n0) & (c == a * N + n0))[0][0]), jj] = pint[a]
+    k1, k2 = int(round(t1 / h)), int(round(t2 / h))
+    rate = np.zeros((len(n0s), 3))
+    stay = np.zeros(len(n0s))
+    masks = [np.nonzero(n_of[idx] == n0)[0] for n0 in n0s]
+    for k in range(k2):
+        y = lu_solve(lu, y, check_finite=False)
+        if k == k1 - 1:
+            n1 = np.real(nvec @ y[diag])
+        if k >= k1:
+            rate += np.array([np.real(v @ y) for v in K_vec]).T
+            stay += np.array([np.real(y[diag[mk], jj].sum()) for jj, mk in enumerate(masks)])
+    n2 = np.real(nvec @ y[diag])
+    # per atom still in n0: atoms that left are removed from the average, so that low n, which
+    # decay within the window, are not underestimated
+    drift = (n2 - n1) / (h * stay)
+    return dict(drift=drift, rate=rate / stay[:, None], stay=stay / (k2 - k1), P=Pf, n=float(nvec @ pops), P0=float(Pf[0]), ss_rate=ss_rate, pint=pint)
 
 
 def setup(fc, s, Delta_G, d2, N, wc_scale=1.0, line=None):

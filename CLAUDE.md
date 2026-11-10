@@ -44,6 +44,9 @@ Case A is from the converged solver.
     The cause is Raman splitting of the narrow line, since s = 2(Ω_R/Γ_n)², and the recoil tail.
 - **Mode impurity:** the rate halves at an LP₀₁ admixture ε ≈ 1.3 η⊥ ≈ 0.03 (linear interpolation between ε = 0.02 and 0.04; 1.2 η⊥ in log-log). The simple model's threshold,
   2.8 η⊥, is about 2× too optimistic. A trap offset x_s is equivalent to ε_eff = η⊥ x_s/x₀.
+  **Caveat (purity.dat, fixed s, converged):** the 1.3 η⊥ figure is for the maximum W (⟨n⟩-based, s ≈ 3), which in case A
+  is dominated by the tail. The ground-state rate W₀ halves at ε ≈ 3.6 η⊥ (s = 1) and 2.2 η⊥ (s = 3) in both fibres, and P₀ is
+  unchanged (slightly better) up to ε ≈ 3 η⊥. LP₀₁ power < 10⁻³ keeps ≥ 90 % of W₀ at s ≤ 1 in case A. Paper not updated.
 - **Saturated phonon-removal rate:** 30–45% of (1−h)Γ_n/2. The generalised rate model (GRM) is
   calibrated with c_sat = 2.25 (17% rms).
 - **LP₁₂ vs LP₁₁:** identical rate at equal s; a higher mode only lowers the probe power.
@@ -101,7 +104,8 @@ presentation/            18-slide talk for an atomic-physics audience
                          writes the theme colours into the .pptx
   assets/                generated PNGs (300 dpi)
   radial_eit_cooling_talk.pptx
-notes/                   research notes; anomalous-cooling/ (theory note + to-do)
+notes/                   research notes; anomalous-cooling/ (theory note + to-do);
+                         quantum-memory/ (standalone memory note + light scripts, for a separate project)
 Makefile                 make test | results | figures | paper | report | slides | clean
 ```
 
@@ -145,8 +149,8 @@ figures, and margins must be at least 0.5 in.
 
 Study scripts (run from `simulation/studies/`):
 - `saturation.py` → `sat_A.dat`, `sat_B.dat` (Fig. 3).
-- `robustness.py [carrier|twophoton|mismatch]` → `carrier_A.dat`, `twophoton_A.dat`,
-  `mismatch_{A,B}.dat` (Fig. 4).
+- `robustness.py [carrier|twophoton|mismatch|purity]` → `carrier_A.dat`, `twophoton_A.dat`,
+  `mismatch_{A,B}.dat` (Fig. 4); `purity.dat` (P₀, ⟨n⟩, W, W₀ against ε at s = 0.3, 1, 3, both cases, ~12 min).
 - `dynamics.py [relaxation|capture]` → `dyn_A.dat` (converged master equation, N = 400, ~4 min), `capture_{A,B}.dat` (Fig. 5).
 - `calibration.py [steady|drift]` → `grmcheck.dat`, `drift_calib.dat`. These fix `rate_models.CSAT`
   and Methods Table 3.
@@ -162,7 +166,9 @@ Study scripts (run from `simulation/studies/`):
   time evolution, D1/D2 checks, W against W0); `plotting/convergence_plots.py` plots it.
 - `universal.py [thermal|map|mapband]` → `universal_thermal*.dat` (⟨n⟩, P₀ from thermal states, ~1.5 h), `universal_map.dat` (plane (b_p, ν_r/ω_rec), ~1 h,
   4 workers), `universal_mapband.dat`; plots by `plotting/universal_plots.py` in `results/universal/`. Older subcommands (steady, drift, capture, robust) still use N = 20.
-- `two_axes.py [validate|steady|thermal|exact]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis.
+- `ramp.py [drift|chain|optimise[=smax]|twostage]` → `ramp_*.dat`: s-ramp step 3 (chain calibrated on ME drift, optimal control); the optimum is two stages (s_max, then s ≈ 1), 2× faster to P₀ = 0.9 from n̄₀ = 30 on the chain (case A, b_p = ½). `validate` (step 4, banded ME, piecewise s via `E.banded_evolve_piecewise`): 5.8, 7.6, 10.2 ms for s_max = 10, 5, 3 against 15.6 ms at constant s = 2 (2.7, 2.1, 1.5×).
+- `two_axes.py [validate|steady|thermal|exact|switch|switch_n]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis; `switch` gives P₀₀ and the 2D rate W₀₀ against the stage length τ of the alternation (`two_axes_switch.dat`, ~7 min): τ ≳ 5/Γ_n needed, W₀₀ peaks at ≈ 0.2 W₀ for τΓ_n ≈ 5–15; `switch_n` confirms within 1 % at N = 8, 10.
+- `fast.py [sign|delta]` → `fast_sign.dat`, `fast_delta.dat`: Fock drift at Δ = −3Γ (params accepts Δ < 0; narrow peak at δ = −ν_r, probe offset d2 ≈ +0.8) and at Δ = 2, 5Γ. The fast channel heats at Δ < 0 (capture range below n ≈ 8); its onset and the dip (n ≈ 0.5 n_c) move with n_c.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
@@ -258,7 +264,7 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
-- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. Next: both axes, real mode polarisations.
+- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. The effective 2D chain (`two_axes_zeeman.py`) passes the closed-Λ benchmark but fails the P(n) test for Zeeman schemes: do not quote its Zeeman P₀₀. A full 2D Zeeman ME is for a cluster, if needed. Next: real mode polarisations.
 - **Prior work:** carrier-free EIT at a node is Xing & Mehta, PR Applied 24, 014034 (2025), and the heavy-tail law is Dechant et al. (2015, 2016). Do not present either as new; see `notes/paper_draft_ideas.md`.
 - **Both radial axes (theory and chain done; `notes/anomalous-cooling/two_axes_theory.md`).** One probe cools one motional mode; recoil heats both axes, so a cold state needs h < 1/2. h = 0.188 ζ/b_p with ζ = k_L a ω_rec/ν_z: the limits on a scale with ν_z. Numbers in the key-results table are for ONE axis.
 - **Case-A convergence fix (done).** The case-A
@@ -289,16 +295,14 @@ Conventions and gotchas:
   h = 1/2 for ⟨n⟩, h = 1 for a steady state), rounded by physical cut-offs (sideband resolution,
   Bessel non-linearity, anharmonicity, trap depth). Full plan, evidence and to-do list:
   **`notes/anomalous-cooling/`** (theory note `anomalous_cooling.tex`, to-do `anomalous_cooling_todo.md`). Nothing there is established yet.
-- **Optimal s ramp (deferred).** Theory in `notes/anomalous-cooling/s_ramp_theory.md`; simulation steps in
-  `anomalous_cooling_todo.md`. Do not start them unprompted: ask the author after the map and band checks.
+- **Optimal s ramp (done, steps 1–4).** Two stages, s_max then s = 1, are 1.5–2.7× faster to P₀ = 0.9 (master equation). Theory and results in `notes/anomalous-cooling/s_ramp_theory.md`. Open: a recipe across the map.
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
   F=2→F′=1, interference signs, tensor light shift of 5P₃/₂, leakage increases κ) and both
   radial axes, e.g. alternating LP₁₁ lobes.
 - For submission, move the text into the official Springer Nature template (`sn-jnl.cls`, option
   `sn-nature`).
-- The background report still quotes the old purity estimate ε ≲ 2.8 η⊥. The master equation gives
-  rate halving at ≈ 1.4 η⊥. Update it if the report is reused.
+- The background report is updated (purity, ramp, switching, fast channel, memory OD); the paper is not.
 - Fill the `\note{}` placeholders.
 
 ## Git

@@ -261,7 +261,24 @@ def mapband():
                                    'sigma', 'pgc'], rows)
 
 
-STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust, 'thermal': thermal, 'map': map_study, 'mapband': mapband}
+# ---------------------------------------------------------------- hot stage at high s
+def hotstage():
+    """Constant s from nbar_0 = 30, case A, bp = 1/2 and 5/6, one axis: does the capture time fall
+    as 1/s? With a band check at s = 5."""
+    c = E.paper_cases()['A']
+    rows = []
+    for bp, s, N, B, tmax in ((0.5, 3.0, 400, 4, 1500.0), (0.5, 5.0, 400, 4, 1000.0), (5 / 6, 3.0, 400, 4, 1000.0), (5 / 6, 5.0, 400, 4, 800.0),
+                              (0.5, 5.0, 250, 4, 300.0), (0.5, 5.0, 250, 6, 300.0)):
+        p = E.params(c, s=s, N=N, bp=bp)
+        tt, n, P0 = E.banded_evolve_states(p, [E.thermal(30.0, N)], tmax, B=B, h=0.5, n_out=200)
+        rows += [[bp, s, N, B, x, y, z] for x, y, z in zip(tt / c['om'], n[0], P0[0])]
+        tp = [first_crossing(tt, -P0[0], -f) for f in (0.5, 0.7, 0.8)]
+        log('hotstage bp %.2f s %g N %d B %d:' % (bp, s, N, B), 't(P0 = 0.5, 0.7, 0.8) ms: %s' % ', '.join('%.2f' % (x / c['om'] * 1e3) for x in tp),
+            '| end t %.1f ms P0 %.3f n %.2f' % (tt[-1] / c['om'] * 1e3, P0[0, -1], n[0, -1]))
+    save('universal_hotstage.dat', ['bp', 's', 'N', 'band', 't_s', 'n', 'P0'], rows)
+
+
+STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust, 'thermal': thermal, 'map': map_study, 'mapband': mapband, 'hotstage': hotstage}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

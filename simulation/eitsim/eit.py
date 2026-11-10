@@ -59,8 +59,10 @@ def params(fc, s=0.5, Delta_G=3.0, m=1, eps=0.0, xs=0.0, d2=0.0,
     # design values (units of the design trap frequency)
     G = fc['Gamma'] / fc['om']
     D = Delta_G * G
-    Wc = np.sqrt(4 * (D + 1))                       # narrow peak at delta = nu
-    Gn = G * 0.5 * (1 - D / np.sqrt(D**2 + Wc**2))  # width of the narrow state
+    # narrow peak at delta = nu for D > 0; for D < 0 (red detuning) the same coupling puts it at
+    # delta = -nu, the mirror image; the probe is then offset with d2 (see studies/fast.py)
+    Wc = np.sqrt(4 * (abs(D) + 1))
+    Gn = G * 0.5 * (1 - abs(D) / np.sqrt(D**2 + Wc**2))  # width of the narrow state
     etap = gfac(m) * fc['x0a']
     Wp = np.sqrt(s * G * Gn / 2) / etap
     # same lasers, actual trap frequency nu_rel * nu: rescale to actual units

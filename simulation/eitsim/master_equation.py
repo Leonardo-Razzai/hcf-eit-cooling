@@ -236,6 +236,50 @@ def banded_evolve_states(p, pops_list, tmax, B=4, h=0.25, n_out=60):
     return np.array(ts), np.array(ns).T, np.array(ps).T
 
 
+def banded_evolve_piecewise(stages, pops, B=4, h=0.25, n_out=200):
+    """Piecewise-constant parameters: stages = [(p_1, t_1), (p_2, t_2), ...] (same N), starting from
+    sum_n pops[n] |g_p,n><g_p,n|. The full banded state is carried across stages; BDF2 restarts at each
+    switch with the second-order start of banded_evolve_states. Returns times, <n>, P0."""
+    from scipy.linalg import lu_factor, lu_solve
+    y = None
+    ts, ns, ps = [], [], []
+    t0 = 0.0
+    total = sum(tk for _, tk in stages)
+    every = max(1, int(np.ceil(total / h)) // n_out)
+    k_glob = 0
+    for p, tk in stages:
+        M, r, c, n_of = banded_generator(p, B)
+        S = r.size
+        if y is None:
+            diag = np.nonzero(r == c)[0]
+            nvec = np.zeros(S)
+            nvec[diag] = n_of[r[diag]]
+            p0vec = np.zeros(S)
+            p0vec[diag[n_of[r[diag]] == 0]] = 1.0
+            y = np.zeros(S, complex)
+            for n, pn in enumerate(pops):
+                y[int(np.nonzero((r == n) & (c == n))[0][0])] = pn
+            ts.append(0.0)
+            ns.append(float(np.real(nvec @ y)))
+            ps.append(float(np.real(p0vec @ y)))
+        ym = y - h * (M @ y)
+        M *= -2 * h
+        M[np.diag_indices(S)] += 3.0
+        lu = lu_factor(M, overwrite_a=True, check_finite=False)
+        del M
+        nsteps = int(round(tk / h))
+        for k in range(1, nsteps + 1):
+            ym, y = y, lu_solve(lu, 4 * y - ym)
+            k_glob += 1
+            if k_glob % every == 0 or k == nsteps:
+                ts.append(t0 + k * h)
+                ns.append(float(np.real(nvec @ y)))
+                ps.append(float(np.real(p0vec @ y)))
+        t0 += nsteps * h
+        del lu
+    return np.array(ts), np.array(ns), np.array(ps)
+
+
 def banded_evolve(p, pops, tmax, B=4, h=0.25, n_out=60):
     """<n>(t) from one initial state: see banded_evolve_states. Returns times, <n>."""
     t, n, _ = banded_evolve_states(p, [pops], tmax, B=B, h=h, n_out=n_out)

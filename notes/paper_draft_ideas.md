@@ -176,6 +176,8 @@ Reference for ion tripod schemes: Lechner et al. 2016. Dark-state destabilisatio
 
 ## 6. Application: spin-wave memory in a cm-long column
 
+**Superseded in detail by `quantum-memory/memory_theory.md`** (budget, multimode, crosstalk model, future simulations). Main correction: with one atom per site and a real Λ line strength, a = 15 µm gives OD ≈ 4–7 per cm, so efficient storage needs a small core.
+
 **The honest position: we have not shown that this outperforms existing memories.** What follows is the
 argument and what must be computed.
 
@@ -253,6 +255,12 @@ Fig. 4 of the current paper (robustness) can go in compact form with Fig. 5 or i
 5. Memory model with lattice scattering, lowering and inhomogeneity.
 6. Fast-channel confirmations ($\Delta < 0$, $\Delta$ scan); Rb imperfections at converged N.
 7. Read: Roghani & Helm 2008; find the Waterloo paper.
+
+### Later additions
+
+- **Map:** add ions and tweezers as extra points on $\nu_r/\omega_{\rm rec}$ (author's decision, 9 Nov 2026).
+- **Mode filter by the column:** `mode_filter_theory.md`. Nearly transparent when cold; possibly a hot-stage bonus.
+- **Full 2D Zeeman master equation:** only later, on a cluster if needed.
 
 ## Where to publish
 

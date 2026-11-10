@@ -1,15 +1,17 @@
 """Images for the slide deck: schematics, equations and result plots.
 
-Reads simulation/results and the eitsim package; writes presentation/assets/*.png
+Reads simulation/results, the eitsim package and notes/quantum-memory; writes presentation/assets/*.png
 (300 dpi). Run from anywhere:  python presentation/make_assets.py
 """
 import sys
 from pathlib import Path
 
 import numpy as np
+import scipy.constants as sc
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 from matplotlib.patches import FancyBboxPatch, Rectangle, Circle, Ellipse, Polygon
 from matplotlib.lines import Line2D
 from scipy.special import jv
@@ -20,6 +22,14 @@ RESULTS = ROOT / 'simulation' / 'results'
 OUT = HERE / 'assets'
 sys.path.insert(0, str(ROOT / 'simulation'))
 import eitsim as E  # noqa: E402
+
+# On WSL, register the Windows fonts so that Calibri is used (otherwise DejaVu Sans)
+for _f in Path('/mnt/c/Windows/Fonts').glob('*'):
+    if _f.name.lower().startswith(('calibri', 'arial', 'cambria')) and _f.suffix.lower() in ('.ttf', '.ttc'):
+        try:
+            font_manager.fontManager.addfont(str(_f))
+        except Exception:
+            pass
 
 # deck palette (matches build_deck.js THEME)
 NAVY, INK, GREY, LIGHT = '#0F1B2D', '#1A2233', '#5B6475', '#EEF2F7'
@@ -49,16 +59,10 @@ def load(name):
 
 # ------------------------------------------------------------------ equations
 EQUATIONS = {
-    'eq_gradient': r'$\Omega_p(\hat x)\simeq\bar\Omega_p\,G_{11}\,\dfrac{\hat x}{a}=\Omega_\perp\,(b+b^\dagger)$',
     'eq_eta': r'$\eta_\perp=G_{11}\,\dfrac{x_0}{a},\qquad G_{11}=3.49$',
-    'eq_fano': r'$R(\delta)=\dfrac{\Omega_p^2\,\Gamma\,\delta^2}{\Gamma^2\delta^2+4\left[(\Delta+\delta)\delta-\Omega_c^2/4\right]^2}'
-               r',\qquad \Omega_c^2=4\nu_r(\Delta+\nu_r)$',
-    'eq_W': r'$W\simeq(1-h)\,\dfrac{\Gamma_n}{2}\,\dfrac{s}{1+s},\qquad \Gamma_n\simeq\dfrac{\Gamma\,\nu_r}{\Delta}$',
-    'eq_n': r'$n_{\rm ss}\simeq\left(\dfrac{\Gamma}{4\Delta}\right)^2\dfrac{1+h}{1-h}\,(1+s),\qquad h=\kappa\,\alpha\,\eta_{\rm sp}^2,\ \ \kappa=1/b_p$',
-    'eq_s': r'$s=\dfrac{2\Omega_\perp^2}{\Gamma\,\Gamma_n}=2\left(\dfrac{\Omega_R}{\Gamma_n}\right)^2,\qquad \Omega_R=\dfrac{\Omega_c\,\Omega_\perp}{2\Delta}$',
-    'eq_lightshift': r'$\delta_{\rm diff}(r)\simeq\delta_0\left(1-\dfrac{V_\perp(r)}{U_0}\right),\qquad \delta_0\approx\dfrac{U_0\,\omega_{\rm hfs}}{\Delta_{\rm eff}}\approx 0.8\ \mathrm{kHz}$',
-    'eq_spread': r'$\sigma_\delta\simeq\delta_0\,\dfrac{\hbar\omega_r\,\langle n_r\rangle}{U_0},\qquad T_2^*\approx\dfrac{1}{\pi\,\sigma_\delta}$',
-    'eq_spinwave': r'$\rho_{pc}(z)\propto e^{i\Delta k\,z},\qquad \Delta k=\dfrac{\omega_{\rm hfs}}{c}\ \Rightarrow\ \lambda_{\rm sw}\approx 4.4\ \mathrm{cm}$',
+    'eq_h': r'$h=\dfrac{\alpha}{b_p}\,\dfrac{\omega_{\rm rec}}{\nu_r}\ \propto\ \dfrac{a}{b_p\,\nu_z}$',
+    'eq_regimes': r'$R(n)\simeq R_{\rm sat}\,\dfrac{c_{\rm sat}\,s\,n}{1+c_{\rm sat}\,s\,n}\left(1+c\,\dfrac{n}{n_c}\right),\qquad n_c=\dfrac{2}{s}\left(\dfrac{\nu_r}{\Gamma_n}\right)^{2}$',
+    'eq_W0': r'$\dfrac{1}{W_0}=\int_0^\infty\dfrac{P_0^{\rm ss}-P_0(t)}{P_0^{\rm ss}}\,dt$',
 }
 
 
@@ -318,178 +322,502 @@ def saturation():
     save(fig, 'saturation.png')
 
 
-def robust():
-    fig, ax = plt.subplots(1, 3, figsize=(13, 4.0))
-    d = load('carrier_A.dat')
-    e, x = d['kind'] == 0, d['kind'] == 1
-    w0 = d['WmaxME'][e][d['epseff'][e] == 0][0]
-    ax[0].plot(d['epseff'][e][1:], d['WmaxME'][e][1:] / 1e3, 'o-', color=PROBE, label=r'LP$_{01}$ admixture $\epsilon$')
-    ax[0].plot(d['epseff'][x], d['WmaxME'][x] / 1e3, 's', color=COUPL, ms=8, mfc='none', mew=1.8, label='trap offset $x_s$')
-    ax[0].plot(d['epseff'][e][1:], d['Wunified'][e][1:] / 1e3, '--', color=GREY, lw=1.6, label='simple model')
-    ax[0].axhline(w0 / 1e3, color=PROBE, lw=1, ls=':')
-    ax[0].set_xscale('log')
-    ax[0].set_ylim(0, 3.2)
-    ax[0].set_xlabel(r'$\epsilon_{\rm eff}$')
-    ax[0].set_ylabel(r'max. rate ($10^3$ s$^{-1}$)')
-    ax[0].legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), fontsize=11)
-    t = load('twophoton_A.dat')
-    ax[1].semilogy(t['d2'], t['n0'], 'o-', color=PROBE, label=r'clean node, $\epsilon=0$')
-    ax[1].semilogy(t['d2'], t['n5'], 's-', color=COUPL, label=r'$\epsilon=0.05$')
-    ax[1].set_xlabel(r'two-photon error $\delta_{\rm e}/\nu_r$')
-    ax[1].set_ylabel(r'$\langle n_x\rangle$')
-    ax[1].legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), fontsize=11)
-    for key, c in (('A', PROBE), ('B', COUPL)):
-        m = load(f'mismatch_{key}.dat')
-        ax[2].plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=c, ms=4, label=f'case {key}')
-    ax[2].axvspan(0.9, 1.1, color=GREEN, alpha=0.12, lw=0)
-    ax[2].set_xlabel(r'$\nu_r/\nu_r^{\rm design}$')
-    ax[2].set_ylabel(r'$W/W_{\max}$')
-    ax[2].legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=11)
-    fig.tight_layout(w_pad=2.5)
-    save(fig, 'robust.png')
+ALPHA = 0.397            # recoil fraction per radial axis
 
 
-def dynamics():
-    fig, ax = plt.subplots(1, 2, figsize=(9.6, 4.6))
-    d = load('dyn_A.dat')
-    ax[0].plot(d['tms'], d['nME'], 'o', color=PROBE, ms=5, label='master equation')
-    ax[0].plot(d['tms'], d['nGRM'], '-', color=COUPL, label='rate model, calibrated')
-    ax[0].plot(d['tms'], d['nSM'], '--', color=GREY, lw=1.6, label='simple model')
-    ax[0].set_yscale('log')
-    ax[0].set_ylim(0.015, 10)
-    ax[0].set_xlabel('time (ms)')
-    ax[0].set_ylabel(r'$\langle n_x\rangle$')
-    ax[0].set_title(r'case A, from $\langle n\rangle=2$', fontsize=14, loc='left')
-    ax[0].legend(loc='upper right', fontsize=11)
-    for key, c in (('A', PROBE), ('B', COUPL)):
-        cp = load(f'capture_{key}.dat')
-        ax[1].semilogy(cp['tms'], cp['n_staged'], '-', color=c, label=f'case {key} (staged)')
-    ax[1].set_xscale('log')
-    ax[1].set_xlim(0.05, 150)
-    ax[1].set_ylim(0.01, 100)
-    ax[1].set_xlabel('time (ms)')
-    ax[1].set_ylabel(r'$\langle n_x\rangle$')
-    ax[1].set_title(r'cooling from 10 $\mu$K', fontsize=14, loc='left')
-    ax[1].legend(loc='upper right', fontsize=11)
-    fig.tight_layout(w_pad=3)
-    save(fig, 'dynamics.png')
+def hscale():
+    """Where systems sit on the recoil parameter h, with the thresholds 1/3, 1/2, 1."""
+    fig, ax = plt.subplots(figsize=(11.5, 3.3))
+    edges = [3e-3, 1 / 3, 0.5, 1, 3]
+    cols = ['#E8F1F8', '#FFF4E0', '#FBE3D6', '#EBD5D1']
+    labs = ['near-thermal tail', 'heavy tail', 'mean set by cut-offs', 'no ground-state cooling']
+    for x0, x1, c in zip(edges[:-1], edges[1:], cols):
+        ax.axvspan(x0, x1, color=c, lw=0)
+    ax.text(0.04, 1.75, labs[0], ha='center', va='center', fontsize=13, color=GREY)
+    ax.text(0.41, 1.5, labs[1], ha='center', va='center', fontsize=12.5, color=GREY, rotation=90)
+    ax.text(0.71, 1.38, 'mean set\nby cut-offs', ha='center', va='center', fontsize=12, color=GREY, rotation=90)
+    ax.text(1.73, 1.15, 'no ground-\nstate cooling', ha='center', va='center', fontsize=12.5, color=GREY)
+    for x in (1 / 3, 0.5, 1):
+        ax.axvline(x, color=INK, lw=1.0, ls=':')
+    ax.text(1 / 3, -0.55, '1/3', ha='center', fontsize=12)
+    ax.text(0.5, -0.55, '1/2', ha='center', fontsize=12)
+    ax.text(1, -0.55, '1', ha='center', fontsize=12)
+    pts = [(0.008, 'trapped ion\n(Ca$^+$, 3 MHz)', GREY, 0.75), (0.03, 'Rb tweezer\n(100 kHz)', GREY, 0.75),
+           (0.094, 'fibre B\n$a=3.5\\,\\mu$m', COUPL, 0.75), (0.24, 'fibre A\n$b_p=5/6$', PROBE, 0.75),
+           (0.40, 'fibre A\n$b_p=1/2$', PROBE, 0.75)]
+    for x, lab, c, y in pts:
+        ax.plot(x, y, 'o', ms=11, color=c, mec=INK, mew=0.8, zorder=5)
+        if x > 0.3:
+            ax.text(x * 1.07, y - 0.32, lab, ha='left', va='top', fontsize=12, color=INK,
+                    bbox=dict(fc='white', ec='none', alpha=0.85, pad=1.5))
+        else:
+            ax.text(x, y - 0.32, lab, ha='center', va='top', fontsize=12, color=INK)
+    ax.set_xscale('log')
+    ax.set_xlim(3e-3, 3)
+    ax.set_ylim(-0.75, 2.15)
+    ax.set_yticks([])
+    ax.spines['left'].set_visible(False)
+    ax.set_xlabel(r'recoil per removed phonon, $h$   ($b_p=1/2$ for ion and tweezer)')
+    save(fig, 'hscale.png')
 
 
-def temperature():
-    """Cooling versus initial radial temperature k_B T_r / U0 (calibrated GRM)."""
-    fig, ax = plt.subplots(1, 2, figsize=(9.6, 4.6))
-    tr = load('temptrace_A.dat')
-    tags = [c[2:] for c in tr.dtype.names if c.startswith('n_')]      # n_0p004 -> 0p004
-    cols = plt.cm.viridis(np.linspace(0.0, 0.85, len(tags)))[::-1]
-    for g, c in zip(tags, cols):
-        x = float(g.replace('p', '.'))
-        e = int(np.floor(np.log10(x) + 1e-12))
-        lab = r'$%g\times10^{%d}$' % (round(x / 10**e, 6), e)
-        ax[0].semilogy(tr['tms'], tr['n_' + g], color=c, lw=2, label=lab)
-    ax[0].set_xlim(0, 400)
-    ax[0].set_ylim(0.1, 1e4)             # top kept empty for the legend
-    ax[0].set_xlabel('time (ms)')
-    ax[0].set_ylabel(r'$\langle n_x\rangle$')
-    ax[0].set_title('case A', fontsize=14, loc='left')
-    ax[0].legend(title=r'$k_BT_r/U_0$', loc='upper right', fontsize=10, title_fontsize=10, ncol=3)
+def tail():
+    """Steady-state Fock distribution: power law against a thermal state of equal <n>."""
+    d = load('convergence/tail.dat')
+    fig, ax = plt.subplots(figsize=(6.6, 4.6))
+    n = d['n']
+    for col, c, lab in (('P_A_s0p1', PROBE, 'case A, $s=0.1$'), ('P_A_s1', SKY, 'case A, $s=1$'),
+                        ('P_B_s1', COUPL, 'case B, $s=1$')):
+        P = d[col]
+        ok = P > 0
+        ax.loglog(n[ok], P[ok], 'o-', color=c, ms=4, lw=1.6, label=lab)
+    P = d['P_A_s0p1']
+    nm = np.sum(n * P) / np.sum(P)
+    th = (nm / (1 + nm))**n / (1 + nm)
+    ax.loglog(n, th, '--', color=GREY, lw=1.6, label=r'thermal, same $\langle n\rangle$')
+    h = ALPHA / (0.5 * E.paper_cases()['A']['nu_wrec'])
+    x = np.array([5, 80])
+    ref = np.interp(5, n, P)
+    ax.loglog(x, ref * (x / 5)**(-1 / h) * 2.2, '-', color=INK, lw=1.2, label=r'$n^{-1/h}$, $h=%.2f$ (case A)' % h)
+    ax.set_ylim(1e-9, 0.2)
+    ax.set_xlim(0.9, 300)
+    ax.set_xlabel('Fock state $n$')
+    ax.set_ylabel('steady-state $P(n)$')
+    ax.legend(loc='upper right', fontsize=12)
+    save(fig, 'tail.png')
+
+
+def regimes():
+    d = load('convergence/rates_vs_n.dat')
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
+    x0, x1 = 3e-3, 400
+    ax.axvspan(x0, 1, color='#E8F1F8', lw=0)
+    ax.axvspan(1, 18, color='#F2F2F2', lw=0)
+    ax.axvspan(18, x1, color='#FBE9DE', lw=0)
+    for x, lab in ((0.06, 'resolved\nsideband'), (4.2, 'saturated'), (85, 'fast channel')):
+        ax.text(x, 1.3e5, lab, ha='center', va='top', fontsize=13, color=GREY)
+    Rsat, csat, cfast, nc1 = 1.9e3, 2.25, 1.0, 18.0     # GRM saturated rate; GRM c_sat; fitted c; n_c at s = 1
+    for s, c in ((0.01, GREY), (0.1, SKY), (1.0, PROBE)):
+        r = d[d['s'] == s]
+        ax.loglog(s * r['n0'], -r['drift'], 'o-', color=c, ms=5, label=f'$s={s:g}$')
+        n = np.geomspace(r['n0'].min(), r['n0'].max(), 200)
+        ax.loglog(s * n, Rsat * csat * s * n / (1 + csat * s * n) * (1 + cfast * n * s / nc1), '--', color=c, lw=1.5)
+    ax.set_xlim(x0, x1)
+    ax.set_ylim(20, 2e5)
+    ax.set_xlabel(r'$s\,n$  (saturation of the $n\to n-1$ sideband)')
+    ax.set_ylabel(r'phonon removal rate (s$^{-1}$), case A')
+    hs, ls = ax.get_legend_handles_labels()
+    hs.append(Line2D([], [], color=INK, ls='--', lw=1.5))
+    ls.append('formula')
+    ax.legend(hs, ls, loc='lower right', fontsize=12)
+    save(fig, 'regimes.png')
+
+
+def cooling_map():
+    D = load('universal_map.dat')
+    NU, BP = np.unique(D['nu_wrec']), np.unique(D['bp'])
+
+    def grid(q):
+        Z = np.full((BP.size, NU.size), np.nan)
+        for i, b in enumerate(BP):
+            for j, v in enumerate(NU):
+                r = D[(D['bp'] == b) & (D['nu_wrec'] == v) & (D['DeltaG'] == 3) & (D['s'] == 1)]
+                r = r[np.argsort(r['N'])][-1]
+                Z[i, j] = q(r)
+        return Z
+    en = np.sqrt(NU[1:] * NU[:-1])
+    en = np.r_[NU[0]**2 / en[0], en, NU[-1]**2 / en[-1]]
+    eb = (BP[1:] + BP[:-1]) / 2
+    eb = np.r_[2 * BP[0] - eb[0], eb, 2 * BP[-1] - eb[-1]]
+    fig, ax = plt.subplots(1, 2, figsize=(11.0, 4.4))
+    Z1 = grid(lambda r: r['P0'])
+    Z2 = grid(lambda r: r['W0'] if (r['P0'] > 0.85 and r['n'] < 1) else np.nan)
+    from matplotlib.colors import LogNorm
+    m1 = ax[0].pcolormesh(en, eb, Z1, cmap='Blues', vmin=0.5, vmax=1)
+    m2 = ax[1].pcolormesh(en, eb, Z2, cmap='Blues', norm=LogNorm(0.008, 0.12))
+    fig.colorbar(m1, ax=ax[0], label='ground-state population $P_0$')
+    fig.colorbar(m2, ax=ax[1], label=r'cooling rate $W_0/\nu_r$')
+    x = np.geomspace(0.7, 20, 200)
+    for a in ax:
+        for hh, ls in ((1 / 3, ':'), (0.5, '--'), (1, '-')):
+            a.plot(x, ALPHA / (hh * x), color=INK, ls=ls, lw=1.4)
+        for xv, bv, mk in ((NU[2], 0.5, 'o'), (NU[2], 5 / 6, 's'), (NU[5], 0.5, '^')):
+            a.plot(xv, bv, mk, mfc='white', mec=INK, ms=10, mew=1.4)
+        a.set_xscale('log')
+        a.set_xlim(en[0], en[-1])
+        a.set_ylim(eb[0], eb[-1])
+        a.set_yticks(BP, ['1/6', '1/3', '1/2', '2/3', '5/6'])
+        a.set_xticks([1, 2, 5, 10], ['1', '2', '5', '10'])
+        a.set_xlabel(r'trap stiffness $\nu_r/\omega_{\rm rec}$')
+        a.set_ylabel('branching to probe ground state $b_p$')
+    hs = [Line2D([], [], color=INK, ls=':'), Line2D([], [], color=INK, ls='--'), Line2D([], [], color=INK, ls='-'),
+          Line2D([], [], marker='o', ls='', mfc='white', mec=INK, ms=9), Line2D([], [], marker='s', ls='', mfc='white', mec=INK, ms=9),
+          Line2D([], [], marker='^', ls='', mfc='white', mec=INK, ms=9)]
+    fig.legend(hs, ['$h=1/3$', '$h=1/2$', '$h=1$', "A, D1 F'=2", "A, D1 F'=1", 'B'], loc='upper center',
+               ncol=6, bbox_to_anchor=(0.5, 1.07), fontsize=12)
+    fig.tight_layout(w_pad=2)
+    save(fig, 'map.png')
+
+
+def two_axes():
+    d = load('two_axes_steady.dat')
+    d = d[d['s'] == 1]
+    fig, ax = plt.subplots(figsize=(6.8, 4.6))
+    for DG, c in ((3, PROBE), (6, COUPL)):
+        r = d[d['DeltaG'] == DG]
+        o = np.argsort(r['h'])
+        ax.semilogy(r['h'][o], 1 - r['P0_1D'][o], 'o', mfc='white', color=c, ms=7, mew=1.5)
+        ax.semilogy(r['h'][o], 1 - r['P00_2D'][o], 'o', color=c, ms=7)
+    for x in (1 / 3, 0.5):
+        ax.axvline(x, color=GREY, ls=':', lw=1.2)
+    ax.set_xlabel('recoil parameter $h$ (one axis)')
+    ax.set_ylabel('population outside the ground state')
+    ax.set_ylim(2e-3, 1.2)
+    hs = [Line2D([], [], marker='o', ls='', color=PROBE, ms=7), Line2D([], [], marker='o', ls='', color=COUPL, ms=7),
+          Line2D([], [], marker='o', ls='', mfc='white', mec=INK, ms=7), Line2D([], [], marker='o', ls='', color=INK, ms=7)]
+    ax.legend(hs, [r'$\Delta=3\Gamma$', r'$\Delta=6\Gamma$', r'one axis, $1-P_0$', r'both axes, $1-P_{00}$'],
+              loc='lower center', bbox_to_anchor=(0.5, 1.0), fontsize=12, ncol=4, handletextpad=0.3, columnspacing=1.0)
+    save(fig, 'two_axes.png')
+
+
+def capture():
+    fig, ax = plt.subplots(figsize=(6.6, 4.6))
     for key, c in (('A', PROBE), ('B', COUPL)):
         m = load(f'temperature_{key}.dat')
-        ax[1].loglog(m['TU0'], m['t90_ms'], 'o-', color=c, ms=5, label=f'case {key}')
-    ax[1].set_xlim(1e-3, 1e-1)
-    ax[1].set_ylim(0.05, 3000)
-    ax[1].set_xlabel(r'initial $k_BT_r/U_0$')
-    ax[1].set_ylabel(r'time to 90 % in $n=0$ (ms)')
-    ax[1].legend(loc='upper left', fontsize=11)
-    for key, c, y in (('A', PROBE, 1.0), ('B', COUPL, 1.3)):      # initial mean occupation
-        fc = E.paper_cases()[key]
-        k = E.HBAR * fc['om'] / fc['U0']
-        top = ax[1].secondary_xaxis(y, functions=(
-            lambda x, k=k: 1 / np.expm1(k / np.clip(x, 1e-12, None)),
-            lambda n, k=k: k / np.log1p(1 / np.clip(n, 1e-12, None))))
-        top.set_xlabel(r'$\bar n_0$, case %s' % key, color=c)
-        top.tick_params(axis='x', colors=c)
-        top.spines['top'].set_color(c)
+        ax.loglog(m['TuK'], m['t90_ms'], 'o-', color=c, ms=5, label=f'case {key}')
+    ax.set_xlabel(r'initial radial temperature ($\mu$K)')
+    ax.set_ylabel(r'time to 90 % in $n=0$ (ms)')
+    ax.set_ylim(0.1, 1000)
+    ax.legend(loc='upper left', fontsize=12)
+    save(fig, 'capture.png')
+
+
+def memory_panel():
+    sys.path.insert(0, str(ROOT / 'notes' / 'quantum-memory'))
+    import memory_budget as mb
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.4))
+    a = np.geomspace(2.5, 25, 100)
+    sig = 3 * mb.LAM_S**2 / (2 * np.pi) * 1e12                 # um^2
+    A = mb.a_eff(a * 1e-6) * 1e12                             # um^2
+    for od, eta, ls in ((93, 0.90, '-'), (201, 0.95, '--')):
+        for r, c, lab in ((0.25, PROBE, 'clock'), (0.5, COUPL, 'stretched')):
+            ax[0].loglog(a, od * A / (sig * r), ls, color=c, label=r'%s $\Lambda$, $\eta$ = %.2f' % (lab, eta))
+    ax[0].set_xlabel(r'core radius $a$ ($\mu$m)')
+    ax[0].set_ylabel('atoms in the fibre, $N$')
+    ax[0].set_xticks([3, 5, 10, 20], ['3', '5', '10', '20'])
+    ax[0].xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax[0].set_ylim(1e3, 2e6)
+    ax[0].legend(loc='upper left', fontsize=11)
+    ax[0].set_title(r'atoms needed for efficiency $\eta$', fontsize=12, loc='left')
+    T = np.geomspace(1e-3, 100, 300)
+    scen = (('full depth, no echo', dict(u=1.0), GREY), ('full depth, echo', dict(u=1.0, echo=True), SKY),
+            (r'depth ×0.01, echo, $\tau_{\rm bg}$ = 2 s', dict(u=.01, echo=True), PROBE),
+            (r'depth ×0.01, echo, $\tau_{\rm bg}$ = 100 s', dict(u=.01, echo=True, tau_bg=100.), COUPL))
+    for lab, kw, c in scen:
+        s = mb.storage_terms(T, **kw)
+        ax[1].semilogx(T, s['heat'] * s['inh'] * s['mag'] * s['bg'], color=c, label=lab)
+    ax[1].set_xlabel('storage time (s)')
+    ax[1].set_ylabel(r'efficiency after storage time $T$, $\eta(T)/\eta(0)$')
+    ax[1].set_ylim(0, 1.05)
+    ax[1].legend(loc='center left', bbox_to_anchor=(1.01, 0.5), fontsize=11)
+    ax[1].set_title('1 % lattice-intensity spread along the column', fontsize=12, loc='left')
     fig.tight_layout(w_pad=3)
-    save(fig, 'temperature.png')
-
-
-def lines():
-    """D1 versus D2: rate versus detuning and rate relative to the paper scheme."""
-    cfgs = (((1, 2, 1), PROBE, "D1  F'=2 (paper)"), ((1, 1, 2), SKY, "D1  F'=1, probe F=2"),
-            ((2, 2, 1), COUPL, "D2  F'=2"), ((2, 1, 1), ATOM, "D2  F'=1, probe F=1"))
-
-    def sel(d, line, Fe, gp):
-        return d[(d['line'] == line) & (d['Fe'] == Fe) & (d['gp'] == gp)]
-    fig, ax = plt.subplots(1, 2, figsize=(10.4, 4.6), gridspec_kw=dict(width_ratios=[1, 1.15]))
-    dl = load('lines_delta_A.dat')
-    for cfg, c, lab in cfgs:
-        r = sel(dl, *cfg)
-        ok, ok3 = r['okopt'] == 1, r['ok3'] == 1
-        ax[0].plot(r['DeltaG'], np.where(ok3, r['W3'], np.nan), '--', color=c, lw=1.2)
-        ax[0].plot(r['DeltaG'], np.where(ok, r['Wopt'], np.nan), 'o-', color=c, lw=2, ms=6, label=lab)
-    ax[0].set_xscale('log')
-    ax[0].set_yscale('log')
-    ax[0].set_xticks([2, 3, 5, 8, 12], ['2', '3', '5', '8', '12'])
-    ax[0].minorticks_off()
-    ax[0].set_xlim(1.7, 14)
-    ax[0].set_ylim(100, 3e4)
-    ax[0].set_xlabel(r'single-photon detuning $\Delta/\Gamma$')
-    ax[0].set_ylabel(r'cooling rate $W$ (s$^{-1}$)')
-    ax[0].set_title('case A; dashed: three-level model', fontsize=13, loc='left')
-    ax[0].legend(loc='upper right', fontsize=10.5)
-    for key, mk, dy in (('A', 'o', 0.16), ('B', 's', -0.16)):
-        m = load(f'lines_ml_{key}.dat')
-        ref = sel(m, 1, 2, 1)['W3'][0]
-        for k, (cfg, c, _) in enumerate(cfgs):
-            r = sel(m, *cfg)
-            y = len(cfgs) - 1 - k + dy
-            ax[1].plot(sorted(r['Wopt'] / ref), [y, y], '-', color=c, lw=6, solid_capstyle='butt')
-            ax[1].plot(r['W3'][0] / ref, y, mk, mfc='white', color=c, ms=8, mew=1.6)
-    ax[1].axvline(1, color=GREY, lw=1, ls=':')
-    ax[1].set_xlim(0, 2.6)
-    ax[1].set_ylim(-0.6, len(cfgs) - 0.4)
-    ax[1].set_yticks(range(len(cfgs)), [lab for _, _, lab in cfgs][::-1])
-    ax[1].set_xlabel(r'$W\,/\,W_{\rm paper}$ at $\Delta=3\Gamma$, $s=1$')
-    ax[1].set_title('bars: all hyperfine levels; o / \u25a1: three-level, case A / B',
-                    fontsize=12, loc='left')
-    fig.tight_layout(w_pad=2.5)
-    save(fig, 'lines.png')
-
-
-def memory():
-    """Thermal spread of the differential light shift vs radial occupation."""
-    h = 6.62607015e-34
-    kl = 2 * np.pi / 1064e-9
-    U0 = E.M_RB * (2 * np.pi * 300e3)**2 / (2 * kl**2)          # J
-    delta0 = 800.0                                               # Hz
-    n = np.logspace(-2.3, 2, 200)
-    fig, ax = plt.subplots(figsize=(6.4, 4.4))
-    pts = {}                                   # (10 uK, end of staged capture)
-    for key in 'AB':
-        cp = load(f'capture_{key}.dat')
-        pts[key] = (cp['n_staged'][0], cp['n_staged'][-1])
-    for key, c in (('A', PROBE), ('B', COUPL)):
-        fc = E.paper_cases()[key]
-        sig = delta0 * h * fc['nur'] * n / U0
-        ax.loglog(n, sig, color=c, label=f'case {key} ($\\nu_r$ = {fc["nur"] / 1e3:.1f} kHz)')
-        for nn, mk, lab in ((pts[key][0], 'o', '10 $\\mu$K'), (pts[key][1], '*', 'after EIT')):
-            s = delta0 * h * fc['nur'] * nn / U0
-            ax.plot(nn, s, mk, color=c, ms=11 if mk == '*' else 8, mec=INK, mew=0.8, zorder=5)
-    ax.set_xlabel(r'radial occupation $\langle n_r\rangle$ (each axis)')
-    ax.set_ylabel(r'light-shift spread $\sigma_\delta$ (Hz)')
-    ax.set_ylim(3e-3, 300)
-    sec = ax.secondary_yaxis('right', functions=(lambda s: 1 / (np.pi * s), lambda t: 1 / (np.pi * t)))
-    sec.set_ylabel(r'$T_2^*\approx 1/\pi\sigma_\delta$ (s)')
-    hs, ls = ax.get_legend_handles_labels()
-    hs += [Line2D([], [], marker='o', ls='', color=GREY, mec=INK, ms=8),
-           Line2D([], [], marker='*', ls='', color=GREY, mec=INK, ms=11)]
-    ls += [r'thermal, 10 $\mu$K', 'after radial EIT cooling']
-    ax.legend(hs, ls, loc='upper left', fontsize=12)
     save(fig, 'memory.png')
 
 
+def rb_figure():
+    """Two images: rb_hyperfine.png (rate against 1 - P0 for the Lambda configurations, Delta scan) and
+    rb_zeeman.png (cost of the Zeeman structure: best rate at each P0 per remixing scheme), case A."""
+    om = E.paper_cases()['A']['om']
+    fig, ax = plt.subplots(figsize=(6.6, 5.0))
+    d = load('lines_delta_A.dat')
+    cfgs = (((1, 1, 2), SKY, "D1 F'=1, probe on F=2 ($b_p$ = 5/6)"), ((1, 2, 1), PROBE, "D1 F'=2, probe on F=1 ($b_p$ = 1/2)"),
+            ((2, 2, 1), COUPL, "D2 F'=2, probe on F=1 ($b_p$ = 1/2)"), ((2, 1, 1), ATOM, "D2 F'=1, probe on F=1 ($b_p$ = 5/6)"))
+    for (line, Fe, gp), c, lab in cfgs:
+        r = d[(d['line'] == line) & (d['Fe'] == Fe) & (d['gp'] == gp) & (d['okopt'] == 1)]
+        r = r[np.argsort(r['DeltaG'])]
+        ax.loglog(1 - r['P0opt'], r['W0opt'], 'o-', color=c, ms=6, label=lab)
+        if (line, Fe) == (1, 1):
+            for x, y, D in zip(1 - r['P0opt'], r['W0opt'], r['DeltaG']):
+                ax.annotate(r'%g$\Gamma$' % D, (x, y), textcoords='offset points', xytext=(-4, 7), fontsize=11, ha='right', color=GREY)
+    ax.set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax.set_xlabel(r'population outside the ground state, $1-P_0$')
+    ax.set_title(r'all excited hyperfine levels, $\Delta$ = 2–12$\Gamma$ (up-left is better)', loc='left', fontsize=12.5)
+    ax.legend(loc='upper left', fontsize=11)
+    ax.set_ylim(300, 3e4)
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set_xticks([3e-3, 1e-2, 3e-2], ['0.003', '0.01', '0.03'])
+    save(fig, 'rb_hyperfine.png')
+
+    fig, ax = plt.subplots(figsize=(11.0, 4.6))
+    z = np.genfromtxt(RESULTS / 'zeeman_refine.dat', names=True)
+    z = z[(z['P0'] > 0.85) & (z['n'] < 1) & (z['W0'] > 0) & np.isfinite(z['W0']) & (np.abs(z['nu_wrec'] - 1.97) < 0.01)]
+    m = load('universal_map.dat')
+    ref = m[(np.abs(m['nu_wrec'] - 1.968) < 0.01) & (np.abs(m['bp'] - 5 / 6) < 0.01) & (m['P0'] > 0.85)]
+    groups = ((ref, INK, "D1 F'=1, probe on F=2,\nno Zeeman sublevels (closed $\\Lambda$)"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 2)], SKY, "hyperfine $\\Lambda$ + repumper"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 0)], GREEN, "hyperfine $\\Lambda$ + transverse field"),
+              (z[z['scheme'] == 1], COUPL, "Zeeman $\\Lambda$ in F=2 + F=1 repumper"))
+    for g, c, lab in groups:
+        x, y = 1 - g['P0'], g['W0'] * om
+        o = np.argsort(x)
+        ax.loglog(x, y, '.', color=c, ms=5, alpha=0.35)
+        ax.loglog(x[o], np.maximum.accumulate(y[o]), '-', color=c, lw=2.4, label=lab)
+    ax.axvline(0.03, color=GREY, ls=':', lw=1.2)
+    ax.set_xlabel(r'population outside the ground state, $1-P_0$')
+    ax.set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax.set_xlim(1.5e-3, 0.16)
+    ax.set_ylim(50, 1.5e4)
+    hs, ls = ax.get_legend_handles_labels()
+    hs += [Line2D([], [], marker='.', ls='', color=GREY, ms=10, alpha=0.6), Line2D([], [], color=GREY, lw=2.4),
+           Line2D([], [], color=GREY, ls=':', lw=1.2)]
+    ls += ['dots: single runs of that scheme\n($\\delta_e$, $s$, remixing, polarisation)', 'lines: best rate reached at each $P_0$', '$P_0$ = 0.97']
+    ax.legend(hs, ls, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=11.5)
+    ax.set_title('D1, all 8 ground sublevels, case A ($\\Delta$ = 3$\\Gamma$)', loc='left', fontsize=12.5)
+    save(fig, 'rb_zeeman.png')
+
+
+def robust_figure():
+    """Rate against trap-frequency mismatch (lasers fixed at the design value), cases A and B."""
+    fig, ax = plt.subplots(figsize=(6.4, 4.6))
+    for key, col in (('A', PROBE), ('B', COUPL)):
+        m = load(f'mismatch_{key}.dat')
+        ax.plot(m['nurel'], m['WME'] / m['WME'].max(), 'o-', color=col, ms=5, label=f'case {key}')
+    ax.axvspan(0.9, 1.1, color=GREEN, alpha=0.12, lw=0)
+    ax.text(1.0, 0.08, '±10 %', ha='center', fontsize=12, color=GREEN)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(r'radial frequency / design value, $\nu_r/\nu_r^{\rm design}$')
+    ax.set_ylabel(r'rate / maximum')
+    ax.set_title('lasers fixed, trap frequency varies', loc='left', fontsize=13)
+    ax.legend(loc='upper left', fontsize=11)
+    save(fig, 'robust.png')
+
+
+def purity_figure():
+    """Steady state against the LP01 power fraction in the probe (eps^2), cases A and B, s = 0.3, 1, 3."""
+    d = load('purity.dat')
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5))
+    styles = {0.3: ':', 1.0: '-', 3.0: '--'}
+    for case, c, lab in ((0, PROBE, 'A'), (1, COUPL, 'B')):
+        for s, ls in styles.items():
+            r = d[(d['case'] == case) & (d['s'] == s)]
+            r = r[np.argsort(r['eps'])]
+            clean = r[r['eps'] == 0][0]
+            x = r['eps'][1:]**2
+            ax[0].semilogx(x, r['W0'][1:] / clean['W0'], ls, color=c, marker='o', ms=4.5, lw=2)
+            ax[1].loglog(x, 1 - r['P0'][1:], ls, color=c, marker='o', ms=4.5, lw=2)
+            ax[1].plot([x[0] * 0.55], [1 - clean['P0']], marker='<', color=c, ms=7, alpha=0.8)
+    ax[0].axhline(0.5, color=GREY, lw=1, ls=':')
+    ax[0].set_ylim(0, 1.08)
+    ax[0].set_ylabel(r'ground-state rate $W_0$ / clean mode')
+    ax[1].set_ylabel(r'population outside the ground state, $1-P_0$')
+    for a in ax:
+        a.set_xlabel(r'LP$_{01}$ power fraction in the probe, $\epsilon^2$')
+        a.axvline(1e-3, color=GREEN, lw=1.2, ls='-', alpha=0.6)
+    ax[0].text(1.1e-3, 1.02, r'$10^{-3}$', color=GREEN, fontsize=12, va='bottom')
+    ax[0].set_title('a   cooling rate', loc='left', fontsize=13)
+    ax[1].set_title(r'b   ground state (arrows: clean mode)', loc='left', fontsize=13)
+    hs = [Line2D([], [], color=PROBE, lw=3), Line2D([], [], color=COUPL, lw=3),
+          Line2D([], [], color=INK, ls=':', lw=2), Line2D([], [], color=INK, ls='-', lw=2), Line2D([], [], color=INK, ls='--', lw=2)]
+    fig.legend(hs, [r'A: $a=15\,\mu$m, $\eta_\perp=0.021$', r'B: $a=3.5\,\mu$m, $\eta_\perp=0.043$', '$s=0.3$', '$s=1$', '$s=3$'],
+               loc='upper center', ncol=5, bbox_to_anchor=(0.5, 1.08), fontsize=12)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'purity.png')
+
+
+def _manifold(ax, F, y, x0, dx=0.42, color=INK, label=None, lw=3.0, w=0.3):
+    """Draw the Zeeman sublevels of one hyperfine level; return {m: (x, y)}."""
+    pos = {}
+    for m in range(-F, F + 1):
+        x = x0 + m * dx
+        ax.plot([x - w / 2, x + w / 2], [y, y], color=color, lw=lw, solid_capstyle='butt')
+        pos[m] = (x, y)
+    if label:
+        ax.text(x0 + F * dx + 0.35, y, label, va='center', fontsize=12.5, color=color)
+    return pos
+
+
+def _arrow(ax, a, b, color, ls='-', lw=1.8, shrink=0.0):
+    ax.annotate('', xy=b, xytext=a, arrowprops=dict(arrowstyle='-|>', color=color, lw=lw, ls=ls,
+                                                     shrinkA=shrink, shrinkB=shrink, mutation_scale=12))
+
+
+def level_schemes():
+    """Backup: level schemes and fields of the Zeeman studies (D1) and the excited-manifold study (D2)."""
+    fig, ax = plt.subplots(1, 3, figsize=(15.5, 5.6), gridspec_kw=dict(width_ratios=[1.15, 1.0, 0.95]))
+    for a in ax:
+        a.set_axis_off()
+    # ---- a: D1 hyperfine Lambda, F'=1, probe on F=2, lin perp lin
+    a = ax[0]
+    g2 = _manifold(a, 2, 1.15, 0.0, label='F = 2')
+    g1 = _manifold(a, 1, 0.0, 3.1, label='F = 1')
+    e1 = _manifold(a, 1, 4.2, 0.9, label="F' = 1")
+    _manifold(a, 2, 5.0, 0.9, color=GREY, lw=2.0, label="F' = 2")
+    for m in (-1, 0, 1):
+        _arrow(a, g2[m], e1[m], PROBE)
+    for m0, m1 in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+        _arrow(a, g1[m0], e1[m1], COUPL)
+    for m in (-2, 2):
+        a.add_patch(Circle(g2[m], 0.2, fill=False, ec=PROBE, lw=1.6, ls='--'))
+    a.text(0.75, 0.55, r'probe $\pi$ (LP$_{11}$): $|2,\pm2\rangle$ dark', ha='center', fontsize=12, color=PROBE)
+    a.text(3.1, -0.6, r'coupling $\sigma^\pm$ (LP$_{01}$)', ha='center', fontsize=12, color=COUPL)
+    a.text(1.95, 4.6, '814.5 MHz', fontsize=11, color=GREY, va='center')
+    a.annotate('', xy=(-1.2, 1.15), xytext=(-1.2, 0.0), arrowprops=dict(arrowstyle='<->', color=GREY, lw=1))
+    a.text(-1.3, 0.57, '6.83\nGHz', fontsize=11, color=GREY, ha='right', va='center')
+    a.set_title("a   hyperfine $\\Lambda$: D1 F'=1, probe on F=2\n     (lin $\\perp$ lin; B transverse)", loc='left', fontsize=13)
+    a.set_xlim(-2.1, 5.2)
+    a.set_ylim(-1.3, 5.6)
+    # ---- b: D1 Zeeman Lambda inside F=2
+    a = ax[1]
+    g2 = _manifold(a, 2, 1.15, 0.0, label='F = 2')
+    g1 = _manifold(a, 1, 0.0, 2.9, color=GREY, lw=2.0, label='F = 1')
+    e2 = _manifold(a, 2, 4.6, 0.6, label="F' = 2")
+    _arrow(a, g2[2], e2[1], PROBE, lw=2.4)
+    _arrow(a, g2[0], e2[1], COUPL, lw=2.4)
+    for m in (-1, 0, 1):
+        _arrow(a, g1[m], e2[m + 1], GREY, ls='--', lw=1.3)
+    a.add_patch(Circle(g2[2], 0.2, fill=False, ec=GREEN, lw=1.8))
+    a.text(0.85, -0.6, r'probe $\sigma^-$ from $|2,2\rangle$, coupling $\sigma^+$ from $|2,0\rangle$', ha='center', fontsize=12, color=INK)
+    a.text(3.3, 2.6, 'repumper\n(F = 1, dashed)', ha='center', fontsize=11.5, color=GREY)
+    a.text(0.85, -1.05, r'target $|2,2\rangle$ (green), dark to the coupling', ha='center', fontsize=11.5, color=GREEN)
+    a.set_title("b   Zeeman $\\Lambda$ in F=2: D1 F'=2, F=1 repumper\n     (after Qiu et al.; B along the fibre)", loc='left', fontsize=13)
+    a.set_xlim(-1.4, 4.6)
+    a.set_ylim(-1.5, 5.6)
+    # ---- c: D2 excited manifold (no Zeeman sublevels)
+    a = ax[2]
+    ys = {0: 3.6, 1: 3.95, 2: 4.65, 3: 5.85}
+    for Fe, y in ys.items():
+        a.plot([0.2, 2.6], [y, y], color=INK, lw=2.5)
+        a.text(2.75, y, "F' = %d" % Fe, va='center', fontsize=12)
+    for (y1, y2), lab in (((3.6, 3.95), '72 MHz'), ((3.95, 4.65), '157 MHz'), ((4.65, 5.85), '267 MHz')):
+        a.annotate('', xy=(-0.1, y2), xytext=(-0.1, y1), arrowprops=dict(arrowstyle='<->', color=GREY, lw=1))
+        a.text(-0.2, (y1 + y2) / 2, lab, ha='right', va='center', fontsize=11, color=GREY)
+    a.plot([0.2, 2.6], [0, 0], color=INK, lw=2.5)
+    a.plot([0.2, 2.6], [1.15, 1.15], color=INK, lw=2.5)
+    a.text(2.75, 0, 'F = 1', va='center', fontsize=12)
+    a.text(2.75, 1.15, 'F = 2', va='center', fontsize=12)
+    _arrow(a, (0.6, 0), (0.9, ys[2]), PROBE, lw=2.2)
+    _arrow(a, (1.5, 1.15), (1.2, ys[2]), COUPL, lw=2.2)
+    _arrow(a, (1.7, 0), (2.0, ys[1]), PROBE, ls='--', lw=2.2)
+    _arrow(a, (2.4, 1.15), (2.1, ys[1]), COUPL, ls='--', lw=2.2)
+    a.text(1.4, -0.75, "solid: D2 F'=2, probe on F=1 ($b_p$ = 1/2)\ndashed: D2 F'=1, probe on F=1 ($b_p$ = 5/6)", ha='center', fontsize=11.5)
+    a.set_title('c   D2: excited hyperfine levels only\n     (no Zeeman sublevels simulated)', loc='left', fontsize=13)
+    a.set_xlim(-1.4, 3.6)
+    a.set_ylim(-1.5, 6.3)
+    hs = [Line2D([], [], color=PROBE, lw=3), Line2D([], [], color=COUPL, lw=3), Line2D([], [], color=GREY, lw=1.5, ls='--')]
+    fig.legend(hs, ['probe (LP$_{11}$)', 'coupling (LP$_{01}$)', 'repumper'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.02), fontsize=12.5)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    save(fig, 'levels_zeeman.png')
+
+
+def ramp_figure():
+    """Optimal saturation ramp from nbar0 = 30 (chain model, s-ramp step 3): s(t) for three caps, and
+    times to the target for constant s, the optimal ramp and two stages."""
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5), gridspec_kw=dict(width_ratios=[1.15, 1]))
+    files = ((10, 'ramp_optimal.dat', COUPL), (5, 'ramp_optimal_smax5.dat', PROBE), (3, 'ramp_optimal_smax3.dat', SKY))
+    tw = load('ramp_twostage.dat')
+    for smax, name, c in files:
+        d = load(name)
+        r = d[(d['nbar0'] == 30) & (d['P0target'] == 0.9)]
+        t = np.r_[r['t_start'], r['t_end'][-1]] * 1e3
+        ax[0].step(t, np.r_[r['s'], r['s'][-1]], where='post', color=c, lw=2.4, label=r'$s \leq %g$: %.1f ms' % (smax, r['t_ramp'][0] * 1e3))
+    tc = load('ramp_optimal.dat')
+    tc = tc[(tc['nbar0'] == 30) & (tc['P0target'] == 0.9)]
+    ax[0].axhline(tc['s_const'][0], color=GREY, ls=':', lw=1.5, label='best constant $s$ = %g: %.1f ms' % (tc['s_const'][0], tc['t_const'][0] * 1e3))
+    ax[0].set_yscale('log')
+    ax[0].set_xlim(0, 10)
+    ax[0].set_ylim(0.4, 15)
+    ax[0].set_yticks([0.5, 1, 2, 5, 10], ['0.5', '1', '2', '5', '10'])
+    ax[0].set_xlabel('time (ms)')
+    ax[0].set_ylabel('saturation parameter $s$')
+    ax[0].set_title(r'a   optimal $s(t)$, $\bar n_0$ = 30 $\rightarrow$ $P_0$ = 0.9', loc='left', fontsize=13)
+    ax[0].legend(loc='upper right', fontsize=11)
+    labels, xs = [], []
+    k = 0
+    for target in (0.8, 0.9):
+        c0 = load('ramp_optimal.dat')
+        c0 = c0[(c0['nbar0'] == 30) & (c0['P0target'] == target)]
+        bars = [('constant\n$s$ = %g' % c0['s_const'][0], c0['t_const'][0], GREY)]
+        for smax, name, c in files[::-1]:
+            d = load(name)
+            r = d[(d['nbar0'] == 30) & (d['P0target'] == target)]
+            bars.append((r'$s\leq%g$' % smax, r['t_ramp'][0], c))
+        for j, (lab, tval, c) in enumerate(bars):
+            x = k + j
+            ax[1].bar(x, tval * 1e3, color=c, width=0.75)
+            if j > 0:
+                smax = (3, 5, 10)[j - 1]
+                two = tw[(tw['P0target'] == target) & (tw['smax'] == smax)]['T'][0]
+                ax[1].plot(x, two * 1e3, 'k_', ms=22, mew=2.2)
+            labels.append(lab)
+            xs.append(x)
+        ax[1].text(k + 1.5, 15.3, r'$P_0$ = %.1f' % target, ha='center', fontsize=12.5)
+        k += 5
+    ax[1].set_xticks(xs, labels, rotation=45, ha='right', fontsize=11)
+    ax[1].set_ylim(0, 16.5)
+    ax[1].set_ylabel(r'time from $\bar n_0$ = 30 (ms)')
+    ax[1].set_title('b   bars: optimal ramp; black lines: two stages', loc='left', fontsize=13)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'ramp.png')
+
+
+def switch_figure():
+    """Both axes by alternating the LP11 orientation: steady state and rate against the stage length
+    (exact 2D master equation, N = 6 per axis, s = 1, Delta = 3 Gamma)."""
+    d = load('two_axes_switch.dat')
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5))
+    for nw, c, lab in ((8.43, COUPL, r'case B, $b_p$ = 1/2'), (1.97, PROBE, r'case A, $b_p$ = 5/6')):
+        r = d[np.abs(d['nu_wrec'] - nw) < 0.05]
+        r = r[np.argsort(r['tau'])]
+        ax[0].semilogx(r['tauGn'], r['P00ss'], 'o-', color=c, ms=6, label=lab)
+        ax[0].axhline(r['P0_1D'][0]**2, color=c, ls=':', lw=1.3)
+        ok = r['P00ss'] >= 0.85
+        ax[1].semilogx(r['tauGn'][ok], r['W00'][ok] / r['W0_1D'][ok], 'o-', color=c, ms=6, label=lab)
+    for a in ax:
+        a.axvspan(5, 15, color=GREEN, alpha=0.12, lw=0)
+        a.set_xlabel(r'stage length $\tau$ in units of $1/\Gamma_n$')
+    ax[0].set_ylim(0, 1.02)
+    ax[0].set_ylabel(r'both axes in the ground state, $P_{00}$')
+    ax[0].set_title(r'a   steady state (dotted: two independent axes, $P_0^2$)', loc='left', fontsize=12.5)
+    ax[0].legend(loc='lower right', fontsize=11)
+    ax[1].set_ylim(0, 0.3)
+    ax[1].set_xlim(ax[0].get_xlim())
+    ax[1].set_ylabel(r'2D rate $W_{00}$ / one-axis $W_0$')
+    ax[1].set_title(r'b   cooling rate (only where $P_{00} \geq 0.85$)', loc='left', fontsize=12.5)
+    ax[1].legend(loc='upper right', fontsize=11)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'switch.png')
+
+
+def switch_fom_figure():
+    """Figure of merit for alternating the probe orientation: W00 * P00 (rate times ground-state
+    population of both axes), relative to the one-axis W0 * P0, against the stage length."""
+    d = load('two_axes_switch.dat')
+    dn = load('two_axes_switch_n.dat')
+    fig, ax = plt.subplots(figsize=(7.0, 4.6))
+    for nw, c, lab in ((8.43, COUPL, r'case B, $b_p$ = 1/2'), (1.97, PROBE, r'case A, $b_p$ = 5/6')):
+        r = d[np.abs(d['nu_wrec'] - nw) < 0.05]
+        r = r[np.argsort(r['tau'])]
+        fom = r['W00'] * r['P00ss'] / (r['W0_1D'] * r['P0_1D'])
+        cold = r['P00ss'] >= 0.85
+        pos = fom > 0
+        ax.semilogx(r['tauGn'][cold], fom[cold], 'o-', color=c, ms=7, label=lab)
+        ax.semilogx(r['tauGn'][~cold & pos], fom[~cold & pos], 'o', color=c, ms=7, mfc='white', mew=1.5)
+        q = dn[np.abs(dn['nu_wrec'] - nw) < 0.05]
+        ax.semilogx(q['tauGn'], q['W00'] * q['P00ss'] / (q['W0_1D'] * q['P0_1D']), 'x', color=c, ms=9, mew=1.8)
+    ax.axvspan(5, 15, color=GREEN, alpha=0.12, lw=0)
+    ax.set_xlabel(r'stage length $\tau$ in units of $1/\Gamma_n$')
+    ax.set_ylabel(r'$W_{00}P_{00}$ / one-axis $W_0P_0$')
+    ax.set_ylim(0, 0.25)
+    hs, ls = ax.get_legend_handles_labels()
+    hs += [Line2D([], [], marker='o', ls='', mfc='white', mec=GREY, ms=7, mew=1.5), Line2D([], [], marker='x', ls='', color=GREY, ms=9, mew=1.8)]
+    ls += [r'$P_{00} < 0.85$ ($W_{00}$ unreliable)', r'$N$ = 8, 10 per axis (others $N$ = 6)']
+    ax.legend(hs, ls, loc='upper left', fontsize=11)
+    save(fig, 'switch_fom.png')
+
+
 if __name__ == '__main__':
-    for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup,
-              saturation, robust, dynamics, temperature, lines, memory):
+    for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure, switch_fom_figure):
         f()
         print('ok', f.__name__)
