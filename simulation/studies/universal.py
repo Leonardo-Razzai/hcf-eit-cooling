@@ -261,6 +261,42 @@ def mapband():
                                    'sigma', 'pgc'], rows)
 
 
+# ---------------------------------------------------------------- universality in h
+H_SCAN = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2)
+
+
+def _hscan_row(route, nw, bp, h):
+    DG, s, N, B = 8.0, 1.0, 400, 4
+    r = E.steady(case(nw), s, cut=(N, B), Delta_G=DG, bp=bp)
+    p = E.params(case(nw), s=s, Delta_G=DG, bp=bp)
+    nc = 2 / p['Gn']**2 / s
+    k = np.arange(N)
+    P = np.asarray(r['P'])
+    sel = (k >= 5) & (k <= min(40, int(nc / 3))) & (P > 0)
+    slope = np.polyfit(np.log(k[sel]), np.log(P[sel]), 1)[0]
+    log('hscan route %d nu/wrec %.3f bp %.3f h %.2f: P0 %.4f n %.3f W0 %.4f slope %.2f (-1/h = %.2f), n_c %.0f' % (
+        route, nw, bp, h, r['P0'], r['n'], r['W0'], slope, -1 / h, nc))
+    return [route, nw, bp, h, r['P0'], r['n'], r['W0'], slope, nc], [[route, h, n, P[n]] for n in range(N)]
+
+
+def _hscan_task(a):
+    return _hscan_row(*a)
+
+
+def hscan():
+    """Universality: h = 0.1-1.2 reached by two routes, (1) b_p = 1/2 with nu_r/omega_rec = alpha/(b_p h),
+    (2) nu_r/omega_rec = 4 with b_p = alpha/(4 h); s = 1, Delta = 8 Gamma (long plateau, n_c ~ 130),
+    N = 400, band 4. Tail exponent fitted on 5 <= n <= min(40, n_c/3)."""
+    tasks = []
+    for h in H_SCAN:
+        tasks.append((1, E.ALPHA / (0.5 * h), 0.5, h))
+        tasks.append((2, 4.0, E.ALPHA / (4.0 * h), h))
+    with ProcessPoolExecutor(2) as ex:
+        out = list(ex.map(_hscan_task, tasks))
+    save('universal_hscan.dat', ['route', 'nu_wrec', 'bp', 'h', 'P0', 'n', 'W0', 'slope', 'nc'], [o[0] for o in out])
+    save('universal_hscan_pn.dat', ['route', 'h', 'n', 'P'], [row for o in out for row in o[1]])
+
+
 # ---------------------------------------------------------------- hot stage at high s
 def hotstage():
     """Constant s from nbar_0 = 30, case A, bp = 1/2 and 5/6, one axis: does the capture time fall
@@ -278,7 +314,7 @@ def hotstage():
     save('universal_hotstage.dat', ['bp', 's', 'N', 'band', 't_s', 'n', 'P0'], rows)
 
 
-STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust, 'thermal': thermal, 'map': map_study, 'mapband': mapband, 'hotstage': hotstage}
+STUDIES = {'steady': steady, 'drift': drift, 'capture': capture, 'robust': robust, 'thermal': thermal, 'map': map_study, 'mapband': mapband, 'hotstage': hotstage, 'hscan': hscan}
 
 if __name__ == '__main__':
     for name in sys.argv[1:] or STUDIES:

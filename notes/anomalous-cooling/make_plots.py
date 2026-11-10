@@ -306,6 +306,49 @@ def fig_fom():
     save(fig, 'fom.pdf')
 
 
+def closed_form(n, s, h=None, c=1.0, csat=2.25):
+    """Minimal model, Fokker-Planck: v = -(1-h) R_b F, D = h (n + 1/2) R_b, R_b = csat s n / (1 + csat s n),
+    F = 1 + c n / n_c (fast channel: extra friction, no extra diffusion). Unnormalised P(n), n >= 1."""
+    h = H_A if h is None else h
+    nc = SNC / s
+    Rb = csat * s * n / (1 + csat * s * n)
+    v = -(1 - h) * Rb * (1 + c * n / nc)
+    D = h * (n + 0.5) * Rb
+    g = np.concatenate([[0], np.cumsum(0.5 * (v[1:] / D[1:] + v[:-1] / D[:-1]) * np.diff(n))])
+    return np.exp(g) / D
+
+
+def fig_minimal():
+    """Minimal model against the master equation: steady P(n), case A, s = 0.1 and 1. Closed form normalised
+    at n = 5; chain (exact recoil kernel, ME removal rate) absolute."""
+    tail = load('tail.dat')
+    ch = np.genfromtxt(ROOT / 'simulation' / 'results' / 'ramp_tail_chain.dat', names=True)
+    fig, axs = plt.subplots(1, 2, figsize=(WDOUBLE, 62 * MM))
+    for ax, s, col, lab in ((axs[0], 0.1, 'P_A_s0p1', 'a'), (axs[1], 1.0, 'P_A_s1', 'b')):
+        n = tail['n']
+        P = tail[col]
+        m = n >= 1
+        ax.loglog(n[m], P[m], 'o', color=CA, ms=2.2, label='master equation')
+        c = ch[ch['s'] == s]
+        ax.loglog(c['n'][c['n'] >= 1], c['P'][c['n'] >= 1], '-', color=CO, lw=1.0, label='chain (exact kernel)')
+        nn = n[m].astype(float)
+        cf = closed_form(nn, s)
+        i5 = np.argmin(np.abs(nn - 5))
+        ax.loglog(nn, cf / cf[i5] * P[m][i5], '--', color=CG, lw=1.0, label='closed form (Fokker-Planck)')
+        ax.loglog(nn, P[m][i5] * (nn / 5)**(-1 / H_A), ':', color=CL, lw=0.8, label=r'$n^{-1/h}$')
+        ax.axvline(1 / (2.25 * s), color=CL, lw=0.5)
+        ax.axvline(SNC / s, color=CL, lw=0.5, ls='--')
+        ax.set_ylim(1e-10, 0.1)
+        ax.set_xlim(0.9, 300)
+        ax.set_xlabel('Fock state $n$')
+        ax.set_ylabel('$P(n)$')
+        ax.set_title('$s=%g$' % s, fontsize=7, loc='right')
+        letter(ax, lab)
+    axs[1].legend(loc='lower left', fontsize=6)
+    fig.tight_layout()
+    save(fig, 'minimal.pdf')
+
+
 if __name__ == '__main__':
     fig_geometry()
     fig_recoil()
@@ -313,4 +356,5 @@ if __name__ == '__main__':
     fig_tail()
     fig_phase()
     fig_fom()
+    fig_minimal()
     print('scales n_lin %.0f n_anh %.0f n_depth %.0f; h_A %.3f, s n_res %.1f' % (fig_scales() + (H_A, SNC)))
