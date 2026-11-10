@@ -147,7 +147,7 @@ much faster than the GRM-based capture times of the paper.
       $N = 300/400$ (`tail_s0p1.dat`); figure `results/convergence/tail_mechanism.png`.
       Check: R(n) saturation at $n \approx 1$/s; D $\propto$ n R; local ratio −v n/D ≈ $$(1-h)/h$$, s-independent;
       log–log tail slope vs −1/h.
-- [ ] Write the minimal analytic model properly (R(n), v, D, tail exponent, crossover scales,
+- [x] Write the minimal analytic model properly (done: Sec. "The minimal analytic model" of `anomalous_cooling.tex`, with tests; the exact-kernel chain replaces Fokker–Planck for large jumps) (R(n), v, D, tail exponent, crossover scales,
       tail contribution to $n_{\rm ss}$); improve the Fokker–Planck treatment for large discrete jumps
       (e.g. master equation for P(n) with the exact recoil kernel).
 - [ ] Scan h via $\nu_r/\omega_{\rm rec}$ and $b_p$ with the banded solver (reduced cases, branch `universal`):
