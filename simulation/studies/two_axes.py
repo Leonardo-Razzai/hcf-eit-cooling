@@ -310,7 +310,31 @@ def switch():
 
 
 
-STUDIES = {'validate': validate, 'steady': steady, 'thermal': thermal, 'exact': exact, 'switch': switch}
+def switch_n():
+    """Convergence of switch() in the Fock truncation: N = 8 and 10 per axis at a few stage lengths."""
+    rows = []
+    B = E.paper_cases()['B']['eta_sp']**-2
+    A = E.paper_cases()['A']['eta_sp']**-2
+    DG, s, dt = 3.0, 1.0, 0.1
+    runs = [(B, 0.5, 8, tau) for tau in (8.0, 16.0, 32.0, 64.0)] + [(A, 5 / 6, 8, tau) for tau in (16.0, 32.0)]
+    runs += [(B, 0.5, 10, tau) for tau in (16.0, 32.0)]
+    for nw, bp, N, tau in runs:
+        p = E.params(E.reduced_case(nw), s=s, N=N, bp=bp, Delta_G=DG)
+        r1 = E.solve_banded(p, B=N)
+        tmax = max(600.0, 12 * 2 * tau)
+        tmax = 2 * tau * np.ceil(tmax / (2 * tau))
+        tr = []
+        exact_2d(nw, bp, DG, s, N=N, tmax=tmax, dt=dt, tau=tau, quiet=True, init=(1, 1), fine=tr)
+        tr = np.array(tr)
+        per = int(round(2 * tau / dt))
+        pss = tr[-per:].mean()
+        W00 = pss / (np.sum(pss - tr) * dt)
+        rows.append([nw, bp, N, tau, tau * p['Gn'], pss, W00, r1['W0'], r1['P0']])
+        log('switch_n nu %.2f bp %.2f N %d tau %g: P00ss %.4f W00/W0 %.3f' % (nw, bp, N, tau, pss, W00 / r1['W0']))
+    save('two_axes_switch_n.dat', ['nu_wrec', 'bp', 'N', 'tau', 'tauGn', 'P00ss', 'W00', 'W0_1D', 'P0_1D'], rows)
+
+
+STUDIES = {'validate': validate, 'steady': steady, 'thermal': thermal, 'exact': exact, 'switch': switch, 'switch_n': switch_n}
 
 if __name__ == '__main__':
     for name in sys.argv[1:]:
