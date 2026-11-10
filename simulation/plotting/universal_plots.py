@@ -164,7 +164,49 @@ def fig_target():
     plt.close(fig)
 
 
+def fig_hscan():
+    """Universality in h: two routes to the same h (b_p = 1/2 with varying trap stiffness; nu_r/omega_rec = 4
+    with varying b_p), s = 1, Delta = 8 Gamma, N = 400."""
+    d = np.genfromtxt(R / 'universal_hscan.dat', names=True)
+    pn = np.genfromtxt(R / 'universal_hscan_pn.dat', names=True)
+    fig, ax = plt.subplots(1, 3, figsize=(WDOUBLE, 58 * MM))
+    hh = np.linspace(0.08, 1.3, 200)
+    for route, c, mk, lab in ((1, CA, 'o', r'$b_p=1/2$, varying $\nu_r/\omega_{\rm rec}$'), (2, CB, 's', r'$\nu_r/\omega_{\rm rec}=4$, varying $b_p$')):
+        r = d[d['route'] == route]
+        ax[0].plot(r['h'], -r['slope'], mk, color=c, ms=3.5, mfc='white', mew=0.8, label=lab)
+        ax[2].semilogy(r['h'], r['n'] / (1 - r['P0']), mk, color=c, ms=3.5, mfc='white', mew=0.8)
+        ax[2].semilogy(r['h'], 1 - r['P0'], mk, color=c, ms=3.5, mew=0.8)
+    ax[0].plot(hh, 1 / hh, '-', color='k', lw=0.7, label=r'$1/h$')
+    ax[0].set_xlabel('$h$')
+    ax[0].set_ylabel(r'tail exponent, $-d\ln P/d\ln n$')
+    ax[0].set_ylim(0, 11)
+    ax[0].legend(loc='upper right', fontsize=6)
+    for h, c in ((0.2, CL), (0.4, CG), (0.6, CO), (1.0, 'k')):
+        for route, ls in ((1, '-'), (2, '--')):
+            q = pn[(pn['route'] == route) & (np.abs(pn['h'] - h) < 1e-6)]
+            n, P = q['n'], q['P']
+            m = (n >= 1) & (P > 0)
+            ax[1].loglog(n[m], P[m] / P[n == 5][0], ls, color=c, lw=0.9, label=('$h=%g$' % h) if route == 1 else None)
+    ax[1].set_xlim(1, 400)
+    ax[1].set_ylim(1e-8, 1e2)
+    ax[1].set_xlabel('Fock state $n$')
+    ax[1].set_ylabel(r'$P(n)/P(5)$')
+    ax[1].legend(loc='lower left', fontsize=6, title='solid: route 1, dashed: route 2', title_fontsize=5.5)
+    ax[2].set_xlabel('$h$')
+    ax[2].set_ylabel(r'open: $\langle n\rangle/(1-P_0)$; filled: $1-P_0$')
+    for a in (ax[0], ax[2]):
+        for x in (1 / 3, 0.5, 1.0):
+            a.axvline(x, color=CG, lw=0.4, ls=':')
+    for a, l in zip(ax, 'abc'):
+        letter(a, l)
+    fig.tight_layout()
+    fig.savefig(OUT / 'hscan.pdf')
+    fig.savefig(OUT / 'hscan.png')
+    plt.close(fig)
+
+
 if __name__ == '__main__':
     fig_map()
     fig_collapse()
     fig_target()
+    fig_hscan()
