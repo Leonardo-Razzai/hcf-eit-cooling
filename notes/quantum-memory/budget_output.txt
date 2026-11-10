@@ -49,24 +49,36 @@ backward eta = 0.90 needs OD = 93
 backward eta = 0.95 needs OD = 201
 backward eta = 0.99 needs OD = 1096
 
-== 4. Optical depth of a column, single occupancy: OD = sigma rho_s, rho_s = N / A_eff
-sigma = r (3 lam^2 / 2 pi) = 0.3018 r um^2, i.e. OD per atom/um^2; r = 0.250; lattice period 532 nm
-normalised, f = 1: rho_s per cm of column and OD per cm (r = 1 and this r)
- a(um) A_eff(um2)   rho_s(um-2/cm)   OD/cm(r=1)     OD/cm(r)
-  15.0      190.5             98.7         29.8          7.4
-   7.5       47.6            394.7        119.1         29.8
-   5.0       21.2            888.0        268.0         67.0
-   3.5       10.4           1812.3        546.9        136.7
- a(um)  L(mm)   fill        N      rho_s  OD(r=1)       OD    eta_b
-  15.0     10    1.0    18797       98.7     29.8      7.4    0.404
-  15.0     10    0.5     9398       49.3     14.9      3.7    0.225
-  15.0     50    0.5    46992      246.7     74.4     18.6    0.646
-   7.5     10    0.5     9398      197.3     59.5     14.9    0.591
-   5.0     10    0.5     9398      444.0    134.0     33.5    0.768
-   3.5     10    0.5     9398      906.1    273.4     68.4    0.869
-   3.5      3    0.5     2820      271.8     82.0     20.5    0.669
-   3.5      1    0.5      940       90.6     27.3      6.8    0.380
-   3.5     10    1.0    18797     1812.3    546.9    136.7    0.929
+== 4. Optical depth from the atom number: OD = sigma N kappa / A_eff
+sigma = r (3 lam^2 / 2 pi) = 0.3018 r um^2; kappa = mode-column overlap (1 for a thin column)
+ a(um) A_eff(um2)     OD/1e4 (r=1)     OD/1e4 clock OD/1e4 stretched
+   3.5       10.4            290.9             72.7            145.5
+   5.0       21.2            142.6             35.6             71.3
+   7.5       47.6             63.4             15.8             31.7
+  10.0       84.7             35.6              8.9             17.8
+  15.0      190.5             15.8              4.0              7.9
+atoms needed (kappa = 1), clock r = 1/4 / stretched r = 1/2:
+ a(um)       eta=0.80 (OD 41)       eta=0.90 (OD 93)      eta=0.95 (OD 201)
+   3.5      5.6e+03 / 2.8e+03      1.3e+04 / 6.4e+03      2.8e+04 / 1.4e+04
+   5.0      1.1e+04 / 5.7e+03      2.6e+04 / 1.3e+04      5.7e+04 / 2.8e+04
+   7.5      2.6e+04 / 1.3e+04      5.9e+04 / 2.9e+04      1.3e+05 / 6.4e+04
+  10.0      4.6e+04 / 2.3e+04        1e+05 / 5.2e+04      2.3e+05 / 1.1e+05
+  15.0        1e+05 / 5.1e+04      2.4e+05 / 1.2e+05      5.1e+05 / 2.5e+05
+overlap kappa against the radial rms size of the column (per axis):
+ a(um)    0.1 um    0.3 um      1 um      2 um      3 um
+   3.5     0.995     0.959     0.660     0.390     0.323
+   7.5     0.999     0.991     0.905     0.692     0.507
+  15.0     1.000     0.998     0.975     0.905     0.804
+what sets the radial size (nu_z = 300 kHz at u = 1; lowering keeps n, so a thermal size grows as u^-1/4):
+  a= 3.5 u=1     ground state 0.04 um (kappa 0.999); from 10 uK 0.16 um (kappa 0.988)
+  a= 3.5 u=0.01  ground state 0.14 um (kappa 0.991); from 10 uK 0.51 um (kappa 0.889)
+  a=15.0 u=1     ground state 0.09 um (kappa 1.000); from 10 uK 0.69 um (kappa 0.988)
+  a=15.0 u=0.01  ground state 0.29 um (kappa 0.998); from 10 uK 2.18 um (kappa 0.889)
+column length: mean atoms per lattice site N d / L (d = 532 nm), for N = 1e4, 3e4, 1e5:
+  L =  1 mm: 5.32, 15.96, 53.20
+  L =  3 mm: 1.77, 5.32, 17.73
+  L = 10 mm: 0.53, 1.60, 5.32
+  L = 30 mm: 0.18, 0.53, 1.77
 
 == 5. Backward retrieval, hyperfine phase mismatch
 Delta k L = 2 (omega_hf / c) L = 2.86 rad per cm
@@ -116,10 +128,10 @@ check at dt=0, flat S, d=150: eta(h large) = 0.9348, Eq.(30) 0.9349
    300      300        600      0.895    15120.0     9.19e-01          8.6
 
 == 8. Control photons per access: N_c = 2 h A / sigma_c = (h/d) N (r_s / r_c)
-a=15.0 L=10  f=0.5  d=1.9     N=9398    h=5.6     N_c=2.82e+04  energy 7.0 fJ; 100 ns pulse: 70 nW
-a=15.0 L=10  f=1.0  d=3.7     N=18797   h=11.2    N_c=5.64e+04  energy 14.1 fJ; 100 ns pulse: 141 nW
-a=3.5  L=10  f=0.5  d=34.2    N=9398    h=102.5   N_c=2.82e+04  energy 7.0 fJ; 100 ns pulse: 70 nW
-a=3.5  L=1   f=0.5  d=3.4     N=940     h=10.3    N_c=2.82e+03  energy 0.7 fJ; 100 ns pulse: 7 nW
+a=15.0 N=10000    d=2.0     h=5.9     N_c=3.00e+04  energy 7.5 fJ; 100 ns pulse: 75 nW
+a=15.0 N=100000   d=19.8    h=59.4    N_c=3.00e+05  energy 75.0 fJ; 100 ns pulse: 750 nW
+a=3.5  N=10000    d=36.4    h=109.1   N_c=3.00e+04  energy 7.5 fJ; 100 ns pulse: 75 nW
+a=3.5  N=100000   d=363.7   h=1091.0  N_c=3.00e+05  energy 75.0 fJ; 100 ns pulse: 750 nW
 
 == 9. Noise per read [order-of-magnitude]
 Residual s population p: incoherent photons d p. FWM spin-wave probability: (h/d) d^2 (Gamma/omega_hf)^2 / 2 r_ratio
@@ -162,15 +174,15 @@ power admixture p=1e-05: intensity +-1.0 %, shift +-7.3 Hz at u=1, +-0.073 Hz at
 
 == 13. Pressure inside the core: molecular flow with wall outgassing q (open at both ends)
 p = 3 q L^2 / (8 a^2 v), L = fibre length; q and species are assumptions (H2, q = 1e-8 Pa m/s)
- a(um)   L(mm)   p (torr)  tau_bg(s) OD(r=1/2,f=.5)
-  15.0      40    1.1e-07       0.18        7.4
-  15.0      20    2.8e-08       0.70        7.4
-  15.0      10    7.1e-09       2.82        7.4
-   7.5      10    2.8e-08       0.70       29.8
-   3.5      10    1.3e-07       0.15      136.7
-   3.5       3    1.2e-08       1.70       41.0
-   3.5       1    1.3e-09      15.33       13.7
-   5.0       2    2.6e-09       7.82       13.4
+ a(um)   L(mm)   p (torr)  tau_bg(s) OD per 1e4 (r=1/2)
+  15.0      40    1.1e-07       0.18            7.9
+  15.0      20    2.8e-08       0.70            7.9
+  15.0      10    7.1e-09       2.82            7.9
+   7.5      10    2.8e-08       0.70           31.7
+   3.5      10    1.3e-07       0.15          145.5
+   3.5       3    1.2e-08       1.70          145.5
+   3.5       1    1.3e-09      15.33          145.5
+   5.0       2    2.6e-09       7.82           71.3
 
 == 14. Fibre bending modes shake the trap [hazard estimate]
 ndot = m omega^3 S_x(f) / (4 hbar), S_x one-sided in m^2/Hz (Savard 1997, converted)

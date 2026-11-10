@@ -490,20 +490,18 @@ def memory_panel():
     import memory_budget as mb
     fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.4))
     a = np.geomspace(2.5, 25, 100)
-    sig = 3 * mb.LAM_S**2 / (2 * np.pi) * 1e12
-    rho = 1e4 / 0.532 / (mb.a_eff(a * 1e-6) * 1e12)          # um^-2 per cm, one atom per site
-    for r, c, lab in ((0.25, PROBE, 'clock Λ ($r=1/4$)'), (0.5, COUPL, 'stretched Λ ($r=1/2$)')):
-        ax[0].loglog(a, sig * r * rho, color=c, label=lab)
-    for od, lab in ((93, r'$\eta=0.90$'), (201, r'$\eta=0.95$')):
-        ax[0].axhline(od, color=GREY, ls='--', lw=1.2)
-        ax[0].text(24, od * 1.08, lab, ha='right', va='bottom', fontsize=12, color=GREY)
+    sig = 3 * mb.LAM_S**2 / (2 * np.pi) * 1e12                 # um^2
+    A = mb.a_eff(a * 1e-6) * 1e12                             # um^2
+    for od, eta, ls in ((93, 0.90, '-'), (201, 0.95, '--')):
+        for r, c, lab in ((0.25, PROBE, 'clock'), (0.5, COUPL, 'stretched')):
+            ax[0].loglog(a, od * A / (sig * r), ls, color=c, label=r'%s $\Lambda$, $\eta$ = %.2f' % (lab, eta))
     ax[0].set_xlabel(r'core radius $a$ ($\mu$m)')
-    ax[0].set_ylabel('optical depth per cm')
+    ax[0].set_ylabel('atoms in the fibre, $N$')
     ax[0].set_xticks([3, 5, 10, 20], ['3', '5', '10', '20'])
     ax[0].xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    ax[0].set_ylim(2, 600)
-    ax[0].legend(loc='lower left', fontsize=12)
-    ax[0].set_title('one atom per site; OD = 0.302 r µm² × ρ$_s$', fontsize=12, loc='left')
+    ax[0].set_ylim(1e3, 2e6)
+    ax[0].legend(loc='upper left', fontsize=11)
+    ax[0].set_title('atoms needed (thin column; independent of its length)', fontsize=12, loc='left')
     T = np.geomspace(1e-3, 100, 300)
     scen = (('full depth, no echo', dict(u=1.0), GREY), ('full depth, echo', dict(u=1.0, echo=True), SKY),
             (r'depth ×0.01, echo, $\tau_{\rm bg}$ = 2 s', dict(u=.01, echo=True), PROBE),

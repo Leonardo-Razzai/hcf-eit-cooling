@@ -346,11 +346,11 @@ async function main() {
   s.addText("Application: a spin-wave memory in the fibre", { placeholder: "title" });
   await img(s, "memory.png", MX, 1.35, W - 2 * MX, 4.05, { name: "memory optical depth and storage time" });
   text(s, bullets([
-    ["Optical depth is the bottleneck: ", "OD = 0.302 r µm² × ρ_s; 90 % efficiency needs ρ_s ≈ 1200 µm⁻² on the clock Λ: a ≲ 4 µm for a 1 cm column at one atom per site, or several atoms per site"],
+    ["Optical depth is the bottleneck: ", "it is set by the number of atoms N in the fibre, not by the column length; 90 % efficiency needs N ≈ 1.3×10⁴ at a = 3.5 µm and 2.4×10⁵ at a = 15 µm (clock Λ; half on the stretched Λ). The length only sets the density, N·532 nm/L atoms per site"],
     ["Storage: ", "cool deep, store shallow, with an echo: 2–11 s, limited by vacuum, then by lattice heating"],
     ["Ground state buys ", "shallow traps, uniform coupling and 60× fewer motional jumps; an echo alone removes static thermal dephasing"],
   ], { space: 6 }), MX, 5.5, W - 2 * MX, 1.35, { fontSize: 14 });
-  s.addNotes("Theory only. Left: optical depth per centimetre of column for one atom per site, as a function of core radius; rho_s is the number of atoms per square micrometre of mode area. A 15 micrometre core gives only 7 to 15 per centimetre on a usable lambda scheme, so efficient storage needs a small core, a longer column or several atoms per site. Right: storage model with lattice scattering and a one percent intensity spread along the column. Lowering the lattice a hundred times after cooling and using an echo gives seconds, limited by the background gas inside the fibre, which is the least certain input. The radial ground state is not mainly a coherence-time gain; it allows shallow traps and uniform coupling.");
+  s.addNotes("Theory only. Left: the number of atoms in the fibre needed for 90 and 95 percent efficiency, against core radius, for a thin column; the optical depth depends on the atom number and the mode area only, not on the column length. A 15 micrometre core needs a few hundred thousand atoms, a 3.5 micrometre core about ten thousand. Right: storage model with lattice scattering and a one percent intensity spread along the column. Lowering the lattice a hundred times after cooling and using an echo gives seconds, limited by the background gas inside the fibre, which is the least certain input. The radial ground state is not mainly a coherence-time gain; it allows shallow traps and uniform coupling.");
 
   // ============================================================ 19 summary
   pres.addSection({ title: "Summary" });

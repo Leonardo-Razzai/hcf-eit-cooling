@@ -17,11 +17,11 @@ Tags: **[script]** computed by these scripts; **[estimate]** back-of-envelope in
 
 ## 0. Summary
 
-1. **The bottleneck is optical depth, not storage time.** OD $= \sigma\rho_s$, with $\rho_s = N/A_{\rm eff}$ ∝ the mean occupancy $\bar n_{\rm site}$.
-   For a = 15 µm, a 1 cm column and $\bar n_{\rm site}$ = ½, OD ≈ 15 on a closed transition, and only **3.7 to 7.4 on a usable Λ**.
-   That gives 23–40 % efficiency. Efficient storage (η ≥ 0.9) needs OD ≈ 90–100, so it needs a **small core**
-   (a ≈ 3.5–5 µm gives OD 35–140), **several atoms per site** (OD ∝ $\bar n_{\rm site}$; costs in Section 1.5), a longer column, or a cavity. Small cores also lower the cooling parameter h, so the
-   memory and the cooling point the same way. Vacuum and loading point the other way. [script]
+1. **The bottleneck is optical depth, which is set by the number of atoms in the fibre.** OD $= \sigma N\kappa/A_{\rm eff}$: N atoms, the overlap κ of
+   the column with the mode (≈ 1 for a cold, thin column) and the mode area $A_{\rm eff} \approx 0.85\,a^2$. **The column length drops out** of the OD; it sets the
+   density (atoms per site N d/L), the phase mismatch and the vacuum. Efficient storage (η ≥ 0.9, OD ≈ 93) needs on the clock Λ
+   **N ≈ 1.3×10⁴ atoms at a = 3.5 µm and 2.4×10⁵ at a = 15 µm** (half for the stretched Λ). Small cores also lower the cooling parameter h, so the
+   memory and the cooling point the same way; loading and vacuum point the other way. [script]
 2. **Achievable efficiency** (optimal control, backward retrieval) is $1-\eta \approx 11.6/{\rm OD}$ at large OD: 0.90 at OD = 93,
    0.95 at 201, 0.99 at 1100. In a cm-long column, backward retrieval loses a few per cent to the hyperfine phase mismatch
    (2.9 rad/cm). [script; Gorshkov 2007]
@@ -39,7 +39,7 @@ Tags: **[script]** computed by these scripts; **[estimate]** back-of-envelope in
    Independent per-atom noise transfers only $(1-|\chi|^2)/N$ into another orthogonal mode, which is negligible. Crosstalk comes from (a) phases
    **correlated** along z (Jacobi–Anger, $J_1^2(\phi_0)$; for example an LP₀₂ admixture in the lattice), (b) the **phase-matching tail**
    $X/X_0 \approx 1.6\,d/(\Delta k L)^2$, so channels must be separated by $\Delta kL \gg d$, not 2π, (c) **read-out erasure**: resonant EIT
-   read-out destroys co-located spin waves, while far-detuned Raman leaves $\approx e^{-12.7/d}$ per access, and (d) random filling, $(1-f)/N$. [script]
+   read-out destroys co-located spin waves, while far-detuned Raman leaves $\approx e^{-12.7/d}$ per access, and (d) how the N atoms are distributed over sites, about 1/N. [script]
 
 ---
 
@@ -47,11 +47,11 @@ Tags: **[script]** computed by these scripts; **[estimate]** back-of-envelope in
 
 ### 1.1 Geometry
 
-Atoms sit in a 1064 nm LP₀₁ standing wave on the fibre axis, with mean occupancy $\bar n_{\rm site}$ per site (f below; f > 1 means several atoms per site, Section 1.5). The site spacing is 532 nm.
-A 1 cm column has 18 800 sites. Signal and control are guided; for cold atoms on the axis the relevant intensity is the on-axis
-one, $I(0) = P/A_{\rm eff}$ with $A_{\rm eff} = \pi a^2 J_1^2(u_{01})$ ≈ 0.85 a².
+N atoms sit in a 1064 nm LP₀₁ standing wave on the fibre axis, in a column of length L and radial rms size $\sigma_r$ (per axis). The site spacing is
+d = 532 nm, so the mean number of atoms per site is N d/L (no assumption on the occupancy is needed). Signal and control are guided; the
+relevant intensity is the mode intensity averaged over the column, $\kappa I(0)$, with $I(0) = P/A_{\rm eff}$, $A_{\rm eff} = \pi a^2 J_1^2(u_{01})$ ≈ 0.85 a².
 
-$${\rm OD} = \frac{N\,\sigma}{A_{\rm eff}},\qquad \sigma = r\,\frac{3\lambda^2}{2\pi},\qquad d = {\rm OD}/2 \ \ \text{(Gorshkov convention: intensity } e^{-2d}).$$
+$${\rm OD} = \frac{N\,\sigma\,\kappa}{A_{\rm eff}},\qquad \kappa = \frac{\langle |E(r)|^2\rangle_{\rm column}}{|E(0)|^2},\qquad \sigma = r\,\frac{3\lambda^2}{2\pi},\qquad d = {\rm OD}/2 \ \ \text{(Gorshkov convention: intensity } e^{-2d}).$$
 
 Here r is the branching ratio of the specific transition (r = 1 for a closed two-level transition).
 
@@ -80,47 +80,55 @@ Inputs a memory project needs from the cooling work:
 - the preparation time (ms) and atom loss;
 - the internal state after cooling (F = 1 or 2; the Zeeman repumper leaves atoms spread over sublevels, so optical pumping to g is a separate step).
 
-### 1.4 Column optical depth [script]
+### 1.4 Optical depth from the atom number [script]
 
-**Reporting convention (author's request): give results per cm of atom column and per unit atomic surface density
-$\rho_s = N/A_{\rm eff}$ in µm⁻².** Then ${\rm OD} = \sigma\rho_s$, with $\sigma = 0.302\,r$ µm² on D1: OD per atom/µm² is σ itself.
-Efficiencies are not linear in OD, so always quote them with the total OD (or $\rho_s$ and length) they belong to.
+**Reporting convention (author's request): state results in terms of what an experiment controls: the number of atoms N in the fibre, the radial
+size of the column $\sigma_r$ and the column length L.** Efficiencies are not linear in OD, so always quote them with the N (and κ) they belong to.
 
-Normalised to one atom per site (18 800 atoms per cm; scale linearly with the mean occupancy $\bar n_{\rm site}$):
+OD per 10⁴ atoms, thin column (κ = 1); $\sigma = 0.302\,r$ µm² on D1:
 
-| a (µm) | $A_{\rm eff}$ (µm²) | $\rho_s$ per cm (µm⁻² cm⁻¹) | OD/cm, r = 1 | OD/cm, clock (r = ¼) | OD/cm, stretched (r = ½) |
+| a (µm) | $A_{\rm eff}$ (µm²) | r = 1 | clock Λ (r = ¼) | stretched Λ (r = ½) |
+|---|---|---|---|---|
+| 3.5 | 10.4 | 291 | 73 | 145 |
+| 5 | 21 | 143 | 36 | 71 |
+| 7.5 | 48 | 63 | 16 | 32 |
+| 10 | 85 | 36 | 8.9 | 18 |
+| 15 | 190 | 16 | 4.0 | 7.9 |
+
+**Atoms needed** (κ = 1), clock / stretched Λ, backward retrieval with optimal control:
+
+| a (µm) | η = 0.8 (OD 41) | η = 0.9 (OD 93) | η = 0.95 (OD 201) |
+|---|---|---|---|
+| 3.5 | 5.6×10³ / 2.8×10³ | 1.3×10⁴ / 6.4×10³ | 2.8×10⁴ / 1.4×10⁴ |
+| 5 | 1.1×10⁴ / 5.7×10³ | 2.6×10⁴ / 1.3×10⁴ | 5.7×10⁴ / 2.8×10⁴ |
+| 7.5 | 2.6×10⁴ / 1.3×10⁴ | 5.9×10⁴ / 2.9×10⁴ | 1.3×10⁵ / 6.4×10⁴ |
+| 10 | 4.6×10⁴ / 2.3×10⁴ | 1.0×10⁵ / 5.2×10⁴ | 2.3×10⁵ / 1.1×10⁵ |
+| 15 | 1.0×10⁵ / 5.1×10⁴ | 2.4×10⁵ / 1.2×10⁵ | 5.1×10⁵ / 2.5×10⁵ |
+
+**Radial size of the column.** Overlap κ against the rms size $\sigma_r$ (per axis):
+
+| a (µm) | 0.1 µm | 0.3 µm | 1 µm | 2 µm | 3 µm |
 |---|---|---|---|---|---|
-| 15 | 190 | 99 | 30 | 7.4 | 15 |
-| 7.5 | 48 | 395 | 119 | 30 | 60 |
-| 5 | 21 | 888 | 268 | 67 | 134 |
-| 3.5 | 10.4 | 1812 | 547 | 137 | 273 |
+| 3.5 | 0.995 | 0.959 | 0.66 | 0.39 | 0.32 |
+| 7.5 | 0.999 | 0.991 | 0.91 | 0.69 | 0.51 |
+| 15 | 1.000 | 0.998 | 0.975 | 0.91 | 0.80 |
 
-Targets as $\rho_s$, clock scheme: η = 0.9 needs OD 93, i.e. $\rho_s$ ≈ 1230 µm⁻²; η = 0.95 needs ≈ 2660 µm⁻² (half that for the stretched scheme).
+What sets $\sigma_r$: the radial ground state ($x_0$ = 0.04–0.09 µm at full depth, 0.14–0.29 µm after lowering 100×) gives κ ≥ 0.99; a 10 µK column gives
+κ = 0.99 at full depth and 0.89 after lowering 100× (its size grows as $u^{-1/4}$), the same in both cores because $\sigma_r/a$ is fixed. For an LP₀₁ signal the
+column size therefore costs ≤ 11 %; it matters much more for an LP₀ₘ signal (`hom_memory_theory.md`).
 
-Examples:
+**Column length.** L does not enter the OD. It sets the mean atoms per site N d/L (N = 10⁴: 5.3, 1.8, 0.53, 0.18 for L = 1, 3, 10, 30 mm), the backward
+phase mismatch (2.9 rad/cm, Section 2.2) and, through the fibre length, the vacuum (Section 3.5). **Short columns are better for everything except density.**
 
-| a (µm) | Column (mm) | f | N | ρ_s (µm⁻²) | OD (r = 1) | OD clock (r = ¼) | η, clock | OD stretched (r = ½) |
-|---|---|---|---|---|---|---|---|---|
-| 15 | 10 | 1 | 18 800 | 99 | 30 | 7.4 | 0.40 | 15 |
-| 15 | 10 | ½ | 9 400 | 49 | 15 | 3.7 | 0.23 | 7.4 |
-| 15 | 50 | ½ | 47 000 | 247 | 74 | 19 | 0.65 | 37 |
-| 7.5 | 10 | ½ | 9 400 | 197 | 60 | 15 | 0.59 | 30 |
-| 5 | 10 | ½ | 9 400 | 444 | 134 | 34 | 0.77 | 67 |
-| 3.5 | 10 | ½ | 9 400 | 906 | 273 | 68 | 0.87 | 137 |
-| 3.5 | 10 | 1 | 18 800 | 1812 | 547 | 137 | 0.93 | 273 |
+Case A (15 µm) needs ≈ 2.4×10⁵ atoms for η = 0.9 on the clock Λ; in a 1 cm column that is ≈ 13 atoms per site. The manuscript's sentence that "the large
+optical depth of a fibre strip allows efficient storage" therefore holds for small cores or large atom numbers. [Paper text not changed; needs the author's decision.]
 
-η is backward retrieval, optimal control. **Case A (15 µm) is not an efficient memory with single occupancy:** η = 0.9 over 1 cm needs $\bar n_{\rm site}$ ≈ 12 (clock) or 6 (stretched). The manuscript's
-sentence that "the large optical depth of a fibre strip allows efficient storage" holds for small cores only. [Paper text not changed;
-needs the author's decision.]
+Ways to raise OD at a given N: a smaller core (× $a^{-2}$); an LP₀ₘ signal (× g = 2.3–6.3, `hom_memory_theory.md`); the stretched Λ (× 2); a low-finesse
+cavity (fibre-end mirrors), which multiplies d by about the finesse (Gorshkov 2007: the cavity error is 1/C instead of 2.9/d).
 
-Ways to raise OD: a smaller core (× $a^{-2}$); an LP₀ₘ signal (× g = 2.3–6.3, `hom_memory_theory.md`); a longer column (vacuum, loading);
-several atoms per site (× $\bar n_{\rm site}$, Section 1.5); a low-finesse cavity (fibre-end mirrors), which multiplies d by about the finesse (Gorshkov
-2007: the cavity error is 1/C instead of 2.9/d).
+### 1.5 Density: atoms per site, set by N and L [estimate]
 
-### 1.5 More than one atom per site [estimate]
-
-Single occupancy is not required. OD scales with the mean occupancy $\bar n_{\rm site}$ through $\rho_s$, so $\bar n_{\rm site}$ = 3 at a = 7.5 µm gives the
-OD of single occupancy at a = 4.3 µm. Two atoms in the same site share the 3D motional ground state, of size $\sigma_r = x_0$, $\sigma_z$ = 14 nm at full
+No occupancy has to be assumed: N atoms in a column of length L give a mean N d/L per site. When this exceeds about one, some sites hold two or more atoms. Two atoms in the same site share the 3D motional ground state, of size $\sigma_r = x_0$, $\sigma_z$ = 14 nm at full
 depth, so the pair density $\int|\psi|^4$ is high. Mean-field shift $\Delta\nu = (4\pi\hbar^2/m)\,\Delta a\int|\psi|^4/h$ per extra atom, with scattering lengths
 $a_{11}$ = 100.4, $a_{12}$ = 98.0, $a_{22}$ = 95.4 a₀ (values for the stretched states, from memory; **verify the clock-state values**):
 
@@ -139,9 +147,9 @@ Consequences:
   shift of a bias field (72 Hz/G²), so B ≳ 1 G helps. Hyperfine-changing collisions from F = 2 and spin exchange in \|1,0⟩\|2,0⟩ need real rate coefficients:
   **unknown here, S9.** At 10¹³–10¹⁵ cm⁻³ even 10⁻¹⁴ cm³ s⁻¹ gives 0.1–10 s⁻¹.
 - **Light-assisted pair loss during cooling** (collisional blockade, Schlosser et al., PRL 89, 023005, 2002; Fuhrmanek et al., PRA 85, 062708, 2012) would project each
-  site to 0 or 1 atoms, which caps $\bar n_{\rm site}$ near ½. EIT cooling keeps atoms mostly in the dark state, with a small excited fraction, which may suppress it. **This is a question for the
-  cooling project and decides whether $\bar n_{\rm site}$ > 1 is possible at all.** Loading after cooling is not an option here, since the cooling happens in place.
-- **Crosstalk.** The Gram floor becomes ${\rm Var}(n_{\rm site})/(\bar n_{\rm site}N)$: 1/N for Poisson occupation, (1−f)/N for binomial (Section 7.2).
+  site to 0 or 1 atoms, which caps the mean number of atoms per site near ½, that is N ≲ L/(2d) ≈ 10⁴ per cm. EIT cooling keeps atoms mostly in the dark state, with a small excited fraction, which may suppress it. **This is a question for the
+  cooling project and decides whether more than about one atom per site, and so N ≳ 2×10⁴ per cm, is possible at all.** Loading after cooling is not an option here, since the cooling happens in place.
+- **Crosstalk.** The Gram floor is ${\rm Var}(n_{\rm site})/(\bar n_{\rm site}N)$, set by how the N atoms are distributed over sites: 1/N for Poisson occupation, (1−f)/N for binomial filling f (Section 7.2).
 - Collective effects in a site: two atoms sharing a spin-wave excitation are fine at low excitation. Rydberg-like blockade does not apply.
 
 ---
@@ -237,7 +245,7 @@ Antiresonant fibres strip HOMs, which helps. This smooth, periodic phase is also
 | Fibre bending modes | thermal amplitude 1–16 pm | Off resonance < 10⁻⁷ quanta/s; **if a mode coincides with ν_r**, 0.02–0.2 quanta/s. Avoid coincidence; this sets a clamping design rule. |
 | Background gas | assumed $p = 3qL^2/8a^2\bar v$ | **The outgassing rate q is an assumption** (10⁻⁸ Pa m s⁻¹). Then τ_bg ∝ a²/L_fibre²: a = 3.5 µm and L = 10 mm give 0.15 s; L = 3 mm, 1.7 s; L = 1 mm, 15 s. OD²τ_bg ∝ 1/a² at a fixed q, so small cores still win, but **short fibre pieces** are needed. Needs measured data. |
 | Magnetic noise | — | clock pair or magic field; the stretched scheme needs transfer to clock states for storage |
-| Collisions ($\bar n_{\rm site}$ > 1) | see Section 1.5 | density shift static (echo); collision rates unknown |
+| Collisions (N d/L > 1) | see Section 1.5 | density shift static (echo); collision rates unknown |
 
 ### 3.6 What the radial ground state buys [estimate]
 
@@ -392,7 +400,7 @@ Hence the shelving of Section 6, or simultaneous read-out of all channels follow
 
 ### 7.7 Example budget [estimate]
 
-a = 3.5 µm, 1 cm, f = ½, stretched scheme (OD 137), four mode-pair groups, Raman read-out with shelving. Gram floor 5×10⁻⁵; independent noise ≤ 10⁻⁴;
+a = 3.5 µm, N ≈ 9 400 atoms in L = 1 cm (≈ 0.5 per site), stretched scheme (OD 137), four mode-pair groups, Raman read-out with shelving. Gram floor 5×10⁻⁵; independent noise ≤ 10⁻⁴;
 mode-pair tail ≈ 2×10⁻³ (d = 68, φ = 257 rad); LP₀₂ lattice beat ≲ 10⁻³ for T ≤ 40 ms at p = 10⁻⁴ and u = 0.01, unless an echo is used. **The read-out tail dominates.**
 
 ---
@@ -406,9 +414,9 @@ mode-pair tail ≈ 2×10⁻³ (d = 68, φ = 257 rad); LP₀₂ lattice beat ≲ 
 | Dudin 2013, 1D lattice | low (to check) | 16 s with DD | |
 | Leong 2020, HC-PCF, cold Rb | — | 20 ms (1/e) | OD 40, 10 µK |
 | Xin 2019, HC-PCF | coherence, not storage | 252 ms; trap 1.7–2.6 s | ≤ 10⁻⁸ Torr |
-| **This platform, model** | 0.87–0.93 (a = 3.5 µm) | 2–11 s (τ_bg-dependent) | no cavity, fibre-coupled |
+| **This platform, model** | 0.87–0.93 (a = 3.5 µm, N = 1–2×10⁴, clock Λ) | 2–11 s (τ_bg-dependent) | no cavity, fibre-coupled |
 
-A real advance would be **η ≥ 0.9 with τ ≥ 1 s, no cavity, fibre-coupled.** The model allows it only with a small core (≤ 5 µm), a lowered lattice, an echo,
+A real advance would be **η ≥ 0.9 with τ ≥ 1 s, no cavity, fibre-coupled.** The model allows it only with ≳ 10⁴ atoms in a small core (≤ 5 µm) or ≳ 10⁵ in a large one, a lowered lattice, an echo,
 and τ_bg ≳ 10 s in a short fibre piece. The least certain input is the vacuum. The benchmarks use different protocols and definitions of efficiency.
 
 ---
@@ -435,7 +443,7 @@ and τ_bg ≳ 10 s in a short fibre piece. The least certain input is the vacuum
 
 - Copy this folder. The scripts need only numpy, scipy, sympy and matplotlib; constants come from `scipy.constants`, Rb data from Steck rev. 2.3.4
   (mass as 86.909180531 u × CODATA u; the cooling code keeps Steck's kg value, 1.7×10⁻⁷ higher, for reproducibility).
-- **Reporting convention:** results per cm of column and per µm⁻² of surface density $\rho_s$ (Section 1.4).
+- **Reporting convention:** results in terms of the atom number N, the radial size of the column and its length L (Section 1.4).
 - Treat every [estimate] as a hypothesis. The first checks are S5.0 and S2 (cheap), then S1 (the scheme choice and the stretched scheme).
 - Inputs from the cooling project are listed in Section 1.3. Ask for the current values: they change as the cooling study converges.
 - Conventions: d = OD/2 (Gorshkov); η is total (storage × retrieval); depth fraction u is relative to the depth that gives ν_z = 300 kHz.

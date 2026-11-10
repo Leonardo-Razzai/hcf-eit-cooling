@@ -170,26 +170,57 @@ def efficiency_table():
     return np.array(tab)
 
 
-def geometry_table(r_sig):
-    say('\n== 4. Optical depth of a column, single occupancy: OD = sigma rho_s, rho_s = N / A_eff')
+def overlap(a, sig):
+    """kappa = <|E(r)|^2> / |E(0)|^2 of the LP01 mode J0(u01 r / a) over a Gaussian radial column of rms
+    size sig per axis (2D density exp(-r^2 / 2 sig^2) / 2 pi sig^2)."""
+    if sig <= 0:
+        return 1.0
+    r = np.linspace(0, min(a, 8 * sig), 4000)
+    w = r * np.exp(-r**2 / (2 * sig**2))
+    I = np.where(r < a, jv(0, U01 * r / a)**2, 0.0)
+    return np.trapezoid(w * I, r) / np.trapezoid(w, r)
+
+
+def column_table(r_sig):
+    """Optical depth from what an experiment controls: atom number N in the fibre, radial size of the
+    column (through the overlap kappa) and column length L (density, phase mismatch, vacuum)."""
     sig0 = 3 * LAM_S**2 / (2 * np.pi)
-    say('sigma = r (3 lam^2 / 2 pi) = %.4f r um^2, i.e. OD per atom/um^2; r = %.3f; lattice period %.0f nm' % (
-        sig0 * 1e12, r_sig, LAM_L / 2 * 1e9))
-    say('normalised, f = 1: rho_s per cm of column and OD per cm (r = 1 and this r)')
-    say('%6s %10s %16s %12s %12s' % ('a(um)', 'A_eff(um2)', 'rho_s(um-2/cm)', 'OD/cm(r=1)', 'OD/cm(r)'))
-    for a in (15, 7.5, 5, 3.5):
+    say('\n== 4. Optical depth from the atom number: OD = sigma N kappa / A_eff')
+    say('sigma = r (3 lam^2 / 2 pi) = %.4f r um^2; kappa = mode-column overlap (1 for a thin column)' % (sig0 * 1e12))
+    say('%6s %10s %16s %16s %16s' % ('a(um)', 'A_eff(um2)', 'OD/1e4 (r=1)', 'OD/1e4 clock', 'OD/1e4 stretched'))
+    for a in (3.5, 5, 7.5, 10, 15):
         A = a_eff(a * 1e-6)
-        rho = 0.01 / (LAM_L / 2) / (A * 1e12)
-        say('%6.1f %10.1f %16.1f %12.1f %12.1f' % (a, A * 1e12, rho, rho * sig0 * 1e12, rho * sig0 * 1e12 * r_sig))
-    say('%6s %6s %6s %8s %10s %8s %8s %8s' % ('a(um)', 'L(mm)', 'fill', 'N', 'rho_s', 'OD(r=1)', 'OD', 'eta_b'))
-    for a, L, f in ((15, 10, 1), (15, 10, .5), (15, 50, .5), (7.5, 10, .5), (5, 10, .5),
-                    (3.5, 10, .5), (3.5, 3, .5), (3.5, 1, .5), (3.5, 10, 1)):
-        N = f * L * 1e-3 / (LAM_L / 2)
+        od = 1e4 * sig0 / A
+        say('%6.1f %10.1f %16.1f %16.1f %16.1f' % (a, A * 1e12, od, od / 4, od / 2))
+    say('atoms needed (kappa = 1), clock r = 1/4 / stretched r = 1/2:')
+    targets = []
+    for eta in (0.8, 0.9, 0.95):
+        lo, hi = 2.0, 4000.0
+        for _ in range(30):
+            mid = np.sqrt(lo * hi)
+            lo, hi = (lo, mid) if retrieval(mid / 2)[0]**2 > eta else (mid, hi)
+        targets.append((eta, hi))
+    say('%6s ' % 'a(um)' + ' '.join('%22s' % ('eta=%.2f (OD %.0f)' % (e, od)) for e, od in targets))
+    for a in (3.5, 5, 7.5, 10, 15):
         A = a_eff(a * 1e-6)
-        od1 = N * sig0 / A
-        od = od1 * r_sig
-        say('%6.1f %6.0f %6.1f %8.0f %10.1f %8.1f %8.1f %8.3f' % (a, L, f, N, N / (A * 1e12), od1, od,
-                                                                retrieval(od / 2)[0]**2))
+        say('%6.1f ' % a + ' '.join('%22s' % ('%.2g / %.2g' % (od * A / (sig0 * 0.25), od * A / (sig0 * 0.5))) for _, od in targets))
+    say('overlap kappa against the radial rms size of the column (per axis):')
+    say('%6s ' % 'a(um)' + ' '.join('%9s' % ('%g um' % s) for s in (0.1, 0.3, 1, 2, 3)))
+    for a in (3.5, 7.5, 15):
+        say('%6.1f ' % a + ' '.join('%9.3f' % overlap(a * 1e-6, s * 1e-6) for s in (0.1, 0.3, 1, 2, 3)))
+    say('what sets the radial size (nu_z = 300 kHz at u = 1; lowering keeps n, so a thermal size grows as u^-1/4):')
+    for a in (3.5, 15):
+        for u in (1.0, 0.01):
+            t = trap(u, a=a * 1e-6)
+            w = 2 * np.pi * t['nur']
+            x0 = np.sqrt(HBAR / (2 * M * w))
+            T = 10e-6 * np.sqrt(u)
+            sth = np.sqrt(KB * T / (M * w**2))
+            say('  a=%4.1f u=%-5g ground state %.2f um (kappa %.3f); from 10 uK %.2f um (kappa %.3f)' % (
+                a, u, x0 * 1e6, overlap(a * 1e-6, x0), sth * 1e6, overlap(a * 1e-6, sth)))
+    say('column length: mean atoms per lattice site N d / L (d = 532 nm), for N = 1e4, 3e4, 1e5:')
+    for L in (1, 3, 10, 30):
+        say('  L = %2d mm: %s' % (L, ', '.join('%.2f' % (N * LAM_L / 2 / (L * 1e-3)) for N in (1e4, 3e4, 1e5))))
 
 
 def mismatch_table():
@@ -295,14 +326,13 @@ def control_photons(r_sig, r_ctl):
     say('\n== 8. Control photons per access: N_c = 2 h A / sigma_c = (h/d) N (r_s / r_c)')
     sig0 = 3 * LAM_S**2 / (2 * np.pi)
     e_ph = H * C / LAM_S
-    for a, L, f, hd in ((15, 10, .5, 3), (15, 10, 1, 3), (3.5, 10, .5, 3), (3.5, 1, .5, 3)):
-        N = f * L * 1e-3 / (LAM_L / 2)
+    for a, N, hd in ((15, 1e4, 3), (15, 1e5, 3), (3.5, 1e4, 3), (3.5, 1e5, 3)):
         A = a_eff(a * 1e-6)
         d = N * sig0 * r_sig / (2 * A)
         h = hd * d
         Nc = 2 * h * A / (sig0 * r_ctl)
-        say('a=%-4.1f L=%-3d f=%.1f  d=%-7.1f N=%-7.0f h=%-7.1f N_c=%.2e  energy %.1f fJ; '
-            '100 ns pulse: %.0f nW' % (a, L, f, d, N, h, Nc, Nc * e_ph * 1e15, Nc * e_ph / 100e-9 * 1e9))
+        say('a=%-4.1f N=%-8.0f d=%-7.1f h=%-7.1f N_c=%.2e  energy %.1f fJ; '
+            '100 ns pulse: %.0f nW' % (a, N, d, h, Nc, Nc * e_ph * 1e15, Nc * e_ph / 100e-9 * 1e9))
 
 
 def noise_table(r_sig):
@@ -440,14 +470,13 @@ def vacuum_table():
     say('p = 3 q L^2 / (8 a^2 v), L = fibre length; q and species are assumptions (H2, q = 1e-8 Pa m/s)')
     q, v = 1e-8, 1760.
     tau_ref = 2.0 * 1e-8   # s torr, Xin 2019: about 2 s at <= 1e-8 torr; treat as an order of magnitude
-    say('%6s %7s %10s %10s %10s' % ('a(um)', 'L(mm)', 'p (torr)', 'tau_bg(s)', 'OD(r=1/2,f=.5)'))
+    say('%6s %7s %10s %10s %14s' % ('a(um)', 'L(mm)', 'p (torr)', 'tau_bg(s)', 'OD per 1e4 (r=1/2)'))
     sig = 3 * LAM_S**2 / (2 * np.pi) * 0.5
     for a, L, col in ((15, 40, 10), (15, 20, 10), (15, 10, 10), (7.5, 10, 10), (3.5, 10, 10),
                       (3.5, 3, 3), (3.5, 1, 1), (5, 2, 2)):
         p = 3 * q * (L * 1e-3)**2 / (8 * (a * 1e-6)**2 * v)
         torr = p / 133.32
-        N = 0.5 * col * 1e-3 / (LAM_L / 2)
-        say('%6.1f %7.0f %10.1e %10.2f %10.1f' % (a, L, torr, tau_ref / torr, N * sig / a_eff(a * 1e-6)))
+        say('%6.1f %7.0f %10.1e %10.2f %14.1f' % (a, L, torr, tau_ref / torr, 1e4 * sig / a_eff(a * 1e-6)))
 
 
 def fibre_motion():
@@ -544,7 +573,7 @@ if __name__ == '__main__':
     r_s, r_c = ref[4], ref[5]
     validate_kernel()
     tab = efficiency_table()
-    geometry_table(r_s)
+    column_table(r_s)
     mismatch_table()
     capacity_table()
     erasure_table()
