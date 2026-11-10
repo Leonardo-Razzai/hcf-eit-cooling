@@ -167,7 +167,7 @@ Study scripts (run from `simulation/studies/`):
 - `universal.py [thermal|map|mapband]` → `universal_thermal*.dat` (⟨n⟩, P₀ from thermal states, ~1.5 h), `universal_map.dat` (plane (b_p, ν_r/ω_rec), ~1 h,
   4 workers), `universal_mapband.dat`; plots by `plotting/universal_plots.py` in `results/universal/`. Older subcommands (steady, drift, capture, robust) still use N = 20.
 - `ramp.py [drift|chain|optimise[=smax]|twostage]` → `ramp_*.dat`: s-ramp step 3 (chain calibrated on ME drift, optimal control); the optimum is two stages (s_max, then s ≈ 1), 2× faster to P₀ = 0.9 from n̄₀ = 30 on the chain (case A, b_p = ½). Step 4 (ME validation) not done.
-- `two_axes.py [validate|steady|thermal|exact]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis.
+- `two_axes.py [validate|steady|thermal|exact|switch]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis; `switch` gives P₀₀ and the 2D rate W₀₀ against the stage length τ of the alternation (`two_axes_switch.dat`, ~7 min): τ ≳ 5/Γ_n needed, W₀₀ peaks at ≈ 0.2 W₀ for τΓ_n ≈ 5–15.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 

@@ -761,8 +761,36 @@ def ramp_figure():
     save(fig, 'ramp.png')
 
 
+def switch_figure():
+    """Both axes by alternating the LP11 orientation: steady state and rate against the stage length
+    (exact 2D master equation, N = 6 per axis, s = 1, Delta = 3 Gamma)."""
+    d = load('two_axes_switch.dat')
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5))
+    for nw, c, lab in ((8.43, COUPL, r'case B, $b_p$ = 1/2'), (1.97, PROBE, r'case A, $b_p$ = 5/6')):
+        r = d[np.abs(d['nu_wrec'] - nw) < 0.05]
+        r = r[np.argsort(r['tau'])]
+        ax[0].semilogx(r['tauGn'], r['P00ss'], 'o-', color=c, ms=6, label=lab)
+        ax[0].axhline(r['P0_1D'][0]**2, color=c, ls=':', lw=1.3)
+        ok = r['P00ss'] >= 0.85
+        ax[1].semilogx(r['tauGn'][ok], r['W00'][ok] / r['W0_1D'][ok], 'o-', color=c, ms=6, label=lab)
+    for a in ax:
+        a.axvspan(5, 15, color=GREEN, alpha=0.12, lw=0)
+        a.set_xlabel(r'stage length $\tau$ in units of $1/\Gamma_n$')
+    ax[0].set_ylim(0, 1.02)
+    ax[0].set_ylabel(r'both axes in the ground state, $P_{00}$')
+    ax[0].set_title(r'a   steady state (dotted: two independent axes, $P_0^2$)', loc='left', fontsize=12.5)
+    ax[0].legend(loc='lower right', fontsize=11)
+    ax[1].set_ylim(0, 0.3)
+    ax[1].set_xlim(ax[0].get_xlim())
+    ax[1].set_ylabel(r'2D rate $W_{00}$ / one-axis $W_0$')
+    ax[1].set_title(r'b   cooling rate (only where $P_{00} \geq 0.85$)', loc='left', fontsize=12.5)
+    ax[1].legend(loc='upper right', fontsize=11)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'switch.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure):
         f()
         print('ok', f.__name__)
