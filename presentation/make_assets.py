@@ -501,7 +501,7 @@ def memory_panel():
     ax[0].xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax[0].set_ylim(1e3, 2e6)
     ax[0].legend(loc='upper left', fontsize=11)
-    ax[0].set_title('atoms needed (thin column; independent of its length)', fontsize=12, loc='left')
+    ax[0].set_title(r'atoms needed for efficiency $\eta$', fontsize=12, loc='left')
     T = np.geomspace(1e-3, 100, 300)
     scen = (('full depth, no echo', dict(u=1.0), GREY), ('full depth, echo', dict(u=1.0, echo=True), SKY),
             (r'depth ×0.01, echo, $\tau_{\rm bg}$ = 2 s', dict(u=.01, echo=True), PROBE),
@@ -510,7 +510,7 @@ def memory_panel():
         s = mb.storage_terms(T, **kw)
         ax[1].semilogx(T, s['heat'] * s['inh'] * s['mag'] * s['bg'], color=c, label=lab)
     ax[1].set_xlabel('storage time (s)')
-    ax[1].set_ylabel(r'$\eta(T)/\eta(0)$')
+    ax[1].set_ylabel(r'efficiency after storage time $T$, $\eta(T)/\eta(0)$')
     ax[1].set_ylim(0, 1.05)
     ax[1].legend(loc='center left', bbox_to_anchor=(1.01, 0.5), fontsize=11)
     ax[1].set_title('1 % lattice-intensity spread along the column', fontsize=12, loc='left')
@@ -703,8 +703,59 @@ def level_schemes():
     save(fig, 'levels_zeeman.png')
 
 
+def ramp_figure():
+    """Optimal saturation ramp from nbar0 = 30 (chain model, s-ramp step 3): s(t) for three caps, and
+    times to the target for constant s, the optimal ramp and two stages."""
+    fig, ax = plt.subplots(1, 2, figsize=(11.6, 4.5), gridspec_kw=dict(width_ratios=[1.15, 1]))
+    files = ((10, 'ramp_optimal.dat', COUPL), (5, 'ramp_optimal_smax5.dat', PROBE), (3, 'ramp_optimal_smax3.dat', SKY))
+    tw = load('ramp_twostage.dat')
+    for smax, name, c in files:
+        d = load(name)
+        r = d[(d['nbar0'] == 30) & (d['P0target'] == 0.9)]
+        t = np.r_[r['t_start'], r['t_end'][-1]] * 1e3
+        ax[0].step(t, np.r_[r['s'], r['s'][-1]], where='post', color=c, lw=2.4, label=r'$s \leq %g$: %.1f ms' % (smax, r['t_ramp'][0] * 1e3))
+    tc = load('ramp_optimal.dat')
+    tc = tc[(tc['nbar0'] == 30) & (tc['P0target'] == 0.9)]
+    ax[0].axhline(tc['s_const'][0], color=GREY, ls=':', lw=1.5, label='best constant $s$ = %g: %.1f ms' % (tc['s_const'][0], tc['t_const'][0] * 1e3))
+    ax[0].set_yscale('log')
+    ax[0].set_xlim(0, 10)
+    ax[0].set_ylim(0.4, 15)
+    ax[0].set_yticks([0.5, 1, 2, 5, 10], ['0.5', '1', '2', '5', '10'])
+    ax[0].set_xlabel('time (ms)')
+    ax[0].set_ylabel('saturation parameter $s$')
+    ax[0].set_title(r'a   optimal $s(t)$, $\bar n_0$ = 30 $\rightarrow$ $P_0$ = 0.9', loc='left', fontsize=13)
+    ax[0].legend(loc='upper right', fontsize=11)
+    labels, xs = [], []
+    k = 0
+    for target in (0.8, 0.9):
+        c0 = load('ramp_optimal.dat')
+        c0 = c0[(c0['nbar0'] == 30) & (c0['P0target'] == target)]
+        bars = [('constant\n$s$ = %g' % c0['s_const'][0], c0['t_const'][0], GREY)]
+        for smax, name, c in files[::-1]:
+            d = load(name)
+            r = d[(d['nbar0'] == 30) & (d['P0target'] == target)]
+            bars.append((r'$s\leq%g$' % smax, r['t_ramp'][0], c))
+        for j, (lab, tval, c) in enumerate(bars):
+            x = k + j
+            ax[1].bar(x, tval * 1e3, color=c, width=0.75)
+            if j > 0:
+                smax = (3, 5, 10)[j - 1]
+                two = tw[(tw['P0target'] == target) & (tw['smax'] == smax)]['T'][0]
+                ax[1].plot(x, two * 1e3, 'k_', ms=22, mew=2.2)
+            labels.append(lab)
+            xs.append(x)
+        ax[1].text(k + 1.5, 15.3, r'$P_0$ = %.1f' % target, ha='center', fontsize=12.5)
+        k += 5
+    ax[1].set_xticks(xs, labels, rotation=45, ha='right', fontsize=11)
+    ax[1].set_ylim(0, 16.5)
+    ax[1].set_ylabel(r'time from $\bar n_0$ = 30 (ms)')
+    ax[1].set_title('b   bars: optimal ramp; black lines: two stages', loc='left', fontsize=13)
+    fig.tight_layout(w_pad=3)
+    save(fig, 'ramp.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure):
         f()
         print('ok', f.__name__)

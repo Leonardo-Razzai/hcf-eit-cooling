@@ -288,7 +288,18 @@ async function main() {
   ], { space: 14 }), 7.85, 1.6, W - MX - 7.85, 4.8, { fontSize: 16 });
   s.addNotes("Calibrated rate model with the full trap depth in Fock space. The time to reach 90 percent in the ground state grows linearly with temperature because the phonon removal rate per atom is constant in the plateau. The small core is about thirty times faster. A master-equation check from thirty quanta gives 21 milliseconds against 47 from the rate model in case A, so these times are upper bounds.");
 
-  // ============================================================ 14 Rb transitions
+  // ============================================================ 14 ramp
+  s = content("Results");
+  s.addText("Faster capture: a two-stage saturation ramp", { placeholder: "title" });
+  await img(s, "ramp.png", MX, 1.35, W - 2 * MX, 4.35, { name: "optimal saturation ramp" });
+  text(s, bullets([
+    ["Optimum (minimum time, Pontryagin sweeps): ", "high s while the hot tail drains, then s ≈ 1 → 0.7 for the last phonon. Two stages, s_max then s = 1, are within 2 % of it"],
+    ["Gain over the best constant s: ", "2.1× to P₀ = 0.9 with s ≤ 10, 1.5× with s ≤ 3 (the limit for an LP₀₁ admixture of a few per cent); 1.4× to P₀ = 0.8, none to 0.5"],
+    ["Model: ", "population chain with the exact recoil kernel and the master-equation removal rate; within 5–25 % of the master equation at constant s. Validation of the ramp in the master equation is pending"],
+  ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 13 });
+  s.addNotes("Case A, b_p = 1/2, one axis, from a thermal state with 30 quanta. Left: the optimal time dependence of the saturation parameter for three upper limits, from forward-backward optimal-control sweeps on a population chain calibrated on the master-equation drift. Right: time to reach the target ground-state population; grey the best constant s, coloured the optimal ramp, black lines the simple two-stage protocol. The gain is large only for targets close to the ground-state population that a high s alone can reach. These are chain results; the master-equation check of the two-stage protocol is the next step.");
+
+  // ============================================================ 15 Rb transitions
   pres.addSection({ title: "Rubidium" });
   s = content("Rubidium");
   s.addText("⁸⁷Rb: which transition?", { placeholder: "title" });
@@ -305,7 +316,7 @@ async function main() {
   ], { space: 10 }), MX, 4.2, 7.0, 2.4, { fontSize: 14 });
   s.addNotes("Figure: ground-state rate against the population left outside the ground state, as the single-photon detuning goes from 2 to 12 Gamma, for the four closed lambda configurations with all excited hyperfine levels in the master equation. Up and left is better. On D1 the second excited level is 814 MHz away and changes nothing; on D2 the levels are close and the F'=1 configuration depends on the interference sign and stops cooling at large detuning.");
 
-  // ============================================================ 15 Rb Zeeman
+  // ============================================================ 16 Rb Zeeman
   s = content("Rubidium");
   s.addText("⁸⁷Rb: what the Zeeman structure costs", { placeholder: "title" });
   await img(s, "rb_zeeman.png", MX, 1.35, W - 2 * MX, 4.3, { name: "Zeeman cost" });
@@ -316,7 +327,7 @@ async function main() {
   ], { space: 4 }), MX, 6.38, W - 2 * MX, 0.5, { fontSize: 14 });
   s.addNotes("All 8 ground sublevels, one axis, case A. For each scheme, dots are single runs over two-photon detuning, saturation, remixing strength and polarisation; the line is the best rate reached at each ground-state population. Black is the same D1 F'=1 lambda without Zeeman structure. The hyperfine lambda with a repumper and the Zeeman lambda of Qiu and co-workers end up at about the same rate, a factor three below the closed lambda; a transverse field is worse.");
 
-  // ============================================================ 16 purity
+  // ============================================================ 17 purity
   s = content("Rubidium");
   s.addText("Mode purity: how clean must the LP₁₁ probe be?", { placeholder: "title" });
   await img(s, "purity.png", MX, 1.35, W - 2 * MX, 4.4, { name: "steady state against mode purity" });
@@ -327,7 +338,7 @@ async function main() {
   ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 14 });
   s.addNotes("Converged master equation at fixed saturation, both fibres. Horizontal axis: the LP01 power fraction in the probe, epsilon squared, which is what a mode measurement gives. Left: the ground-state rate relative to a clean mode. Right: the population outside the ground state, with the clean-mode value marked by arrows. A small admixture is equivalent to displacing the node, so the ground state is hardly affected; the rate suffers first, and more at high saturation, where the carrier is driven harder. An earlier estimate, rate halving at 1.3 eta perp, used the rate from the mean occupation at the rate-optimal s near 3; in case A that rate is dominated by the tail and exaggerates the sensitivity.");
 
-  // ============================================================ 17 requirements
+  // ============================================================ 18 requirements
   s = content("Rubidium");
   s.addText("Practical requirements", { placeholder: "title" });
   table(s, ["Requirement", "Value", "Reason"], [
@@ -340,19 +351,21 @@ async function main() {
   await img(s, "robust.png", 8.15, 1.35, W - MX - 8.15, 5.3, { valign: "middle", name: "trap-frequency tolerance" });
   s.addNotes("Figure: lasers set for the design trap frequency while the actual one varies, as it would along a lossy fibre. Mode purity is the critical experimental requirement, as for ions: a small LP01 admixture restores a carrier. The simple estimate of the tolerance is a factor two too optimistic. A displaced trap is equivalent to an admixture. The trap frequency must be uniform along the column to within ten percent, which sets the tolerable lattice-beam loss.");
 
-  // ============================================================ 18 memory
+  // ============================================================ 19 memory
   pres.addSection({ title: "Application" });
   s = content("Application");
   s.addText("Application: a spin-wave memory in the fibre", { placeholder: "title" });
   await img(s, "memory.png", MX, 1.35, W - 2 * MX, 4.05, { name: "memory optical depth and storage time" });
+  text(s, "η: memory efficiency = probability that a stored photon is retrieved into the fibre mode (storage × retrieval, optimal control pulses, backward retrieval), at T = 0 on the left.",
+    MX, 5.35, W - 2 * MX, 0.4, { fontSize: 12, italic: true, color: "5B6475" });
   text(s, bullets([
     ["Optical depth is the bottleneck: ", "it is set by the number of atoms N in the fibre, not by the column length; 90 % efficiency needs N ≈ 1.3×10⁴ at a = 3.5 µm and 2.4×10⁵ at a = 15 µm (clock Λ; half on the stretched Λ). The length only sets the density, N·532 nm/L atoms per site"],
     ["Storage: ", "cool deep, store shallow, with an echo: 2–11 s, limited by vacuum, then by lattice heating"],
     ["Ground state buys ", "shallow traps, uniform coupling and 60× fewer motional jumps; an echo alone removes static thermal dephasing"],
-  ], { space: 6 }), MX, 5.5, W - 2 * MX, 1.35, { fontSize: 14 });
-  s.addNotes("Theory only. Left: the number of atoms in the fibre needed for 90 and 95 percent efficiency, against core radius, for a thin column; the optical depth depends on the atom number and the mode area only, not on the column length. A 15 micrometre core needs a few hundred thousand atoms, a 3.5 micrometre core about ten thousand. Right: storage model with lattice scattering and a one percent intensity spread along the column. Lowering the lattice a hundred times after cooling and using an echo gives seconds, limited by the background gas inside the fibre, which is the least certain input. The radial ground state is not mainly a coherence-time gain; it allows shallow traps and uniform coupling.");
+  ], { space: 4 }), MX, 5.8, W - 2 * MX, 1.15, { fontSize: 13 });
+  s.addNotes("eta is the total memory efficiency, storage times retrieval, for optimally shaped control pulses and backward retrieval. Theory only. Left: the number of atoms in the fibre needed for 90 and 95 percent efficiency, against core radius, for a thin column; the optical depth depends on the atom number and the mode area only, not on the column length. A 15 micrometre core needs a few hundred thousand atoms, a 3.5 micrometre core about ten thousand. Right: storage model with lattice scattering and a one percent intensity spread along the column. Lowering the lattice a hundred times after cooling and using an echo gives seconds, limited by the background gas inside the fibre, which is the least certain input. The radial ground state is not mainly a coherence-time gain; it allows shallow traps and uniform coupling.");
 
-  // ============================================================ 19 summary
+  // ============================================================ 20 summary
   pres.addSection({ title: "Summary" });
   s = pres.addSlide({ masterName: "DARK", sectionTitle: "Summary" });
   s.addText("Summary", { placeholder: "title" });
@@ -369,7 +382,7 @@ async function main() {
     MX, 5.6, W - 2 * MX, 0.8, { fontSize: 16, italic: true, color: C.background1 });
   s.addNotes("Take-home messages. The concept of node cooling comes from ions; what is new is the platform, all beams guided in a hollow-core fibre, and the regime, where recoil is comparable to the trap quantum and changes the nature of the steady state. Next steps are listed at the bottom.");
 
-  // ============================================================ 20 backup: level schemes
+  // ============================================================ 21 backup: level schemes
   pres.addSection({ title: "Backup" });
   s = content("Backup");
   s.addText("Backup: level schemes and fields in the Zeeman studies", { placeholder: "title" });
