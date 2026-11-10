@@ -37,7 +37,8 @@ The chain is within 5 % at s = 1 and 10–25 % fast elsewhere. Minimum-time s(t)
 4. **It depends on $s_{\max}$**, and $s_{\max}$ is set by mode purity ($s \lesssim 4$ for $\epsilon = 0.03$) and by the validity of the chain at high s.
 
 **Limits.** One axis; $b_p = 1/2$ only; chain calibrated on drift data that are not band-converged at high n and s; the chain is 10–25 % optimistic at constant s.
-**Step 4** (validate the two-stage protocol in the banded master equation, one LU per stage) is cheap and decides whether the gain is real.
+**Step 4: master-equation check (done, `ramp.py validate`).** Banded ME, N = 400, piecewise-constant s, time to $P_0$ = 0.9 from $\bar n_0 = 30$:
+constant s = 2: 15.6 ms (chain 13.5); s = 10 → 1: 5.8 ms (6.4); s = 5 → 1: 7.6 ms (7.2); s = 3 → 1: 10.2 ms (9.3). **The gain is real: 2.7, 2.1, 1.5×.**
 
 
 Analytic reasoning, tested only against stored results (`rate_p0.dat`, `rates_vs_n.dat`, `universal_thermal*.dat`).

@@ -39,7 +39,7 @@ $h$ is the recoil per removed phonon, $\alpha=0.397$. Case A ($a=\ensuremath{15\
 \begin{equation*}
   R(n)\simeq R_{\rm sat}\frac{c_{\rm sat}sn}{1+c_{\rm sat}sn}\Big(1+c\frac{n}{n_c}\Big),\qquad c\approx1.3\text{--}1.9
 \end{equation*}
-The weak limit is the red-sideband rate $ns\Gamma_n/2$; the strong limit is gray molasses. Unexplained: a dip near $sn\approx8$.
+The weak limit is the red-sideband rate $ns\Gamma_n/2$; the strong limit is gray molasses. \textbf{[N]} Confirmed: the onset moves with $n_c$ ($\Delta=2$, 3, $5\Gamma$), and at $\Delta<0$ the fast channel heats ($+2\times10^4\,$s$^{-1}$ at $n=200$), leaving a capture range below $n\approx8$. The dip sits at $n\approx0.5\,n_c$ and moves with the onset; not derived.
 \end{itemize}
 
 \section*{Fock statistics}
@@ -58,21 +58,26 @@ The weak limit is the red-sideband rate $ns\Gamma_n/2$; the strong limit is gray
   h<\tfrac12\ \Leftrightarrow\ \zeta<2.66\,b_p\quad\text{(cold state)},\qquad 2h<\tfrac13\ \Leftrightarrow\ \zeta<0.89\,b_p\quad\text{(clean tail)},\qquad n_{\rm core}=\Big(\frac{\Gamma}{4\Delta}\Big)^2\frac{1+2h}{1-2h}
 \end{equation*}
 \item \textbf{[C]} $P_{00}$ at $s=1$, $3\Gamma$ / $6\Gamma$: case A, $b_p=1/2$: 0.755 / 0.941; case A, $b_p=5/6$: 0.927 / 0.982; $\nu_r/\omega_{\rm rec}=5$, $b_p=5/6$: 0.956 / 0.989. Exact check at $N=6$ per axis: chain $P_{00}$ within 0.6\% for $h\le0.26$; case A, $b_p=5/6$: 0.927 against 0.931. \textbf{[N]} Alternating stages must last $\tau\gtrsim10/\Gamma_n$ ($\approx\SI{0.7}{ms}$ in case A).
+\item \textbf{[C]} Alternating the LP$_{11}$ orientation needs stages $\tau\gtrsim5/\Gamma_n$; faster switching collapses $P_{00}$ (0.19 at $\tau\Gamma_n=0.3$). The 2D rate peaks at $W_{00}\approx0.2\,W_0$ for $\tau\Gamma_n\approx5$--15 (0.3--1\,ms in case A), falling for longer stages; $W_{00}P_{00}\approx0.17$--$0.20$ of $W_0P_0$. Exact 2D master equation, converged in $N$ (6, 8, 10). \more{d:2d}{2D}
 \end{itemize}
 
 \section*{Preparation time}
 \begin{itemize}
 \item \textbf{[N]} One axis, $s=1$, time to $P_0\ge0.9$ from $\bar n_0=30$: 20.8\,ms (case A, $b_p=1/2$), 12.7\,ms ($b_p=5/6$), 3.5\,ms (case B). The GRM is 2.3$\times$ and 1.7$\times$ too slow when hot, and cooling time is sublinear in temperature. \more{d:prep}{preparation}
 \item \textbf{[C]} Both axes, case A, $b_p=5/6$, to $0.9$ of the final $P_{00}$: 32\,ms from $\bar n_0=30$.
-\item \textbf{[M]} Cold-end ramp: $s^*(x)=s_0[\sqrt{1+(x/a-1)/(\beta s_0)}-1]$, $x=1-P_0$; gain 1.03--1.8. Hot stage $T\sim1/s$, untested above $s=1$.
+\item \textbf{[N]} Saturation ramp, case A, $b_p=1/2$, from $\bar n_0=30$ to $P_0=0.9$ (master equation): best constant $s=2$: 15.6\,ms; two stages $s_{\max}\to1$: 5.8, 7.6, 10.2\,ms for $s_{\max}=10$, 5, 3, i.e.\ \textbf{2.7, 2.1, 1.5$\times$ faster}; the optimal control solution (chain) is within 2\% of two stages. Constant-$s$ capture scales as $s^{-1/2}$, not $1/s$. \more{d:prep}{ramp}
 \end{itemize}
+
+\section*{Mode purity}
+\textbf{[N]} At fixed $s$, $P_0$ is unchanged up to an LP$_{01}$ amplitude $\epsilon\approx3\,\etaeff$; $W_0$ halves at $\epsilon\approx3.6\,\etaeff$ ($s=1$) and $2.2\,\etaeff$ ($s=3$). The $\langle n\rangle$-based $W$ looks more fragile ($1.4\,\etaeff$, case A, $s=3$) because of the tail. LP$_{01}$ power $<10^{-3}$ keeps $\ge90\%$ of $W_0$ at $s\le1$. \more{d:purity}{purity}
 
 \section*{Rb lines}
 \textbf{[N]} Case A, all excited levels, $3\Gamma$, $s=1$: D1 $F'=2$: $W_0=2.2\times10^3\,$s$^{-1}$, $P_0\approx0.954$. D1 $F'=1$, probe on $F=2$: 3.2--$3.6\times10^3\,$s$^{-1}$, $P_0\approx0.976$. D2 $F'=2$ is similar to D1 $F'=2$ at $3\Gamma$; D2 $F'=1$ is unreliable. To $P_0=0.99$: D1 $F'=1$ is $\approx2\times$ faster. \textbf{[N, one axis] Zeeman:} a fixed polarisation leaves dark states at every $n$ (2 of 5 and 1 of 3 for D1 $F'=1$), so remixing is required. Best $W_0/\nu_r$ at $P_0\ge0.97$: closed $\Lambda$ 0.077; lin$\perp$lin with repumper 0.0225; Zeeman $\Lambda$ inside $F=2$ 0.022: about $3\times$ slower. \more{d:lines}{lines}
 
 \section*{Memory}
 \textbf{[M]} $|\phi(T)|^2\to P_0^2$ at long $T$, so efficiency is capped near $P_0^4$. Limits: lattice scattering and \textbf{axial shift: 1\% of lattice intensity gives $\approx\SI{8}{Hz}$ at an antinode.} Cool deep, store shallow. LP$_{0m}$ signal: OD and bandwidth $\times g=2.33$--6.32; efficiency only at low OD; LP$_{11}$ signal on the node: useless. \more{d:memory}{memory}
+\textbf{[M]} ${\rm OD}=\sigma N\kappa/A_{\rm eff}$: set by the atom number $N$ and the column--mode overlap $\kappa$, not by the column length. Efficiency 0.9 needs $N\approx1.3\times10^4$ at $a=\SI{3.5}{\upmu m}$, $2.4\times10^5$ at \SI{15}{\upmu m} (clock $\Lambda$). \more{d:memory}{memory}
 
 \section*{Not yet done}
-Zeeman model with both axes; real fibre modes (TE/TM/HE, polarisation, beating); optimal ramp; memory model; excited-state light shift at large $\nu_z$.
+Zeeman model with both axes; real fibre modes (TE/TM/HE, polarisation, beating); why the 2D rate is $0.2\,W_0$; a derivation of the dip at $n\approx0.5\,n_c$; excited-state light shift at large $\nu_z$.
 \end{document}

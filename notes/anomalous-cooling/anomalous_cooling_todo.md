@@ -155,9 +155,9 @@ much faster than the GRM-based capture times of the paper.
 - [ ] Fast channel — test the Sisyphus picture:
   - [ ] map R(n, s) on a 2D grid ($n \approx 1$–300, $s = 0.01$–10; banded drift, ~6 min per s); collapse vs
         $sn$ and vs $\Omega_R\sqrt n/\nu_r$;
-  - [ ] vary $\Delta/\Gamma$: onset should move as 2$(\nu_r/\Gamma_n)^2$/s ≈ 2($\Delta/\Gamma$)²/s;
-  - [ ] flip the sign of $\Delta$: gray molasses needs blue detuning, so red detuning should turn the
-        high-n regime into heating while the resolved regime survives;
+  - [x] vary $\Delta/\Gamma$: onset should move as 2$(\nu_r/\Gamma_n)^2$/s ≈ 2($\Delta/\Gamma$)²/s. **Confirmed** (`fast.py delta`): rise from n ≈ 5–8 (2Γ), 20–30 (3Γ), 50–80 (5Γ); the dip minimum sits at n ≈ 0.5 n_c at all three;
+  - [x] flip the sign of $\Delta$: gray molasses needs blue detuning, so red detuning should turn the
+        high-n regime into heating while the resolved regime survives. **Result** (`fast.py sign`): the fast channel heats (+6.6×10³, +2.0×10⁴ s⁻¹ at n = 50, 200), sign change near n ≈ 8; but the resolved regime keeps only ≈ 5 % of the blue-detuned cooling;
   - [ ] scaling of the high-n rate with $\Omega_c$, $\Delta$, $\Gamma$ (Sisyphus friction, not $\Gamma_n$); bright-state
         population and dark-state following at high n;
   - [ ] semiclassical friction/diffusion of an atom moving through the LP₁₁ gradient (linear
@@ -241,7 +241,7 @@ Theory and results in `s_ramp_theory.md`. Steps 1–3 done with the author's app
 - [x] Drift and diffusion from Fock states at $s = 3$, 5, 10 (`convergence.py rates` extended, ~6 min per s): does the friction peak?
 - [x] Master equation at constant $s = 3$, 5 from $\bar n_0 = 30$: tests the 1/s estimate of the hot stage.
 - [x] Chain for P(n) with the exact kernel and tabulated R(n,s); solve the Pontryagin problem by forward-backward sweeps. Result: two stages, 2× at $P_0^*$ = 0.9 (see `s_ramp_theory.md`).
-- [ ] Validate the ramp as piecewise-constant s in the banded ME; write it as a recipe in $\nu_r/\omega_{\rm rec}$, $b_p$, $\Delta/\Gamma$, $\bar n_0$, $$$P_0$$^*$.
+- [x] Validate the ramp as piecewise-constant s in the banded ME (`ramp.py validate`): two stages give 5.8, 7.6, 10.2 ms for s_max = 10, 5, 3 against 15.6 ms at constant s = 2 (2.7, 2.1, 1.5×). Still open: the recipe in $\nu_r/\omega_{\rm rec}$, $b_p$, $\Delta/\Gamma$, $\bar n_0$, $P_0^*$.
 
 ## Literature check (9 Nov 2026): result
 
