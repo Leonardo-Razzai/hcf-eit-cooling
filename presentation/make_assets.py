@@ -61,6 +61,7 @@ def load(name):
 EQUATIONS = {
     'eq_eta': r'$\eta_\perp=G_{11}\,\dfrac{x_0}{a},\qquad G_{11}=3.49$',
     'eq_h': r'$h=\dfrac{\alpha}{b_p}\,\dfrac{\omega_{\rm rec}}{\nu_r}\ \propto\ \dfrac{a}{b_p\,\nu_z}$',
+    'eq_W0': r'$\dfrac{1}{W_0}=\int_0^\infty\dfrac{P_0^{\rm ss}-P_0(t)}{P_0^{\rm ss}}\,dt$',
 }
 
 
@@ -610,8 +611,93 @@ def purity_figure():
     save(fig, 'purity.png')
 
 
+def _manifold(ax, F, y, x0, dx=0.42, color=INK, label=None, lw=3.0, w=0.3):
+    """Draw the Zeeman sublevels of one hyperfine level; return {m: (x, y)}."""
+    pos = {}
+    for m in range(-F, F + 1):
+        x = x0 + m * dx
+        ax.plot([x - w / 2, x + w / 2], [y, y], color=color, lw=lw, solid_capstyle='butt')
+        pos[m] = (x, y)
+    if label:
+        ax.text(x0 + F * dx + 0.35, y, label, va='center', fontsize=12.5, color=color)
+    return pos
+
+
+def _arrow(ax, a, b, color, ls='-', lw=1.8, shrink=0.0):
+    ax.annotate('', xy=b, xytext=a, arrowprops=dict(arrowstyle='-|>', color=color, lw=lw, ls=ls,
+                                                     shrinkA=shrink, shrinkB=shrink, mutation_scale=12))
+
+
+def level_schemes():
+    """Backup: level schemes and fields of the Zeeman studies (D1) and the excited-manifold study (D2)."""
+    fig, ax = plt.subplots(1, 3, figsize=(15.5, 5.6), gridspec_kw=dict(width_ratios=[1.15, 1.0, 0.95]))
+    for a in ax:
+        a.set_axis_off()
+    # ---- a: D1 hyperfine Lambda, F'=1, probe on F=2, lin perp lin
+    a = ax[0]
+    g2 = _manifold(a, 2, 1.15, 0.0, label='F = 2')
+    g1 = _manifold(a, 1, 0.0, 3.1, label='F = 1')
+    e1 = _manifold(a, 1, 4.2, 0.9, label="F' = 1")
+    _manifold(a, 2, 5.0, 0.9, color=GREY, lw=2.0, label="F' = 2")
+    for m in (-1, 0, 1):
+        _arrow(a, g2[m], e1[m], PROBE)
+    for m0, m1 in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+        _arrow(a, g1[m0], e1[m1], COUPL)
+    for m in (-2, 2):
+        a.add_patch(Circle(g2[m], 0.2, fill=False, ec=PROBE, lw=1.6, ls='--'))
+    a.text(0.75, 0.55, r'probe $\pi$ (LP$_{11}$): $|2,\pm2\rangle$ dark', ha='center', fontsize=12, color=PROBE)
+    a.text(3.1, -0.6, r'coupling $\sigma^\pm$ (LP$_{01}$)', ha='center', fontsize=12, color=COUPL)
+    a.text(1.95, 4.6, '814.5 MHz', fontsize=11, color=GREY, va='center')
+    a.annotate('', xy=(-1.2, 1.15), xytext=(-1.2, 0.0), arrowprops=dict(arrowstyle='<->', color=GREY, lw=1))
+    a.text(-1.3, 0.57, '6.83\nGHz', fontsize=11, color=GREY, ha='right', va='center')
+    a.set_title("a   D1, hyperfine $\\Lambda$: F'=1, probe on F=2\n     (lin $\\perp$ lin; B transverse)", loc='left', fontsize=13)
+    a.set_xlim(-2.1, 5.2)
+    a.set_ylim(-1.3, 5.6)
+    # ---- b: D1 Zeeman Lambda inside F=2
+    a = ax[1]
+    g2 = _manifold(a, 2, 1.15, 0.0, label='F = 2')
+    g1 = _manifold(a, 1, 0.0, 2.9, color=GREY, lw=2.0, label='F = 1')
+    e2 = _manifold(a, 2, 4.6, 0.6, label="F' = 2")
+    _arrow(a, g2[2], e2[1], PROBE, lw=2.4)
+    _arrow(a, g2[0], e2[1], COUPL, lw=2.4)
+    for m in (-1, 0, 1):
+        _arrow(a, g1[m], e2[m + 1], GREY, ls='--', lw=1.3)
+    a.add_patch(Circle(g2[2], 0.2, fill=False, ec=GREEN, lw=1.8))
+    a.text(0.85, -0.6, r'probe $\sigma^-$ from $|2,2\rangle$, coupling $\sigma^+$ from $|2,0\rangle$', ha='center', fontsize=12, color=INK)
+    a.text(3.3, 2.6, 'repumper\n(F = 1, dashed)', ha='center', fontsize=11.5, color=GREY)
+    a.text(0.85, -1.05, r'target $|2,2\rangle$ (green), dark to the coupling', ha='center', fontsize=11.5, color=GREEN)
+    a.set_title("b   D1, Zeeman $\\Lambda$ in F=2 (after Qiu et al.)\n     (B along the fibre)", loc='left', fontsize=13)
+    a.set_xlim(-1.4, 4.6)
+    a.set_ylim(-1.5, 5.6)
+    # ---- c: D2 excited manifold (no Zeeman sublevels)
+    a = ax[2]
+    ys = {0: 3.6, 1: 3.95, 2: 4.65, 3: 5.85}
+    for Fe, y in ys.items():
+        a.plot([0.2, 2.6], [y, y], color=INK, lw=2.5)
+        a.text(2.75, y, "F' = %d" % Fe, va='center', fontsize=12)
+    for (y1, y2), lab in (((3.6, 3.95), '72 MHz'), ((3.95, 4.65), '157 MHz'), ((4.65, 5.85), '267 MHz')):
+        a.annotate('', xy=(-0.1, y2), xytext=(-0.1, y1), arrowprops=dict(arrowstyle='<->', color=GREY, lw=1))
+        a.text(-0.2, (y1 + y2) / 2, lab, ha='right', va='center', fontsize=11, color=GREY)
+    a.plot([0.2, 2.6], [0, 0], color=INK, lw=2.5)
+    a.plot([0.2, 2.6], [1.15, 1.15], color=INK, lw=2.5)
+    a.text(2.75, 0, 'F = 1', va='center', fontsize=12)
+    a.text(2.75, 1.15, 'F = 2', va='center', fontsize=12)
+    _arrow(a, (0.6, 0), (0.9, ys[2]), PROBE, lw=2.2)
+    _arrow(a, (1.5, 1.15), (1.2, ys[2]), COUPL, lw=2.2)
+    _arrow(a, (1.7, 0), (2.0, ys[1]), PROBE, ls='--', lw=2.2)
+    _arrow(a, (2.4, 1.15), (2.1, ys[1]), COUPL, ls='--', lw=2.2)
+    a.text(1.4, -0.75, "solid: F'=2, probe on F=1 ($b_p$ = 1/2)\ndashed: F'=1, probe on F=1 ($b_p$ = 5/6)", ha='center', fontsize=11.5)
+    a.set_title('c   D2: excited hyperfine levels only\n     (no Zeeman sublevels simulated)', loc='left', fontsize=13)
+    a.set_xlim(-1.4, 3.6)
+    a.set_ylim(-1.5, 6.3)
+    hs = [Line2D([], [], color=PROBE, lw=3), Line2D([], [], color=COUPL, lw=3), Line2D([], [], color=GREY, lw=1.5, ls='--')]
+    fig.legend(hs, ['probe (LP$_{11}$)', 'coupling (LP$_{01}$)', 'repumper'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.02), fontsize=12.5)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    save(fig, 'levels_zeeman.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes):
         f()
         print('ok', f.__name__)

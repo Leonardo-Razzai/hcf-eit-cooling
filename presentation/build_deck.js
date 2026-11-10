@@ -216,11 +216,14 @@ async function main() {
   s = content("Results");
   s.addText("Ground-state cooling with nanowatts of probe", { placeholder: "title" });
   await img(s, "saturation.png", MX, 1.4, FIG_W, 4.9, { valign: "middle", name: "rate and occupation versus saturation" });
+  await img(s, "eq_W0.png", TX, 1.45, TW, 0.8, { align: "left", valign: "middle", name: "definition of W0" });
+  text(s, "W₀: inverse integrated relaxation time of the ground-state population P₀, starting from |g_p, n = 1⟩. W is the same with ⟨n⟩ in place of P₀.",
+    TX, 2.3, TW, 0.85, { fontSize: 13, italic: true, color: "5B6475" });
   text(s, bullets([
     ["Case A, a = 15 µm, s = 1: ", "W = 1.6×10³ s⁻¹ (ground-state rate W₀ = 2.2×10³ s⁻¹), P₀ = 0.95, 8 nW"],
     ["Case B, a = 3.5 µm, s = 1: ", "W = 1.2×10⁴ s⁻¹ (W₀ = 1.4×10⁴ s⁻¹), ⟨n⟩ = 0.04, 0.4 nW"],
     ["Simple rate model: ", "valid only at weak probe and only if it counts 1/b_p ≈ 2 photons per cycle; at s ≈ 1 it overestimates W by up to 40 % and underestimates ⟨n⟩ up to 5×"],
-  ], { space: 14 }), TX, 1.6, TW, 4.8, { fontSize: 16 });
+  ], { space: 10 }), TX, 3.25, TW, 3.3, { fontSize: 15 });
   cite(s, "Converged master equation: excited state eliminated, banded coherences, up to 400 Fock states");
   s.addNotes("Symbols: master equation, converged in the number of Fock states, which needed adiabatic elimination of the excited state and a banded solver. Dashed: the standard rate model. s is the saturation of the narrow line, s = 2 times Omega_R over Gamma_n squared. The rate model fails at s near 1 because the Raman coupling splits the narrow line. W0 is the rate of the ground-state population; the rate from the mean occupation is not well defined, as the next slides show.");
 
@@ -355,6 +358,19 @@ async function main() {
   text(s, "Next: optimal saturation ramp from thermal states, real fibre-mode polarisation, Zeeman structure with both axes, memory simulations.",
     MX, 5.6, W - 2 * MX, 0.8, { fontSize: 16, italic: true, color: C.background1 });
   s.addNotes("Take-home messages. The concept of node cooling comes from ions; what is new is the platform, all beams guided in a hollow-core fibre, and the regime, where recoil is comparable to the trap quantum and changes the nature of the steady state. Next steps are listed at the bottom.");
+
+  // ============================================================ 19 backup: level schemes
+  pres.addSection({ title: "Backup" });
+  s = content("Backup");
+  s.addText("Backup: level schemes and fields in the Zeeman studies", { placeholder: "title" });
+  await img(s, "levels_zeeman.png", MX, 1.3, W - 2 * MX, 3.9, { name: "level schemes D1 and D2" });
+  text(s, bullets([
+    ["Model: ", "D1, all 8 ground sublevels, one radial axis, case A trap, Δ = 3Γ; eliminated, banded master equation (N = 12, B = 2; P₀ and W₀ checked to N = 28, B = 3 within 0.8 %)"],
+    ["Scan (s = 1): ", "D1 F′=1 probe F=2, F′=2 probe F=1, F′=2 probe F=2 × polarisations (π,π), (π,lin), (lin,π), (lin,lin), (σ⁺,σ⁺), (σ⁺,σ⁻) × remixing: repumper on both legs, complementary polarisation, γ = 0.03–0.3 ν_r; transverse field L_x = 0.03–0.3 ν_r (0.1 ν_r ≈ 1 mG); longitudinal L_z = 0.1, 0.3 ν_r × two-photon detuning"],
+    ["Refinement (s = 0.3, 1, 3): ", "hyperfine Λ lin ⊥ lin with repumper (0.01–0.1 ν_r) or L_x; Zeeman Λ with F=1 repumper (0.1–1 ν_r) and coupling 0.7–2×; ν_r/ω_rec = 1.97 and 5"],
+    ["D2: ", "all excited hyperfine levels, Δ = 2–12Γ, both signs of the Raman interference; Zeeman sublevels not simulated"],
+  ], { space: 4 }), MX, 5.25, W - 2 * MX, 1.7, { fontSize: 11.5 });
+  s.addNotes("Backup. Panel a: the best hyperfine scheme, D1 F'=1 with the probe on F=2, the probe pi polarised and the coupling perpendicular, with the field transverse to the fibre. A pi probe cannot excite |2,+-2>, so these are dark and must be remixed, by a weak repumper or a transverse field. Panel b: the Zeeman lambda inside F=2 used by Qiu and co-workers, with the field along the fibre so that the guided beams are circularly polarised; |2,2> is the target and is dark to the coupling, and F=1 is emptied by a repumper. Panel c: on D2 only the excited hyperfine structure was included, not the Zeeman sublevels.");
 
   await pres.writeFile({ fileName: OUT });
   await applyTheme(OUT, THEME);          // write THEME colours/fonts into the deck theme
