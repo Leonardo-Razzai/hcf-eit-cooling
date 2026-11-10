@@ -177,7 +177,8 @@ def thermal():
     save('two_axes_thermal.dat', ['nu_wrec', 'bp', 'nbar0', 'P00_end', 'nx_end', 't50', 't80', 't90'], rows)
 
 
-def exact_2d(nw, bp, DG, s, N=6, tmax=600.0, dt=0.1, tau=32.0, only_x=False, recoil_y=True, quiet=False):
+def exact_2d(nw, bp, DG, s, N=6, tmax=600.0, dt=0.1, tau=32.0, only_x=False, recoil_y=True, quiet=False,
+             init=None, fine=None):
     """Eliminated master equation on (n_x, n_y): the x and y probes alternate, L_x for tau and
     L_y for tau, with 1/Gn << tau << 1/W; RK4 for the dense 2 N^2 x 2 N^2 density matrix.
     Averaging the two Liouvillians instead would add the probes coherently in H: a single
@@ -225,10 +226,13 @@ def exact_2d(nw, bp, DG, s, N=6, tmax=600.0, dt=0.1, tau=32.0, only_x=False, rec
         for C, Ch in zip(Cs, Cd):
             out += C @ r @ Ch
         return out
-    th = E.thermal(0.3, N)
     r = np.zeros((d, d), complex)
     idx = np.arange(N * N)
-    r[idx, idx] = np.kron(th, th)
+    if init is None:
+        th = E.thermal(0.3, N)
+        r[idx, idx] = np.kron(th, th)
+    else:                                                         # Fock state |nx, ny> in g_p
+        r[init[0] * N + init[1], init[0] * N + init[1]] = 1.0
     trace = []
     nsteps = int(tmax / dt)
     per = int(tau / dt)
@@ -239,6 +243,8 @@ def exact_2d(nw, bp, DG, s, N=6, tmax=600.0, dt=0.1, tau=32.0, only_x=False, rec
         k3 = rhs(r + 0.5 * dt * k2, st)
         k4 = rhs(r + dt * k3, st)
         r = r + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+        if fine is not None:
+            fine.append(float(np.real(r[0, 0])))                 # P00 after every step
         if k % (2 * per) == 2 * per - 1:
             pop = np.real(np.diag(r))
             pp = (pop[:N * N] + pop[N * N:]).reshape(N, N)
@@ -275,7 +281,36 @@ def exact():
                                 'P0_1D_me', 'n_1D_me', 'P0_1D_chain'], rows)
 
 
-STUDIES = {'validate': validate, 'steady': steady, 'thermal': thermal, 'exact': exact}
+def switch():
+    """Cooling rate of both axes against the stage length tau of the alternation (exact 2D master
+    equation, N = 6 per axis, s = 1, 3 Gamma). W00 is defined like W0: from |1,1>,
+    1/W00 = int (P00ss - P00(t)) / P00ss dt, with P00ss the average over the last full period.
+    Case B (b_p = 1/2) and case A with b_p = 5/6; the one-axis W0 at the same N for reference."""
+    rows = []
+    B = E.paper_cases()['B']['eta_sp']**-2
+    A = E.paper_cases()['A']['eta_sp']**-2
+    N, DG, s, dt = 6, 3.0, 1.0, 0.1
+    for nw, bp in ((B, 0.5), (A, 5 / 6)):
+        p = E.params(E.reduced_case(nw), s=s, N=N, bp=bp, Delta_G=DG)
+        r1 = E.solve_banded(p, B=N)
+        for tau in (1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0):
+            tmax = max(600.0, 12 * 2 * tau)
+            tmax = 2 * tau * np.ceil(tmax / (2 * tau))
+            tr = []
+            exact_2d(nw, bp, DG, s, N=N, tmax=tmax, dt=dt, tau=tau, quiet=True, init=(1, 1), fine=tr)
+            tr = np.array(tr)
+            per = int(round(2 * tau / dt))
+            pss = tr[-per:].mean()
+            W00 = pss / (np.sum(pss - tr) * dt)
+            rows.append([nw, bp, tau, p['Gn'], tau * p['Gn'], pss, W00, r1['W0'], r1['P0']])
+            log('switch nu %.2f bp %.2f tau %g (tau Gn %.2f): P00ss %.4f W00 %.4f (1D W0 %.4f, P0 %.4f)' % (
+                nw, bp, tau, tau * p['Gn'], pss, W00, r1['W0'], r1['P0']))
+    save('two_axes_switch.dat', ['nu_wrec', 'bp', 'tau', 'Gn', 'tauGn', 'P00ss', 'W00', 'W0_1D', 'P0_1D'], rows)
+
+
+
+
+STUDIES = {'validate': validate, 'steady': steady, 'thermal': thermal, 'exact': exact, 'switch': switch}
 
 if __name__ == '__main__':
     for name in sys.argv[1:]:
