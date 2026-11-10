@@ -521,49 +521,55 @@ def memory_panel():
 
 
 def rb_figure():
-    """Rate against ground-state population: hyperfine Lambda configurations (Delta scan) and the
-    cost of the Zeeman structure (remixing schemes), case A."""
+    """Two images: rb_hyperfine.png (rate against 1 - P0 for the Lambda configurations, Delta scan) and
+    rb_zeeman.png (cost of the Zeeman structure: best rate at each P0 per remixing scheme), case A."""
     om = E.paper_cases()['A']['om']
-    fig, ax = plt.subplots(2, 1, figsize=(7.4, 8.6), sharex=True)
+    fig, ax = plt.subplots(figsize=(6.6, 5.0))
     d = load('lines_delta_A.dat')
-    cfgs = (((1, 1, 2), SKY, "D1 F'=1, probe F=2"), ((1, 2, 1), PROBE, "D1 F'=2"),
-            ((2, 2, 1), COUPL, "D2 F'=2"), ((2, 1, 1), ATOM, "D2 F'=1, probe F=1"))
+    cfgs = (((1, 1, 2), SKY, "D1 F'=1, probe on F=2 ($b_p$ = 5/6)"), ((1, 2, 1), PROBE, "D1 F'=2, probe on F=1 ($b_p$ = 1/2)"),
+            ((2, 2, 1), COUPL, "D2 F'=2, probe on F=1 ($b_p$ = 1/2)"), ((2, 1, 1), ATOM, "D2 F'=1, probe on F=1 ($b_p$ = 5/6)"))
     for (line, Fe, gp), c, lab in cfgs:
         r = d[(d['line'] == line) & (d['Fe'] == Fe) & (d['gp'] == gp) & (d['okopt'] == 1)]
         r = r[np.argsort(r['DeltaG'])]
-        ax[0].loglog(1 - r['P0opt'], r['W0opt'], 'o-', color=c, ms=6, label=lab)
+        ax.loglog(1 - r['P0opt'], r['W0opt'], 'o-', color=c, ms=6, label=lab)
         if (line, Fe) == (1, 1):
             for x, y, D in zip(1 - r['P0opt'], r['W0opt'], r['DeltaG']):
-                ax[0].annotate(r'%g$\Gamma$' % D, (x, y), textcoords='offset points', xytext=(-4, 7), fontsize=11, ha='right', color=GREY)
-    ax[0].set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
-    ax[0].set_title(r'a   all excited hyperfine levels, $\Delta$ = 2–12$\Gamma$', loc='left', fontsize=13)
-    ax[0].legend(loc='upper left', fontsize=11)
+                ax.annotate(r'%g$\Gamma$' % D, (x, y), textcoords='offset points', xytext=(-4, 7), fontsize=11, ha='right', color=GREY)
+    ax.set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax.set_xlabel(r'population outside the ground state, $1-P_0$')
+    ax.set_title(r'all excited hyperfine levels, $\Delta$ = 2–12$\Gamma$ (up-left is better)', loc='left', fontsize=12.5)
+    ax.legend(loc='upper left', fontsize=11)
+    ax.set_ylim(300, 3e4)
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set_xticks([3e-3, 1e-2, 3e-2], ['0.003', '0.01', '0.03'])
+    save(fig, 'rb_hyperfine.png')
+
+    fig, ax = plt.subplots(figsize=(11.0, 4.6))
     z = np.genfromtxt(RESULTS / 'zeeman_refine.dat', names=True)
     z = z[(z['P0'] > 0.85) & (z['n'] < 1) & (z['W0'] > 0) & np.isfinite(z['W0']) & (np.abs(z['nu_wrec'] - 1.97) < 0.01)]
     m = load('universal_map.dat')
     ref = m[(np.abs(m['nu_wrec'] - 1.968) < 0.01) & (np.abs(m['bp'] - 5 / 6) < 0.01) & (m['P0'] > 0.85)]
-    groups = ((ref, INK, r"closed $\Lambda$, $b_p$ = 5/6 (no Zeeman)"),
-              (z[(z['scheme'] == 0) & (z['kind'] == 2)], SKY, "D1 F'=1 + repumper"),
-              (z[(z['scheme'] == 0) & (z['kind'] == 0)], GREEN, "D1 F'=1 + transverse field"),
-              (z[z['scheme'] == 1], COUPL, r"Zeeman $\Lambda$ in F=2 + repumper"))
+    groups = ((ref, INK, "D1 F'=1, probe on F=2,\nno Zeeman sublevels (closed $\\Lambda$)"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 2)], SKY, "hyperfine $\\Lambda$ + repumper"),
+              (z[(z['scheme'] == 0) & (z['kind'] == 0)], GREEN, "hyperfine $\\Lambda$ + transverse field"),
+              (z[z['scheme'] == 1], COUPL, "Zeeman $\\Lambda$ in F=2 + F=1 repumper"))
     for g, c, lab in groups:
         x, y = 1 - g['P0'], g['W0'] * om
         o = np.argsort(x)
-        ax[1].loglog(x, y, '.', color=c, ms=4, alpha=0.35)
-        ax[1].loglog(x[o], np.maximum.accumulate(y[o]), '-', color=c, lw=2.2, label=lab)
-    ax[1].axvline(0.03, color=GREY, ls=':', lw=1.2)
-    ax[1].set_xlabel(r'population outside the ground state, $1-P_0$')
-    ax[1].set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
-    ax[1].set_title('b   all 8 ground sublevels: best rate at each $P_0$ (dotted: $P_0$ = 0.97)', loc='left', fontsize=12)
-    hs, ls = ax[1].get_legend_handles_labels()
-    hs += [Line2D([], [], marker='.', ls='', color=GREY, ms=9, alpha=0.6), Line2D([], [], color=GREY, lw=2.2)]
-    ls += [r'dots: single runs of that scheme ($\delta_e$, $s$, remixing, polarisation)', 'lines: best rate reached at each $P_0$']
-    ax[1].legend(hs, ls, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=10.5)
-    ax[1].set_xlim(1.5e-3, 0.16)
-    ax[1].set_ylim(50, 1.5e4)
-    ax[0].set_ylim(300, 3e4)
-    fig.tight_layout(h_pad=1.5)
-    save(fig, 'rb.png')
+        ax.loglog(x, y, '.', color=c, ms=5, alpha=0.35)
+        ax.loglog(x[o], np.maximum.accumulate(y[o]), '-', color=c, lw=2.4, label=lab)
+    ax.axvline(0.03, color=GREY, ls=':', lw=1.2)
+    ax.set_xlabel(r'population outside the ground state, $1-P_0$')
+    ax.set_ylabel(r'ground-state rate $W_0$ (s$^{-1}$)')
+    ax.set_xlim(1.5e-3, 0.16)
+    ax.set_ylim(50, 1.5e4)
+    hs, ls = ax.get_legend_handles_labels()
+    hs += [Line2D([], [], marker='.', ls='', color=GREY, ms=10, alpha=0.6), Line2D([], [], color=GREY, lw=2.4),
+           Line2D([], [], color=GREY, ls=':', lw=1.2)]
+    ls += ['dots: single runs of that scheme\n($\\delta_e$, $s$, remixing, polarisation)', 'lines: best rate reached at each $P_0$', '$P_0$ = 0.97']
+    ax.legend(hs, ls, loc='center left', bbox_to_anchor=(1.02, 0.5), fontsize=11.5)
+    ax.set_title('D1, all 8 ground sublevels, case A ($\\Delta$ = 3$\\Gamma$)', loc='left', fontsize=12.5)
+    save(fig, 'rb_zeeman.png')
 
 
 def robust_figure():
@@ -653,7 +659,7 @@ def level_schemes():
     a.text(1.95, 4.6, '814.5 MHz', fontsize=11, color=GREY, va='center')
     a.annotate('', xy=(-1.2, 1.15), xytext=(-1.2, 0.0), arrowprops=dict(arrowstyle='<->', color=GREY, lw=1))
     a.text(-1.3, 0.57, '6.83\nGHz', fontsize=11, color=GREY, ha='right', va='center')
-    a.set_title("a   D1, hyperfine $\\Lambda$: F'=1, probe on F=2\n     (lin $\\perp$ lin; B transverse)", loc='left', fontsize=13)
+    a.set_title("a   hyperfine $\\Lambda$: D1 F'=1, probe on F=2\n     (lin $\\perp$ lin; B transverse)", loc='left', fontsize=13)
     a.set_xlim(-2.1, 5.2)
     a.set_ylim(-1.3, 5.6)
     # ---- b: D1 Zeeman Lambda inside F=2
@@ -669,7 +675,7 @@ def level_schemes():
     a.text(0.85, -0.6, r'probe $\sigma^-$ from $|2,2\rangle$, coupling $\sigma^+$ from $|2,0\rangle$', ha='center', fontsize=12, color=INK)
     a.text(3.3, 2.6, 'repumper\n(F = 1, dashed)', ha='center', fontsize=11.5, color=GREY)
     a.text(0.85, -1.05, r'target $|2,2\rangle$ (green), dark to the coupling', ha='center', fontsize=11.5, color=GREEN)
-    a.set_title("b   D1, Zeeman $\\Lambda$ in F=2 (after Qiu et al.)\n     (B along the fibre)", loc='left', fontsize=13)
+    a.set_title("b   Zeeman $\\Lambda$ in F=2: D1 F'=2, F=1 repumper\n     (after Qiu et al.; B along the fibre)", loc='left', fontsize=13)
     a.set_xlim(-1.4, 4.6)
     a.set_ylim(-1.5, 5.6)
     # ---- c: D2 excited manifold (no Zeeman sublevels)
@@ -689,7 +695,7 @@ def level_schemes():
     _arrow(a, (1.5, 1.15), (1.2, ys[2]), COUPL, lw=2.2)
     _arrow(a, (1.7, 0), (2.0, ys[1]), PROBE, ls='--', lw=2.2)
     _arrow(a, (2.4, 1.15), (2.1, ys[1]), COUPL, ls='--', lw=2.2)
-    a.text(1.4, -0.75, "solid: F'=2, probe on F=1 ($b_p$ = 1/2)\ndashed: F'=1, probe on F=1 ($b_p$ = 5/6)", ha='center', fontsize=11.5)
+    a.text(1.4, -0.75, "solid: D2 F'=2, probe on F=1 ($b_p$ = 1/2)\ndashed: D2 F'=1, probe on F=1 ($b_p$ = 5/6)", ha='center', fontsize=11.5)
     a.set_title('c   D2: excited hyperfine levels only\n     (no Zeeman sublevels simulated)', loc='left', fontsize=13)
     a.set_xlim(-1.4, 3.6)
     a.set_ylim(-1.5, 6.3)
