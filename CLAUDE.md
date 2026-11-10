@@ -166,8 +166,9 @@ Study scripts (run from `simulation/studies/`):
   time evolution, D1/D2 checks, W against W0); `plotting/convergence_plots.py` plots it.
 - `universal.py [thermal|map|mapband]` → `universal_thermal*.dat` (⟨n⟩, P₀ from thermal states, ~1.5 h), `universal_map.dat` (plane (b_p, ν_r/ω_rec), ~1 h,
   4 workers), `universal_mapband.dat`; plots by `plotting/universal_plots.py` in `results/universal/`. Older subcommands (steady, drift, capture, robust) still use N = 20.
-- `ramp.py [drift|chain|optimise[=smax]|twostage]` → `ramp_*.dat`: s-ramp step 3 (chain calibrated on ME drift, optimal control); the optimum is two stages (s_max, then s ≈ 1), 2× faster to P₀ = 0.9 from n̄₀ = 30 on the chain (case A, b_p = ½). Step 4 (ME validation) not done.
-- `two_axes.py [validate|steady|thermal|exact|switch]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis; `switch` gives P₀₀ and the 2D rate W₀₀ against the stage length τ of the alternation (`two_axes_switch.dat`, ~7 min): τ ≳ 5/Γ_n needed, W₀₀ peaks at ≈ 0.2 W₀ for τΓ_n ≈ 5–15.
+- `ramp.py [drift|chain|optimise[=smax]|twostage]` → `ramp_*.dat`: s-ramp step 3 (chain calibrated on ME drift, optimal control); the optimum is two stages (s_max, then s ≈ 1), 2× faster to P₀ = 0.9 from n̄₀ = 30 on the chain (case A, b_p = ½). `validate` (step 4, banded ME, piecewise s via `E.banded_evolve_piecewise`): 5.8, 7.6, 10.2 ms for s_max = 10, 5, 3 against 15.6 ms at constant s = 2 (2.7, 2.1, 1.5×).
+- `two_axes.py [validate|steady|thermal|exact|switch|switch_n]` → `two_axes_*.dat`: 2D rate chain on P(n_x, n_y) (P₀ reliable, ⟨n⟩ an upper bound), and the exact 2D ME at N = 6 per axis; `switch` gives P₀₀ and the 2D rate W₀₀ against the stage length τ of the alternation (`two_axes_switch.dat`, ~7 min): τ ≳ 5/Γ_n needed, W₀₀ peaks at ≈ 0.2 W₀ for τΓ_n ≈ 5–15; `switch_n` confirms within 1 % at N = 8, 10.
+- `fast.py [sign|delta]` → `fast_sign.dat`, `fast_delta.dat`: Fock drift at Δ = −3Γ (params accepts Δ < 0; narrow peak at δ = −ν_r, probe offset d2 ≈ +0.8) and at Δ = 2, 5Γ. The fast channel heats at Δ < 0 (capture range below n ≈ 8); its onset and the dip (n ≈ 0.5 n_c) move with n_c.
 - `report_scaling.py` → `results/report/*.dat`. It is pure Python and independent of `eitsim`;
   it produces the background-report numbers.
 
@@ -294,16 +295,14 @@ Conventions and gotchas:
   h = 1/2 for ⟨n⟩, h = 1 for a steady state), rounded by physical cut-offs (sideband resolution,
   Bessel non-linearity, anharmonicity, trap depth). Full plan, evidence and to-do list:
   **`notes/anomalous-cooling/`** (theory note `anomalous_cooling.tex`, to-do `anomalous_cooling_todo.md`). Nothing there is established yet.
-- **Optimal s ramp (deferred).** Theory in `notes/anomalous-cooling/s_ramp_theory.md`; simulation steps in
-  `anomalous_cooling_todo.md`. Do not start them unprompted: ask the author after the map and band checks.
+- **Optimal s ramp (done, steps 1–4).** Two stages, s_max then s = 1, are 1.5–2.7× faster to P₀ = 0.9 (master equation). Theory and results in `notes/anomalous-cooling/s_ramp_theory.md`. Open: a recipe across the map.
 - Simulations use an ideal closed Λ system and one radial axis. D1 vs D2: stage 1 (effective Λ)
   and stage 2 (excited hyperfine manifold) done; next the full Zeeman structure (dark states of
   F=2→F′=1, interference signs, tensor light shift of 5P₃/₂, leakage increases κ) and both
   radial axes, e.g. alternating LP₁₁ lobes.
 - For submission, move the text into the official Springer Nature template (`sn-jnl.cls`, option
   `sn-nature`).
-- The background report still quotes the old purity estimate ε ≲ 2.8 η⊥. The master equation gives
-  rate halving at ≈ 1.4 η⊥. Update it if the report is reused.
+- The background report is updated (purity, ramp, switching, fast channel, memory OD); the paper is not.
 - Fill the `\note{}` placeholders.
 
 ## Git

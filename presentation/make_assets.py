@@ -789,8 +789,35 @@ def switch_figure():
     save(fig, 'switch.png')
 
 
+def switch_fom_figure():
+    """Figure of merit for alternating the probe orientation: W00 * P00 (rate times ground-state
+    population of both axes), relative to the one-axis W0 * P0, against the stage length."""
+    d = load('two_axes_switch.dat')
+    dn = load('two_axes_switch_n.dat')
+    fig, ax = plt.subplots(figsize=(7.0, 4.6))
+    for nw, c, lab in ((8.43, COUPL, r'case B, $b_p$ = 1/2'), (1.97, PROBE, r'case A, $b_p$ = 5/6')):
+        r = d[np.abs(d['nu_wrec'] - nw) < 0.05]
+        r = r[np.argsort(r['tau'])]
+        fom = r['W00'] * r['P00ss'] / (r['W0_1D'] * r['P0_1D'])
+        cold = r['P00ss'] >= 0.85
+        pos = fom > 0
+        ax.semilogx(r['tauGn'][cold], fom[cold], 'o-', color=c, ms=7, label=lab)
+        ax.semilogx(r['tauGn'][~cold & pos], fom[~cold & pos], 'o', color=c, ms=7, mfc='white', mew=1.5)
+        q = dn[np.abs(dn['nu_wrec'] - nw) < 0.05]
+        ax.semilogx(q['tauGn'], q['W00'] * q['P00ss'] / (q['W0_1D'] * q['P0_1D']), 'x', color=c, ms=9, mew=1.8)
+    ax.axvspan(5, 15, color=GREEN, alpha=0.12, lw=0)
+    ax.set_xlabel(r'stage length $\tau$ in units of $1/\Gamma_n$')
+    ax.set_ylabel(r'$W_{00}P_{00}$ / one-axis $W_0P_0$')
+    ax.set_ylim(0, 0.25)
+    hs, ls = ax.get_legend_handles_labels()
+    hs += [Line2D([], [], marker='o', ls='', mfc='white', mec=GREY, ms=7, mew=1.5), Line2D([], [], marker='x', ls='', color=GREY, ms=9, mew=1.8)]
+    ls += [r'$P_{00} < 0.85$ ($W_{00}$ unreliable)', r'$N$ = 8, 10 per axis (others $N$ = 6)']
+    ax.legend(hs, ls, loc='upper left', fontsize=11)
+    save(fig, 'switch_fom.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure, switch_fom_figure):
         f()
         print('ok', f.__name__)

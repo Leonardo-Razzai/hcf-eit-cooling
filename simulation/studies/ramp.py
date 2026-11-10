@@ -11,6 +11,7 @@ Subcommands:
             compared with the best constant s                           -> results/ramp_optimal.dat
             (optimise=3, optimise=5: s capped, nbar0 = 30 -> ramp_optimal_smax{3,5}.dat)
   twostage  s_max then s = 1 with the best switch time, on the chain    -> results/ramp_twostage.dat
+  validate  step 4: the two-stage protocols in the banded master equation -> results/ramp_validate.dat
 """
 import sys
 import time
@@ -238,7 +239,27 @@ def twostage():
     save('ramp_twostage.dat', ['P0target', 'smax', 't_switch', 'T'], rows)
 
 
-STUDIES = {'drift': drift, 'chain': chain, 'optimise': optimise, 'twostage': twostage}
+def validate():
+    """s-ramp step 4: the two-stage protocols of twostage() in the banded master equation (N = 400,
+    band 4, as universal.py hotstage), from nbar0 = 30, against the best constant s; target P0 = 0.9."""
+    tw = load('ramp_twostage.dat')
+    tw = tw[tw['P0target'] == 0.9]
+    protocols = [('constant s = 2', [(2.0, 0.025)])]
+    for smax in (10.0, 5.0, 3.0):
+        ts = float(tw[tw['smax'] == smax]['t_switch'][0])
+        protocols.append(('s = %g until %.2f ms, then s = 1' % (smax, ts * 1e3), [(smax, ts), (1.0, 0.025 - ts)]))
+    rows = []
+    for k, (name, st) in enumerate(protocols):
+        t0 = time.time()
+        stages = [(E.params(FC, s=s, N=400, bp=BP), dt * FC['om']) for s, dt in st]
+        tt, n, P0 = E.banded_evolve_piecewise(stages, E.thermal(30.0, 400), B=4, h=0.5, n_out=400)
+        t90 = np.interp(0.9, np.maximum.accumulate(P0), tt) / FC['om'] if P0.max() >= 0.9 else np.nan
+        rows += [[k, x / FC['om'], y, z] for x, y, z in zip(tt, n, P0)]
+        log('validate %-34s t(P0 = 0.9) = %.2f ms, P0 end %.4f, <n> end %.3f (%.0f s)' % (name, t90 * 1e3, P0[-1], n[-1], time.time() - t0))
+    save('ramp_validate.dat', ['protocol', 't_s', 'n', 'P0'], rows)
+
+
+STUDIES = {'drift': drift, 'chain': chain, 'optimise': optimise, 'twostage': twostage, 'validate': validate}
 
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
