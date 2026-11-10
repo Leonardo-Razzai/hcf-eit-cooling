@@ -243,13 +243,15 @@ async function main() {
   // ============================================================ 10 regimes
   s = content("Results");
   s.addText("New: three cooling regimes on one curve", { placeholder: "title" });
-  await img(s, "regimes.png", MX, 1.4, FIG_W, 5.0, { valign: "middle", name: "removal rate regimes" });
+  await img(s, "regimes.png", MX, 1.4, 7.5, 5.0, { valign: "middle", name: "removal rate regimes" });
+  await img(s, "eq_regimes.png", 8.3, 1.45, W - MX - 8.3, 1.0, { align: "left", valign: "middle", name: "removal-rate formula" });
   text(s, bullets([
-    "The phonon-removal rate depends on s and n only through s·n",
-    "R ∝ n, then a saturated plateau, then a fast channel above s·n ≈ 2(ν_r/Γ_n)² ≈ 18",
-    "The plateau makes hot atoms cool linearly in time, not exponentially",
-    "Fast channel: drift grows 17× from n = 20 to 200 while diffusion grows 1.8×; Sisyphus-like reading still to be tested",
-  ], { space: 14 }), TX, 1.6, TW, 4.8, { fontSize: 16 });
+    "Sideband: R ∝ s n while s n ≪ 1",
+    "Saturated plateau: R ≈ R_sat, the narrow line limits the cycle rate",
+    "Fast channel: grows as n/n_c once the Raman splitting exceeds ν_r",
+    "Dashed: R_sat = 1.9 ms⁻¹ and c_sat = 2.25 from the rate model, c ≈ 1 fitted; within a factor 2, the dip near s n ≈ 8 is not captured",
+    "The plateau makes hot atoms cool linearly in time; Sisyphus-like reading of the fast channel still to be tested",
+  ], { space: 8 }), 8.3, 2.65, W - MX - 8.3, 3.9, { fontSize: 14 });
   s.addNotes("Drift of the mean occupation from Fock states, master equation, case A. Curves for different s collapse onto one curve against s times n, the saturation of the n to n minus 1 sideband. At large s n the Raman splitting exceeds the trap frequency and a much faster channel opens; our working hypothesis is dark-state following over the smooth mode profile, a Sisyphus-like mechanism. The sign-of-detuning test is still to be done.");
 
   // ============================================================ 11 map

@@ -61,6 +61,7 @@ def load(name):
 EQUATIONS = {
     'eq_eta': r'$\eta_\perp=G_{11}\,\dfrac{x_0}{a},\qquad G_{11}=3.49$',
     'eq_h': r'$h=\dfrac{\alpha}{b_p}\,\dfrac{\omega_{\rm rec}}{\nu_r}\ \propto\ \dfrac{a}{b_p\,\nu_z}$',
+    'eq_regimes': r'$R(n)\simeq R_{\rm sat}\,\dfrac{c_{\rm sat}\,s\,n}{1+c_{\rm sat}\,s\,n}\left(1+c\,\dfrac{n}{n_c}\right),\qquad n_c=\dfrac{2}{s}\left(\dfrac{\nu_r}{\Gamma_n}\right)^{2}$',
     'eq_W0': r'$\dfrac{1}{W_0}=\int_0^\infty\dfrac{P_0^{\rm ss}-P_0(t)}{P_0^{\rm ss}}\,dt$',
 }
 
@@ -395,14 +396,20 @@ def regimes():
     ax.axvspan(18, x1, color='#FBE9DE', lw=0)
     for x, lab in ((0.06, 'resolved\nsideband'), (4.2, 'saturated'), (85, 'fast channel')):
         ax.text(x, 1.3e5, lab, ha='center', va='top', fontsize=13, color=GREY)
+    Rsat, csat, cfast, nc1 = 1.9e3, 2.25, 1.0, 18.0     # GRM saturated rate; GRM c_sat; fitted c; n_c at s = 1
     for s, c in ((0.01, GREY), (0.1, SKY), (1.0, PROBE)):
         r = d[d['s'] == s]
         ax.loglog(s * r['n0'], -r['drift'], 'o-', color=c, ms=5, label=f'$s={s:g}$')
+        n = np.geomspace(r['n0'].min(), r['n0'].max(), 200)
+        ax.loglog(s * n, Rsat * csat * s * n / (1 + csat * s * n) * (1 + cfast * n * s / nc1), '--', color=c, lw=1.5)
     ax.set_xlim(x0, x1)
     ax.set_ylim(20, 2e5)
     ax.set_xlabel(r'$s\,n$  (saturation of the $n\to n-1$ sideband)')
     ax.set_ylabel(r'phonon removal rate (s$^{-1}$), case A')
-    ax.legend(loc='lower right', fontsize=12)
+    hs, ls = ax.get_legend_handles_labels()
+    hs.append(Line2D([], [], color=INK, ls='--', lw=1.5))
+    ls.append('formula')
+    ax.legend(hs, ls, loc='lower right', fontsize=12)
     save(fig, 'regimes.png')
 
 
