@@ -147,10 +147,10 @@ much faster than the GRM-based capture times of the paper.
       $N = 300/400$ (`tail_s0p1.dat`); figure `results/convergence/tail_mechanism.png`.
       Check: R(n) saturation at $n \approx 1$/s; D $\propto$ n R; local ratio −v n/D ≈ $$(1-h)/h$$, s-independent;
       log–log tail slope vs −1/h.
-- [ ] Write the minimal analytic model properly (R(n), v, D, tail exponent, crossover scales,
+- [x] Write the minimal analytic model properly (done: Sec. "The minimal analytic model" of `anomalous_cooling.tex`, with tests; the exact-kernel chain replaces Fokker–Planck for large jumps) (R(n), v, D, tail exponent, crossover scales,
       tail contribution to $n_{\rm ss}$); improve the Fokker–Planck treatment for large discrete jumps
       (e.g. master equation for P(n) with the exact recoil kernel).
-- [ ] Scan h via $\nu_r/\omega_{\rm rec}$ and $b_p$ with the banded solver (reduced cases, branch `universal`):
+- [x] Scan h via $\nu_r/\omega_{\rm rec}$ and $b_p$ with the banded solver (`universal.py hscan`: tail exponent collapses on 1/h within 3 % between routes, 4–9 % below 1/h; no sharp threshold; $1-P_0$ does not collapse):
       tail exponents, finite-size-scaling exponents, collapse in h, thresholds $h = 1/2$ and $h = 1$.
 - [ ] Fast channel — test the Sisyphus picture:
   - [ ] map R(n, s) on a 2D grid ($n \approx 1$–300, $s = 0.01$–10; banded drift, ~6 min per s); collapse vs
@@ -229,7 +229,7 @@ Next, when simulations resume (cost order):
 - [ ] Report $\langle n\rangle$/(1-$P_0$) in all scans.
 - [ ] Chain for P(n) with the exact recoil kernel and measured R(n), N up to several thousand, regime III
       on and off: sharp thresholds, then their rounding.
-- [ ] ME at $h = 0.1$–1.2 by two routes ($\nu_r/\omega_{\rm rec}$; $b_p$), $s = 1$, $\Delta = 8\Gamma$, $N = 400$: universality.
+- [x] ME at $h = 0.1$–1.2 by two routes ($\nu_r/\omega_{\rm rec}$; $b_p$), $s = 1$, $\Delta = 8\Gamma$, $N = 400$: universality. Done (`universal_hscan*.dat`, `results/universal/hscan.pdf`).
       Recheck the band in regime III.
 - [ ] Banded evolution for $t_{\rm prep}$($$$P_0$$^*$) with $P_0$(t) output: ($\Delta$, s, $b_p$) and ramps.
 - [ ] Derive $n_x$ semiclassically.

@@ -12,6 +12,7 @@ Subcommands:
             (optimise=3, optimise=5: s capped, nbar0 = 30 -> ramp_optimal_smax{3,5}.dat)
   twostage  s_max then s = 1 with the best switch time, on the chain    -> results/ramp_twostage.dat
   validate  step 4: the two-stage protocols in the banded master equation -> results/ramp_validate.dat
+  tailcheck chain steady states at s = 0.1, 0.3, 1, 5 (minimal-model check) -> results/ramp_tail_chain.dat
 """
 import sys
 import time
@@ -259,7 +260,22 @@ def validate():
     save('ramp_validate.dat', ['protocol', 't_s', 'n', 'P0'], rows)
 
 
-STUDIES = {'drift': drift, 'chain': chain, 'optimise': optimise, 'twostage': twostage, 'validate': validate}
+def tailcheck():
+    """Steady state of the chain (exact recoil kernel, master-equation removal rate) at s = 0.1, 0.3, 1, 5,
+    for the comparison with the master-equation tails in notes/anomalous-cooling (minimal model)."""
+    pts = me_drift_table()
+    rows = []
+    for s in (0.1, 0.3, 1.0, 5.0):
+        Q, _ = build_chain(s, pts)
+        w, V = np.linalg.eig(Q)
+        ss = np.real(V[:, np.argmin(np.abs(w))])
+        ss /= ss.sum()
+        rows += [[s, n, ss[n]] for n in range(NCH)]
+        log('tailcheck s %g: P0 %.4f' % (s, ss[0]))
+    save('ramp_tail_chain.dat', ['s', 'n', 'P'], rows)
+
+
+STUDIES = {'drift': drift, 'chain': chain, 'optimise': optimise, 'twostage': twostage, 'validate': validate, 'tailcheck': tailcheck}
 
 if __name__ == '__main__':
     for arg in sys.argv[1:]:
