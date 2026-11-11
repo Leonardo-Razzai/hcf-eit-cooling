@@ -330,11 +330,11 @@ async function main() {
   s.addText("Faster capture: a two-stage saturation ramp", { placeholder: "title" });
   await img(s, "ramp.png", MX, 1.35, W - 2 * MX, 4.35, { name: "optimal saturation ramp" });
   text(s, bullets([
-    ["Optimum (minimum time, Pontryagin sweeps): ", "high s while the hot tail drains, then s ≈ 1 → 0.7 for the last phonon. Two stages, s_max then s = 1, are within 2 % of it"],
-    ["Gain over the best constant s: ", "2.1× to P₀ = 0.9 with s ≤ 10, 1.5× with s ≤ 3 (the limit for an LP₀₁ admixture of a few per cent); 1.4× to P₀ = 0.8, none to 0.5"],
-    ["Model: ", "population chain with the exact recoil kernel and the master-equation removal rate; within 5–25 % of the master equation at constant s. Validation of the ramp in the master equation is pending"],
+    ["Optimum (minimum time, Pontryagin sweeps): ", "high s while the hot tail drains, then s ≈ 1 → 0.7; two stages (s_max, then s = 1) are within 2 % of it"],
+    ["Gain over the best constant s (chain): ", "2.1× to P₀ = 0.9 with s ≤ 10, 1.5× with s ≤ 3 (the limit for an LP₀₁ admixture of a few per cent); 1.4× to P₀ = 0.8, none to 0.5"],
+    ["Master equation (banded, N = 400): ", "two stages reach P₀ = 0.9 in 5.8, 7.6, 10.2 ms (s_max = 10, 5, 3) vs 15.6 ms at constant s = 2: 2.7, 2.1, 1.5× faster (diamonds)"],
   ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 13 });
-  s.addNotes("Case A, b_p = 1/2, one axis, from a thermal state with 30 quanta. Left: the optimal time dependence of the saturation parameter for three upper limits, from forward-backward optimal-control sweeps on a population chain calibrated on the master-equation drift. Right: time to reach the target ground-state population; grey the best constant s, coloured the optimal ramp, black lines the simple two-stage protocol. The gain is large only for targets close to the ground-state population that a high s alone can reach. These are chain results; the master-equation check of the two-stage protocol is the next step.");
+  s.addNotes("Case A, b_p = 1/2, one axis, from a thermal state with 30 quanta. Left: the optimal time dependence of the saturation parameter for three upper limits, from forward-backward optimal-control sweeps on a population chain calibrated on the master-equation drift. Right: time to reach the target ground-state population; grey the best constant s, coloured the optimal ramp, black lines the simple two-stage protocol. The gain is large only for targets close to the ground-state population that a high s alone can reach. Diamonds: the two-stage protocols and the best constant s run in the banded master equation with N = 400. The master equation confirms the chain within about 10 percent and gives an even larger gain at s_max = 10, 2.7 times, because the fast channel at high n is stronger than in the chain.");
 
   // ============================================================ 15 Rb transitions
   pres.addSection({ title: "Rubidium" });
