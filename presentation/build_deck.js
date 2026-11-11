@@ -263,7 +263,19 @@ async function main() {
     "h = 1/3 separates clean ground states from heavy tails; Δ = 3Γ, s = 1 shown",
     "For ⁸⁷Rb, D1 F′=1 with the probe on F=2 (b_p = 5/6): P₀ = 0.975 and 1.5× the rate of D1 F′=2",
   ], { space: 8 }), MX, 5.8, W - 2 * MX, 1.0, { fontSize: 15 });
-  s.addNotes("Converged master-equation map in the plane of trap stiffness in recoil units and branching ratio. Left, ground-state population; right, the ground-state rate in units of nu_r, shown only where the state is cold. Lines of constant h follow the colour contours. The open symbols are the configurations we considered for rubidium. Ions and tweezers would sit far to the right; we plan to add them as points.");
+  s.addNotes("Converged master-equation map in the plane of trap stiffness in recoil units and branching ratio. Left, ground-state population; right, the ground-state rate in units of nu_r, shown only where the state is cold. Lines of constant h follow the colour contours. The open symbols are the configurations we considered for rubidium. Other species, ions and tweezers are placed on the next slide.");
+
+  // ============================================================ 11b species
+  s = content("Results");
+  s.addText("Where do other atoms, ions and tweezers sit on the map?", { placeholder: "title" });
+  await img(s, "species.png", MX, 1.3, W - 2 * MX, 4.3, { name: "species on the cooling map" });
+  text(s, bullets([
+    ["Ions, tweezers: ", "h = 0.002–0.2, so the tail was invisible; closest is the Rb EIT tweezer, h = 0.19 (0.38 for both axes)"],
+    ["Fibre A: ", "Cs h = 0.14, Rb 0.24, K 0.58; Na, Li h > 1. ¹⁷¹Yb on 556 nm: h = 0.44, P₀ = 0.96, W₀ = 1.7×10³ s⁻¹"],
+    ["Sr: ", "461 nm too hot (h = 1.6); 689 nm has Γ ≈ ν_r, resolved sideband rather than EIT"],
+  ], { space: 4 }), MX, 5.65, W - 2 * MX, 1.0, { fontSize: 13.5 });
+  cite(s, "Ions: Roos 2000, Lechner 2016, Xing 2025, Feng 2020, Lin 2013, Wu 2024; tweezers: Qiu 2025, Blodgett 2023, Ang'ong'a 2021, Cooper 2018, Jenkins 2022; Pache 2026");
+  s.addNotes("Left: the whole plane with literature experiments. Every ion EIT experiment sits at h below 0.1, where the recoil tail has an exponent above ten; that is why it was never seen. Tweezers are at h of a few percent up to 0.2. Our fibre is the first EIT setting at h of order 0.1 to 1. For schemes without a dark resonance (gray molasses, Raman or narrow-line sideband) the vertical coordinate is one over the number of photons per removed phonon, an estimate. Right: the fibre points on the simulated map of P0 at Delta = 3 Gamma, s = 1, filled for case A and open for case B, using the best D1 lambda for the alkalis. Ytterbium-171 on the intercombination line behaves like rubidium in case A, with a clean two-level ground state, which avoids the Zeeman dark states that cost rubidium a factor of three. Strontium's red line is resolved-sideband cooling, outside this model.");
 
   // ============================================================ 12 two axes
   s = content("Results");
@@ -276,7 +288,7 @@ async function main() {
     "Since h ∝ a/ν_z, a deeper lattice relaxes the limit",
   ], { space: 14 }), 7.85, 1.6, W - MX - 7.85, 4.8, { fontSize: 16 });
   cite(s, "Rate chain on P(n_x, n_y), checked against the exact 2D master equation (0.927 vs 0.931)");
-  s.addNotes("Open symbols: one axis; filled: both axes, cooled by alternating the LP11 orientation. Below h of one third the second axis costs a factor of about two in the excited population; above one half the two-dimensional ground state is lost at three Gamma. A larger detuning helps. A single scalar vortex beam does not cool both modes; a vector mode might, which is still open.");
+  s.addNotes("Open symbols: one axis; filled: both axes, cooled by alternating the LP11 orientation. Below h of one third the second axis costs a factor of about two in the excited population; above one half the two-dimensional ground state is lost at three Gamma. A larger detuning helps. A single scalar vortex beam does not cool both modes; a TE01 vector mode does, see two slides later.");
 
   // ============================================================ 12b axis switching
   s = content("Results");
@@ -288,6 +300,18 @@ async function main() {
     ["Model: ", "exact 2D master equation with recoil on both axes, N = 6 per axis (indicative), s = 1, Δ = 3Γ; W₀₀ defined like W₀, from |1,1⟩"],
   ], { space: 6 }), MX, 5.75, W - 2 * MX, 1.2, { fontSize: 13 });
   s.addNotes("Alternating the LP11 orientation, x for a time tau and then y for tau. Left: steady-state population of the two-dimensional ground state against the stage length in units of the narrow linewidth; dotted lines show two independent axes. Right: the two-dimensional ground-state rate relative to the one-axis rate, shown only where the state is cold. Each switch interrupts the dark-state dynamics, so a stage must last several narrow-line lifetimes; but a stage much longer than the cooling time leaves the idle axis heating from recoil. The optimum is a few times the narrow-line lifetime. N = 6 per axis truncates the tail, so the numbers are indicative.");
+
+  // ============================================================ 12c TE01
+  s = content("Results");
+  s.addText("New: one TE₀₁ probe cools both axes at once", { placeholder: "title" });
+  await img(s, "te01.png", MX, 1.3, W - 2 * MX, 4.3, { name: "TE01 two-axis cooling" });
+  text(s, bullets([
+    ["Idea: ", "E_x of TE₀₁ carries the y gradient and E_y the x gradient: on two Λ channels they cool both axes, no switching"],
+    ["Condition: ", "the channels must end in different ground states g_c; with a shared g_c only the mode x + y cools"],
+    ["Result: ", "P₀₀ = 0.93–0.94, W₀₀ = 0.35–0.41 W₀: 1.85× faster than switching; TE₀₁ also has an exact node and the lowest loss"],
+  ], { space: 4 }), MX, 5.65, W - 2 * MX, 1.0, { fontSize: 13.5 });
+  cite(s, "Exact 2D eliminated master equation, N = 6 per axis (converged at 8), Δ = 3Γ, s = 1 per channel; losses: Zeisberger & Schmidt 2017");
+  s.addNotes("a: a linearly polarised LP11 has E_x proportional to x, so it addresses one axis. b: TE01 is azimuthally polarised; near the axis E_x is proportional to minus y and E_y to x. With the polarisation components on distinguishable transitions, for example a pi and a sigma transition with the field transverse, or sigma plus and sigma minus with the field along the fibre, each component is its own lambda system and cools one axis, simultaneously. c, d: two-dimensional master equation. Switching the LP11 orientation gives P00 of 0.93 but only 0.2 of the one-axis rate; a circular profile on one transition cools only one circular mode; two channels with a shared coupling ground state fail too, because EIT cooling is a Raman process and the two paths then end in the same state, so only the diagonal mode cools. With separate final states P00 is as high as with switching and the rate is almost twice as large. From the state with one quantum in each axis, the ideal limits are W0 over 1.5 for parallel channels and W0 over 3 for switching; both reach 55 to 70 percent of them. A linear LP11 polarised along its lobes also has a longitudinal field on the axis, a carrier of about 1.4 eta_perp in case A and 2.9 in case B; TE01 has none. The real Zeeman structure for this scheme is the next step.");
 
   // ============================================================ 13 capture
   s = content("Results");
@@ -385,13 +409,14 @@ async function main() {
   const sumItems = [
     ["All-guided radial ground-state cooling: ", "an LP₁₁ probe puts the atoms at a node; 10³–10⁴ s⁻¹ with nanowatts"],
     ["Recoil-dominated regime: ", "the steady state has a power-law tail, n^{−1/h}; P₀ and W₀, not ⟨n⟩, measure the cooling"],
-    ["One map for any atom and trap: ", "h < 1/3 for a clean state, h < 1/2 for both radial axes, h ∝ a/(b_p ν_z)"],
+    ["One map for any atom and trap: ", "h < 1/3 for a clean state, h < 1/2 for both radial axes; ions and tweezers sit at h ≲ 0.2, ¹⁷¹Yb works like Rb"],
+    ["Both axes at once: ", "one TE₀₁ probe on two Λ channels with separate final states, 1.85× faster than switching"],
     ["⁸⁷Rb: ", "D1 F′=1 with the probe on F=2; the Zeeman structure costs about 3× in rate"],
     ["Memory: ", "small cores for optical depth; seconds of storage after lowering the lattice"],
   ];
   text(s, bullets(sumItems.map(([a, b]) => [a, b]), { space: 16 }).map((r) => ({ ...r, options: { ...r.options, color: r.options.bold ? HEX.lt1 : HEX.accent6 } })),
     MX, 1.5, W - 2 * MX, 3.9, { fontSize: 19 });
-  text(s, "Next: optimal saturation ramp from thermal states, real fibre-mode polarisation, Zeeman structure with both axes, memory simulations.",
+  text(s, "Next: Zeeman structure for the TE₀₁ scheme (¹⁷¹Yb first), mode solver for the real fibres, memory simulations.",
     MX, 5.6, W - 2 * MX, 0.8, { fontSize: 16, italic: true, color: C.background1 });
   s.addNotes("Take-home messages. The concept of node cooling comes from ions; what is new is the platform, all beams guided in a hollow-core fibre, and the regime, where recoil is comparable to the trap quantum and changes the nature of the steady state. Next steps are listed at the bottom.");
 

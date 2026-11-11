@@ -816,8 +816,145 @@ def switch_fom_figure():
     save(fig, 'switch_fom.png')
 
 
+def species_figure():
+    """Ions, tweezers and other atoms in the fibre on the cooling map (studies/species.py points)."""
+    rows = []
+    for line in open(RESULTS / 'species_points.txt').read().splitlines()[1:]:
+        name, cat, x, bp, h = line.split()[:5]
+        rows.append((name, cat, float(x), float(bp), float(h)))
+    fig, ax = plt.subplots(1, 2, figsize=(12.4, 4.7), gridspec_kw=dict(width_ratios=[1.15, 1]))
+    D = load('universal_map.dat')
+    NU, BP = np.unique(D['nu_wrec']), np.unique(D['bp'])
+    en = np.sqrt(NU[1:] * NU[:-1])
+    en = np.r_[NU[0]**2 / en[0], en, NU[-1]**2 / en[-1]]
+    eb = (BP[1:] + BP[:-1]) / 2
+    eb = np.r_[2 * BP[0] - eb[0], eb, 2 * BP[-1] - eb[-1]]
+    a = ax[0]
+    a.add_patch(Rectangle((en[0], eb[0]), en[-1] - en[0], eb[-1] - eb[0], fc=LIGHT, ec='none', zorder=0))
+    a.text(1.0, 0.95, 'simulated map', fontsize=11, color=GREY)
+    x = np.geomspace(0.05, 1500, 300)
+    for b in ax:
+        xx = x if b is a else np.geomspace(0.07, 30, 200)
+        for hh, ls in ((1 / 3, ':'), (0.5, '--'), (1, '-')):
+            b.plot(xx, ALPHA / (hh * xx), color=INK, ls=ls, lw=1.4, zorder=1)
+    lab = {'Ca+_Lechner2016': ('Ca$^+$ (3 expts)', 0, -14), 'Yb+_Feng2020': ('Yb$^+$', 0, -14), 'Be+_Lin2013': ('Be$^+$', -6, 10),
+           'Mg+_Wu2024': ('Mg$^+$', 6, -12), 'Rb87_Qiu2026_radial': ('Rb EIT tweezer', 7, 0),
+           'Li6_Blodgett2023': ('Li', 0, -14), 'K39_Angonga2022': ('K', -2, 12), 'Cs_nanofibre_Pache2026': ('Cs nanofibre', 8, -11),
+           'Sr88_Cooper2018': ('Sr tweezer', -8, 0), 'Yb171_Jenkins2022': ('Yb tweezer', 7, 9)}
+    for name, cat, xv, bv, hv in rows:
+        if cat == 'fibre' or name == 'Rb87_Qiu2026_axial':
+            continue
+        a.plot(xv, bv, 'D' if cat == 'ion' else 'v', color=INK if cat == 'ion' else ATOM, ms=8, mec='white', mew=0.6, zorder=4)
+        if name in lab:
+            t_, dx, dy = lab[name]
+            a.annotate(t_, (xv, bv), xytext=(dx, dy), textcoords='offset points', fontsize=11,
+                       ha='center' if dx == 0 else 'left' if dx > 0 else 'right', va='center')
+    sym = {'6Li': 'Li', '23Na': 'Na', '39K': 'K', '87Rb': 'Rb', '133Cs': 'Cs', 'Yb171_556': 'Yb 556', 'Yb171_399': 'Yb 399',
+           'Sr87_689': 'Sr 689', 'Sr87_461': 'Sr 461'}
+    offb = {'39K_fibreA': (-8, -11), '87Rb_fibreA': (6, 9), '133Cs_fibreA': (9, 2), 'Yb171_556_fibreA': (5, 11),
+            'Yb171_399_fibreA': (-7, 0), 'Sr87_689_fibreA': (0, -14), 'Sr87_461_fibreA': (-7, 0), '23Na_fibreA': (0, -14),
+            '6Li_fibreA': (6, 9), '87Rb_fibreB': (6, 9), '133Cs_fibreB': (0, 13), '39K_fibreB': (6, 9), '23Na_fibreB': (6, 9),
+            '6Li_fibreB': (6, 9), 'Yb171_556_fibreB': (6, 9), 'Yb171_399_fibreB': (0, -15), 'Sr87_689_fibreB': (6, -10),
+            'Sr87_461_fibreB': (0, 13)}
+    b = ax[1]
+    Z = np.full((BP.size, NU.size), np.nan)
+    for i, bb in enumerate(BP):
+        for j, v in enumerate(NU):
+            r = D[(D['bp'] == bb) & (D['nu_wrec'] == v) & (D['DeltaG'] == 3) & (D['s'] == 1)]
+            Z[i, j] = r[np.argsort(r['N'])][-1]['P0']
+    m = b.pcolormesh(en, eb, Z, cmap='Blues', vmin=0.5, vmax=1, zorder=0)
+    fig.colorbar(m, ax=b, label=r'$P_0$ ($\Delta=3\Gamma$, $s=1$)', pad=0.02)
+    for name, cat, xv, bv, hv in rows:
+        if cat != 'fibre':
+            continue
+        base, tag = name.rsplit('_fibre', 1)
+        c = PROBE if tag == 'A' else COUPL
+        for axx in ax:
+            axx.plot(xv, bv, 'o' if tag == 'A' else 's', ms=8, mfc=c if tag == 'A' else 'white', mec=c, mew=1.6, zorder=4)
+        dx, dy = offb.get(name, (6, 9))
+        b.annotate(sym[base], (xv, bv), xytext=(dx, dy), textcoords='offset points', fontsize=10.5, color=c, fontweight='bold',
+                   ha='center' if dx == 0 else 'left' if dx > 0 else 'right', va='center', zorder=5,
+                   bbox=dict(boxstyle='round,pad=0.12', fc='white', ec='none', alpha=0.85))
+    a.set_xscale('log')
+    a.set_xlim(0.05, 1500)
+    a.set_ylim(0, 1.05)
+    a.set_xticks([0.1, 1, 10, 100, 1000], ['0.1', '1', '10', '100', '1000'])
+    a.set_ylabel(r'$b_p$ (or $1/\kappa$ without dark state)')
+    b.set_xscale('log')
+    b.set_xlim(0.07, 25)
+    b.set_ylim(0, 1)
+    b.set_xticks([0.1, 0.3, 1, 3, 10], ['0.1', '0.3', '1', '3', '10'])
+    b.xaxis.set_minor_locator(plt.NullLocator())
+    b.set_ylabel('$b_p$')
+    for axx, l in zip(ax, 'ab'):
+        axx.set_xlabel(r'trap stiffness $\nu_r/\omega_{\rm rec}$')
+        axx.text(-0.12, 1.02, l, transform=axx.transAxes, fontsize=15, fontweight='bold')
+    hs = [Line2D([], [], color=INK, ls=':'), Line2D([], [], color=INK, ls='--'), Line2D([], [], color=INK, ls='-'),
+          Line2D([], [], marker='D', ls='', color=INK, ms=8), Line2D([], [], marker='v', ls='', color=ATOM, ms=8),
+          Line2D([], [], marker='o', ls='', color=PROBE, ms=8), Line2D([], [], marker='s', ls='', mfc='white', mec=COUPL, mew=1.6, ms=8)]
+    fig.legend(hs, ['$h=1/3$', '$h=1/2$', '$h=1$', 'ions (EIT)', 'tweezers, nanofibre', 'fibre A, $a=15\\,\\mu$m', 'fibre B, $a=3.5\\,\\mu$m'],
+               loc='upper center', ncol=7, bbox_to_anchor=(0.5, 1.08), fontsize=11.5, handletextpad=0.3, columnspacing=1.0)
+    fig.tight_layout(w_pad=2)
+    save(fig, 'species.png')
+
+
+def te01_figure():
+    """One TE01 probe for both axes: polarisation patterns and the 2D master-equation result."""
+    fig = plt.figure(figsize=(12.4, 4.6))
+    gs = fig.add_gridspec(1, 4, width_ratios=[0.85, 0.85, 1.45, 1.45], wspace=0.35)
+    n = 301
+    X, Y = np.meshgrid(np.linspace(-1.1, 1.1, n), np.linspace(-1.1, 1.1, n))
+    R = np.hypot(X, Y)
+    f = np.where(R <= 1, jv(1, E.U1[0] * R), np.nan)
+    q = np.linspace(-0.75, 0.75, 7)
+    QX, QY = np.meshgrid(q, q)
+    QR = np.hypot(QX, QY)
+    fq = jv(1, E.U1[0] * QR)
+    for k, (title, I, U, V) in enumerate((
+            ('linear LP$_{11}$\n$E_x\\propto x$: one axis', (f * X / np.maximum(R, 1e-9))**2, fq * QX / np.maximum(QR, 1e-9), 0 * QX),
+            ('TE$_{01}$\n$E_x\\propto -y$, $E_y\\propto x$', f**2, -fq * QY / np.maximum(QR, 1e-9), fq * QX / np.maximum(QR, 1e-9)))):
+        a = fig.add_subplot(gs[0, k])
+        a.imshow(I, extent=(-1.1, 1.1, -1.1, 1.1), cmap='Blues', origin='lower')
+        ok = QR < 0.92
+        a.quiver(QX[ok], QY[ok], U[ok], V[ok], color=INK, scale=4.5, width=0.012, headwidth=4, pivot='mid')
+        a.add_patch(Circle((0, 0), 1, fill=False, lw=2, ec=GREY))
+        a.add_patch(Circle((0, 0), 0.07, fc=ATOM, ec=INK, lw=1.2, zorder=5))
+        a.set_title(title, fontsize=13)
+        a.set_axis_off()
+        a.set_aspect('equal')
+        a.text(-0.05, 1.12, 'ab'[k], transform=a.transAxes, fontsize=15, fontweight='bold')
+    d = load('vector_twoaxes.dat')
+    sh = load('vector_shared.dat')
+    labels = ['switch\nLP$_{11}$', 'one\ntransition', 'shared\n$g_c$', 'separate\n$g_c$']
+    xs = np.arange(4)
+    for j, (col, ylab, lim) in enumerate((('P00', r'both axes in ground state, $P_{00}$', (0, 1.05)),
+                                          ('W00', r'2D rate $W_{00}$ / one-axis $W_0$', (0, 0.55)))):
+        a = fig.add_subplot(gs[0, 2 + j])
+        for i, (nw, c, lab) in enumerate(((8.43, COUPL, 'case B'), (1.97, PROBE, 'case A'))):
+            r = d[(np.abs(d['nu_wrec'] - nw) < 0.05) & (d['s'] == 1)]
+            r = r[np.argsort(r['scheme'])]
+            s2 = sh[(np.abs(sh['nu_wrec'] - nw) < 0.05) & (sh['s'] == 1)][0]
+            v = r[col].copy()
+            v[2] = s2[col]                                   # shared g_c with the light shift retuned
+            if col == 'W00':
+                v = v / r['W0_1D']
+                v[(r['P00'] < 0.85) | (np.arange(4) == 2) & (s2['P00'] < 0.85)] = np.nan
+            a.bar(xs + (i - 0.5) * 0.36, np.nan_to_num(v), 0.34, color=c, label=lab)
+            if col == 'W00' and i == 0:
+                for xv, vv in zip(xs, v):
+                    if np.isnan(vv):
+                        a.text(xv, 0.01, 'not\ncold', ha='center', va='bottom', fontsize=10, color=GREY)
+        a.set_xticks(xs, labels, fontsize=10.5)
+        a.set_ylim(*lim)
+        a.set_ylabel(ylab)
+        a.text(-0.18, 1.02, 'cd'[j], transform=a.transAxes, fontsize=15, fontweight='bold')
+        if j == 0:
+            a.legend(loc='upper left', fontsize=11, ncol=2)
+    save(fig, 'te01.png')
+
+
 if __name__ == '__main__':
     for f in (equations, mode_maps, lattice_sketch, levels, fano_plot, setup, saturation,
-              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure, switch_fom_figure):
+              hscale, tail, regimes, cooling_map, two_axes, capture, memory_panel, rb_figure, robust_figure, purity_figure, level_schemes, ramp_figure, switch_figure, switch_fom_figure, species_figure, te01_figure):
         f()
         print('ok', f.__name__)
