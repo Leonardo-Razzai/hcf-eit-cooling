@@ -170,14 +170,15 @@ def run(argv):
 # ------------------------------------------------------------------ scan lists
 GRIDS = {
     # quick test of the cluster set-up: two short runs
-    'test': [dict(scheme='te01_bz', case='B', s=1.0, d1=0.3, d2=0.3, gamma=0.0, N=4, tmax=300.0),
-             dict(scheme='lp11_hf', case='B', s=1.0, d1=0.45, d2=0.0, gamma=0.1, N=4, tmax=300.0)],
+    'test': [dict(scheme='te01_bz', case='A', s=1.0, d1=0.3, d2=0.3, gamma=0.0, N=4, tmax=300.0),
+             dict(scheme='lp11_hf', case='A', s=1.0, d1=0.45, d2=0.0, gamma=0.1, N=4, tmax=300.0)],
 }
 
 
 def main_grid():
+    """Case A only (the fibre of interest)."""
     rows = []
-    for case in ('A', 'B'):
+    for case in ('A',):
         for s in (0.5, 1.0):
             # TE01, both field directions: two-photon detunings per channel, optional repumper
             for sch in ('te01_bz', 'te01_bx'):
@@ -207,7 +208,7 @@ def write_list(argv):
             r.setdefault('N', a.N)
     elif a.grid == 'convergence':
         rows = [dict(scheme=s, case=c, s=1.0, d1=0.4, d2=0.4, gamma=0.1 if s.startswith('lp11') else 0.0, N=N)
-                for s in ('te01_bz', 'lp11_hf') for c in ('A', 'B') for N in (6, 8, 10)]
+                for s in ('te01_bz', 'lp11_hf') for c in ('A',) for N in (6, 8, 10)]
     else:
         rows = GRIDS['test']
     out = Path(a.out) if a.out else CLUSTER / 'scans' / ('zeeman2d_%s.txt' % a.grid)
