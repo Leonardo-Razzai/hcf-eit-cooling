@@ -23,29 +23,60 @@ Physics and level schemes are in the background report, Sec. "One vector mode fo
 
 `python zeeman2d.py cost` prints flops and operator sizes. One run uses one node share (`--cpus-per-task`); more cores help up to ~8.
 
-## Set-up (once)
+## DIFA OPH cluster: rules and access
+
+These notes are taken from `rb_lattice_dsmc/README.md`, which follows the DIFA wiki (startup guide, access, storage and jobs pages, October 2026).
+
+- **Frontends** (`ophfe1`, `ophfe2`) are for logging in, editing, installing and submitting only. Never run simulations or the test suite there (1 GB RAM per user); everything goes through `sbatch`.
+- **Login** through the bastion. In `~/.ssh/config` (in WSL: `~/.ssh` of Ubuntu):
+  ```
+  Host bastion-nav
+      HostName bastion-nav.difa.unibo.it
+      User name.surname00
+  Host ophfe1 ophfe2
+      User name.surname00
+      ProxyJump bastion-nav
+  ```
+  then `ssh ophfe1`.
+- **Queues:** `--qos=debug` (≤ 15 min, not billed) for the checks, `--qos=long` (≤ 72 h, low priority) for N ≥ 8. Ask your sector contact which node type to use (`--constraint=blade` or `matrix`) and whether `--account` is needed. Then uncomment those `##SBATCH` lines in `run_single.sbatch` and `run_array.sbatch`.
+- **Support:** access and accounting through your sector contact; technical problems through `difa.csi@unibo.it`.
+
+## Set-up (once, on the frontend)
 
 ```bash
-# on the cluster, in your home or work directory
-git clone <repository URL> hcf-eit-cooling        # or: rsync -a --exclude .venv ./ cluster:hcf-eit-cooling/
-cd hcf-eit-cooling
-python3 -m venv ~/venvs/hcf-eit                    # Python >= 3.10 (load a module first if needed)
+git clone https://github.com/Leonardo-Razzai/hcf-eit-cooling.git ~/hcf-eit-cooling   # private repo: token or SSH key
+cd ~/hcf-eit-cooling
+python3 --version                    # need >= 3.10 (numpy 2)
+module avail 2>&1 | grep -i python   # if the system python is older, look for a module
+# module load <python module>        # if you use one, also put it in HCF_MODULES in simulation/cluster/env.sh
+python3 -m venv ~/venvs/hcf-eit
 source ~/venvs/hcf-eit/bin/activate
-pip install -r simulation/requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r simulation/requirements.txt
+mkdir -p logs                        # Slurm writes the job logs here: it must exist BEFORE the first sbatch
 ```
 
-Then edit `simulation/cluster/env.sh` if the venv path differs, or if a module must be loaded (`HCF_MODULES`). Submit every job **from the repository root**: logs go to `logs/`, results to `simulation/results/zeeman2d/runs/`.
+- **No package installation is needed:** the scripts put `simulation/` on `sys.path` themselves (`studies/_common.py`), and the job scripts run them from `simulation/studies`.
+- **Keep the venv in `/home`.** It is backed up (50 GB quota); `/scratch` is not.
+- **Without a Python ≥ 3.10 module,** install Miniforge in your home (`bash Miniforge3-Linux-x86_64.sh -b -p ~/miniforge3`) and create the venv with `~/miniforge3/bin/python3 -m venv ~/venvs/hcf-eit`.
+- **If the venv is elsewhere,** set `HCF_VENV` at the top of `simulation/cluster/env.sh`.
+- **Updates later:** `git pull` (or copy `simulation/` with `scp -r`).
 
-## 1. Check the installation (a few minutes, debug queue)
+Submit every job **from the repository root** (`cd ~/hcf-eit-cooling`): logs go to `logs/`, results to `simulation/results/zeeman2d/runs/`.
+
+## 1. Check the installation (debug queue, a few minutes)
 
 ```bash
+# regression tests on a compute node (~30 s; must end with "35 passed")
+sbatch --qos=debug --time=00:15:00 --output=logs/tests_%j.out \
+       --wrap "source simulation/cluster/env.sh && python -m pytest simulation/tests -q"
+# 2D code against the one-axis Zeeman solver, zero and finite field: both must print PASS
 sbatch --qos=debug --time=00:15:00 simulation/cluster/run_single.sbatch zeeman2d.py check
 sbatch --qos=debug --time=00:15:00 simulation/cluster/run_single.sbatch zeeman2d.py check_field
 sbatch --qos=debug --time=00:15:00 simulation/cluster/run_single.sbatch zeeman2d.py smoke
+squeue -u $USER                      # or: slurmtop
+cat logs/hcf2d_<jobid>.out
 ```
-
-- `check` and `check_field` compare the 2D code (with N_y = 1) with the validated one-axis Zeeman solver: at zero field, and at μ_B B/ħ = 40 ν_r. Both must print `PASS`.
-- `smoke` builds all four schemes and takes a few steps.
 
 Then a two-line test scan at N = 4 (≈ 5 min per line):
 
@@ -79,7 +110,7 @@ sbatch --array=1-$N --qos=long --time=72:00:00 --mem=8G --cpus-per-task=8 simula
 ## 4. Collect and bring back
 
 ```bash
-cd simulation/studies && python zeeman2d.py collect      # -> simulation/results/zeeman2d.dat
+cd simulation/studies && python zeeman2d.py collect [--out DIR]   # -> simulation/results/zeeman2d.dat
 # locally:
 rsync -av cluster:hcf-eit-cooling/simulation/results/zeeman2d/ simulation/results/zeeman2d/
 ```
@@ -106,5 +137,6 @@ sbatch simulation/cluster/run_single.sbatch zeeman2d.py run --scheme te01_bz --c
 ## Notes
 
 - **Field strength.** The field enters as Z = μ_B B/ħ in units of ν_r. The default Z = 40 is 0.29 MHz in case A (B ≈ 0.2 G) and 1.2 MHz in case B (B ≈ 0.9 G). Different Raman resonances are Z/2 apart, and the code merges paths closer than `--tol` (default 2 ν_r). Keep Z/2 ≫ tol ≫ |d|.
+- **Results on `/scratch`:** append `--out /scratch/<sector>/name.surname00/zeeman2d` to the `run_array.sbatch` line (extra arguments are passed to every run), and also to `collect`. `/scratch` is fast but not backed up, and files older than 40 days are deleted.
 - **Results directory.** `simulation/results/zeeman2d/runs/` is created by the runs. Commit the collected `.dat` file (and the JSONs, if wanted) when the results are final.
 - **Threads.** Set by `--cpus-per-task` through `env.sh`. Do not run several jobs per core.

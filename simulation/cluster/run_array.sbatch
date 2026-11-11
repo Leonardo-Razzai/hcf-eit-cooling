@@ -6,6 +6,7 @@
 #     N=$(grep -cv '^\s*\(#\|$\)' $LIST)
 #     sbatch --array=1-$N%20 simulation/cluster/run_array.sbatch $LIST
 #
+# Create the log folder once before the first submission: mkdir -p logs (Slurm needs it to exist).
 # "%20" limits the number of tasks running at the same time (be fair to other users).
 # Finished runs (their JSON file exists) are skipped, so the same command can be resubmitted
 # after a failure or a timeout.

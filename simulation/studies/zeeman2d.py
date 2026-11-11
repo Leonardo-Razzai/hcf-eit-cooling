@@ -9,7 +9,7 @@ Meant for the cluster (simulation/cluster/README.md); only `check`, `smoke` and 
   run      one simulation (one array task): --scheme --case --s --d1 --d2 --gamma --zeeman --N --tau
            --tmax ... -> results/zeeman2d/runs/<tag>.json (skipped if it exists)
   list     write a scan list (one `run` per line) for scripts in simulation/cluster/
-  collect  results/zeeman2d/runs/*.json -> results/zeeman2d.dat
+  collect  results/zeeman2d/runs/*.json (or --out DIR) -> results/zeeman2d.dat
 
 Protocol of `run`: RK4 from |1,1> with the internal state uniform over F=2 (or the target sublevel,
 --init target), until tmax; P00ss is the mean over the last window (the last full switching period, or
@@ -219,12 +219,13 @@ def write_list(argv):
     log('wrote %d runs to %s' % (len(rows), out))
 
 
-def collect():
+def collect(argv=()):
+    runs = Path(argv[argv.index('--out') + 1]) if '--out' in argv else RUNS
     keys = ['scheme', 'case', 's', 'd1', 'd2', 'gamma', 'zeeman', 'N', 'tau', 'wc', 'DG', 'P00', 'W00', 'W00_per_s', 'drift',
             'nx', 'ny', 'frame_mismatch', 'runtime_s']
     code = {s: i for i, s in enumerate(SCHEMES)}
     rows = []
-    for fjs in sorted(RUNS.glob('*.json')):
+    for fjs in sorted(runs.glob('*.json')):
         r = json.loads(fjs.read_text())
         rows.append([code[r['scheme']], 0 if r['case'] == 'A' else 1] + [r[k] for k in keys[2:]])
     keys = ['scheme', 'case'] + keys[2:]
@@ -238,5 +239,7 @@ if __name__ == '__main__':
         run(rest)
     elif cmd == 'list':
         write_list(rest)
+    elif cmd == 'collect':
+        collect(rest)
     else:
-        {'check': check, 'check_field': check_field, 'smoke': smoke, 'cost': cost, 'collect': collect}[cmd]()
+        {'check': check, 'check_field': check_field, 'smoke': smoke, 'cost': cost}[cmd]()
