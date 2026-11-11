@@ -751,12 +751,21 @@ def ramp_figure():
                 ax[1].plot(x, two * 1e3, 'k_', ms=22, mew=2.2)
             labels.append(lab)
             xs.append(x)
-        ax[1].text(k + 1.5, 15.3, r'$P_0$ = %.1f' % target, ha='center', fontsize=12.5)
+        ax[1].text(k + 1.5, 17.4, r'$P_0$ = %.1f' % target, ha='center', fontsize=12.5)
         k += 5
+    me = load('ramp_validate.dat')                    # banded master equation, P0 = 0.9
+    for prot, x in ((0, 5), (3, 6), (2, 7), (1, 8)):
+        r = me[me['protocol'] == prot]
+        t90 = np.interp(0.9, np.maximum.accumulate(r['P0']), r['t_s'])
+        ax[1].plot(x, t90 * 1e3, 'D', mfc='white', mec=INK, mew=1.8, ms=9, zorder=5)
     ax[1].set_xticks(xs, labels, rotation=45, ha='right', fontsize=11)
-    ax[1].set_ylim(0, 16.5)
+    ax[1].set_ylim(0, 18.5)
     ax[1].set_ylabel(r'time from $\bar n_0$ = 30 (ms)')
-    ax[1].set_title('b   bars: optimal ramp; black lines: two stages', loc='left', fontsize=13)
+    ax[1].set_title('b   time to the target', loc='left', fontsize=13)
+    hs = [Rectangle((0, 0), 1, 1, fc=GREY), Rectangle((0, 0), 1, 1, fc=PROBE), Line2D([], [], color='k', ls='', marker='_', ms=16, mew=2.2),
+          Line2D([], [], marker='D', ls='', mfc='white', mec=INK, mew=1.8, ms=9)]
+    ax[1].legend(hs, ['best constant $s$ (chain)', 'optimal ramp (chain)', 'two stages (chain)', 'master equation\n(two stages; const. $s$)'],
+                 loc='upper left', bbox_to_anchor=(0.0, 0.9), fontsize=11)
     fig.tight_layout(w_pad=3)
     save(fig, 'ramp.png')
 
@@ -901,7 +910,7 @@ def species_figure():
 def te01_figure():
     """One TE01 probe for both axes: polarisation patterns and the 2D master-equation result."""
     fig = plt.figure(figsize=(12.4, 4.6))
-    gs = fig.add_gridspec(1, 4, width_ratios=[0.85, 0.85, 1.45, 1.45], wspace=0.35)
+    gs = fig.add_gridspec(1, 4, width_ratios=[0.78, 0.78, 1.5, 1.5], wspace=0.33)
     n = 301
     X, Y = np.meshgrid(np.linspace(-1.1, 1.1, n), np.linspace(-1.1, 1.1, n))
     R = np.hypot(X, Y)
@@ -925,9 +934,9 @@ def te01_figure():
         a.text(-0.05, 1.12, 'ab'[k], transform=a.transAxes, fontsize=15, fontweight='bold')
     d = load('vector_twoaxes.dat')
     sh = load('vector_shared.dat')
-    labels = ['switch\nLP$_{11}$', 'one\ntransition', 'shared\n$g_c$', 'separate\n$g_c$']
+    labels = ['LP$_{11}$\nswitched', 'TE$_{01}$\none $\\Lambda$', 'TE$_{01}$\n2 $\\Lambda$, one\n$g_c$', 'TE$_{01}$\n2 $\\Lambda$, two\n$g_c$']
     xs = np.arange(4)
-    for j, (col, ylab, lim) in enumerate((('P00', r'both axes in ground state, $P_{00}$', (0, 1.05)),
+    for j, (col, ylab, lim) in enumerate((('P00', r'both axes in ground state, $P_{00}$', (0, 1.2)),
                                           ('W00', r'2D rate $W_{00}$ / one-axis $W_0$', (0, 0.55)))):
         a = fig.add_subplot(gs[0, 2 + j])
         for i, (nw, c, lab) in enumerate(((8.43, COUPL, 'case B'), (1.97, PROBE, 'case A'))):
@@ -944,12 +953,15 @@ def te01_figure():
                 for xv, vv in zip(xs, v):
                     if np.isnan(vv):
                         a.text(xv, 0.01, 'not\ncold', ha='center', va='bottom', fontsize=10, color=GREY)
+        a.axvspan(2.55, 3.45, color=GREEN, alpha=0.13, lw=0, zorder=0)
+        a.text(3.0, lim[1] * 0.985, 'proposed\nscheme', ha='center', va='top', fontsize=11, color=GREEN, fontweight='bold')
         a.set_xticks(xs, labels, fontsize=10.5)
+        a.set_xlim(-0.55, 3.55)
         a.set_ylim(*lim)
         a.set_ylabel(ylab)
         a.text(-0.18, 1.02, 'cd'[j], transform=a.transAxes, fontsize=15, fontweight='bold')
         if j == 0:
-            a.legend(loc='upper left', fontsize=11, ncol=2)
+            a.legend(loc='upper left', bbox_to_anchor=(0.0, 1.0), fontsize=11, ncol=1)
     save(fig, 'te01.png')
 
 
