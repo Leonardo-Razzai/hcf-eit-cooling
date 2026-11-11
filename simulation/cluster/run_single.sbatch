@@ -1,7 +1,7 @@
 #!/bin/bash
 # One simulation on the cluster (Slurm). Submit from the repository root, e.g.
 #     sbatch simulation/cluster/run_single.sbatch zeeman2d.py check
-#     sbatch simulation/cluster/run_single.sbatch zeeman2d.py run --scheme te01_bz --case B --s 1 --d1 0.4 --d2 0.4 --N 6
+#     sbatch simulation/cluster/run_single.sbatch zeeman2d.py run --scheme te01_bz --case A --s 1 --d1 0.4 --d2 0.4 --N 6
 # Everything after the script name is a study script in simulation/studies and its arguments.
 #
 # Create the log folder once before the first submission: mkdir -p logs (Slurm needs it to exist).

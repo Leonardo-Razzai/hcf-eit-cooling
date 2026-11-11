@@ -78,13 +78,13 @@ squeue -u $USER                      # or: slurmtop
 cat logs/hcf2d_<jobid>.out
 ```
 
-Then a two-line test scan at N = 4 (≈ 5 min per line):
+Then a two-line test scan at N = 4, case A (≈ 5 min per line):
 
 ```bash
 sbatch --array=1-2 --time=00:30:00 simulation/cluster/run_array.sbatch simulation/cluster/scans/zeeman2d_test.txt
 ```
 
-## 2. Main scan (216 runs at N = 6)
+## 2. Main scan (108 runs at N = 6, case A)
 
 ```bash
 LIST=simulation/cluster/scans/zeeman2d_main.txt
@@ -92,7 +92,7 @@ N=$(grep -cv '^\s*\(#\|$\)' $LIST)
 sbatch --array=1-$N%20 simulation/cluster/run_array.sbatch $LIST
 ```
 
-The scan covers, for cases A and B at s = 0.5 and 1:
+The scan covers case A (a = 15 µm) only, at s = 0.5 and 1:
 - **TE₀₁ (both field directions):** two-photon detunings d₁, d₂ ∈ {0, 0.4, 0.8}, with and without repumper.
 - **`lp11_hf`:** d ∈ {0.3, 0.6, 0.9}, repumper 0.03 or 0.1, stage length τ = 16 or 32.
 - **`lp11_zl`:** d ∈ {−0.4, 0, 0.4}, repumper 0.3 or 1.
@@ -102,7 +102,7 @@ Runs whose JSON already exists are skipped, so resubmit the same command after t
 ## 3. Convergence in N (long queue)
 
 ```bash
-LIST=simulation/cluster/scans/zeeman2d_convergence.txt   # te01_bz and lp11_hf, A and B, N = 6, 8, 10
+LIST=simulation/cluster/scans/zeeman2d_convergence.txt   # te01_bz and lp11_hf, case A, N = 6, 8, 10 (6 runs)
 N=$(grep -cv '^\s*\(#\|$\)' $LIST)
 sbatch --array=1-$N --qos=long --time=72:00:00 --mem=8G --cpus-per-task=8 simulation/cluster/run_array.sbatch $LIST
 ```
@@ -129,14 +129,14 @@ The internal state starts uniform over F=2 (`--init target` starts in the target
 ## Single runs
 
 ```bash
-sbatch simulation/cluster/run_single.sbatch zeeman2d.py run --scheme te01_bz --case B --s 1 --d1 0.4 --d2 0.4 --N 6
+sbatch simulation/cluster/run_single.sbatch zeeman2d.py run --scheme te01_bz --case A --s 1 --d1 0.4 --d2 0.4 --N 6
 ```
 
 `python zeeman2d.py run -h` lists all options (Δ/Γ, field `--zeeman` in units of ν_r, coupling scale `--wc`, `--tmax`, `--tau`, ...).
 
 ## Notes
 
-- **Field strength.** The field enters as Z = μ_B B/ħ in units of ν_r. The default Z = 40 is 0.29 MHz in case A (B ≈ 0.2 G) and 1.2 MHz in case B (B ≈ 0.9 G). Different Raman resonances are Z/2 apart, and the code merges paths closer than `--tol` (default 2 ν_r). Keep Z/2 ≫ tol ≫ |d|.
+- **Field strength.** The field enters as Z = μ_B B/ħ in units of ν_r. The default Z = 40 is μ_B B/h = 0.29 MHz in case A (B ≈ 0.2 G). Different Raman resonances are Z/2 apart, and the code merges paths closer than `--tol` (default 2 ν_r). Keep Z/2 ≫ tol ≫ |d|.
 - **Results on `/scratch`:** append `--out /scratch/<sector>/name.surname00/zeeman2d` to the `run_array.sbatch` line (extra arguments are passed to every run), and also to `collect`. `/scratch` is fast but not backed up, and files older than 40 days are deleted.
 - **Results directory.** `simulation/results/zeeman2d/runs/` is created by the runs. Commit the collected `.dat` file (and the JSONs, if wanted) when the results are final.
 - **Threads.** Set by `--cpus-per-task` through `env.sh`. Do not run several jobs per core.

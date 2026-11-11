@@ -1,7 +1,7 @@
 """Run one line of a scan list (used by run_array.sbatch).
 
 A scan list has one run per line: a study script in simulation/studies and its arguments, e.g.
-    zeeman2d.py run --scheme te01_bz --case B --s 1.0 --d1 0.4 --d2 0.4 --gamma 0.0 --N 6
+    zeeman2d.py run --scheme te01_bz --case A --s 1.0 --d1 0.4 --d2 0.4 --gamma 0.0 --N 6
 Blank lines and lines starting with '#' are ignored; --line counts the remaining lines from 1.
 Extra arguments after the list are appended to the command (e.g. --tmax 300 for a test).
 
