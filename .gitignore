@@ -29,3 +29,6 @@ Thumbs.db
 
 # presentation build
 presentation/node_modules/
+
+# cluster job logs
+logs/

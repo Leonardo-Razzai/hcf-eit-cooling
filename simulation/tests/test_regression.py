@@ -426,3 +426,40 @@ def test_vector_mode_fields():
     assert abs(te[1] / he11[1] - 1.49) < 0.01               # TE01 loss / HE11 loss
     d = load('vector_fields.dat')
     assert np.allclose(d['eps_z'][d['case'] == 0], vm.eps_z(c['A']))
+
+
+def test_zeeman2d_reduces_to_one_axis():
+    """2D Zeeman code with N_y = 1 and a one-axis probe against the validated 1D Zeeman solver:
+    zero field (hyperfine Lambda with repumpers) and finite field (Zeeman Lambda inside F = 2)."""
+    from eitsim import zeeman as Z, zeeman2d as Z2
+    fc = E.paper_cases()['A']
+    N = 4
+    lin, pi = (0.0, -1j, 0.0), (0.0, 0.0, 1.0)
+    p = Z.setup(fc, 1.0, 3.0, 0.45, N)
+    pol = {'lin': {1: 2**-0.5, -1: 2**-0.5}, 'pi': {0: 1.0}}
+    st = Z.structure_lambda('D1', 1, 2, pol['lin'], pol['pi'])
+    na, nE = len(st['ground']), len(st['excited'])
+    rp = []
+    for F, comp, i0 in ((2, 'pi', 0), (1, 'lin', st['nP'])):
+        g = Z.field_matrix('D1', F, st['excited'], pol[comp]) / np.sqrt(Z._norm('D1', F, 1))
+        gm = np.zeros((na, nE), complex)
+        gm[i0:i0 + g.shape[0]] = g
+        rp.append(dict(gm=gm, W=Z2.repump_amp(p, 0.1), detuning=p['D']))
+    r1 = Z.solve(st, p, B=N, repump=rp)
+    fields = [Z2.field(2, [(lin, 'x', 1.0)], p['Wp'], 0.45), Z2.field(1, [(pi, 'lp01', 1.0)], p['Wc'], 0.0),
+              Z2.field(2, [(pi, 'lp01', 1.0)], Z2.repump_amp(p, 0.1), 0.0, incoherent=True),
+              Z2.field(1, [(lin, 'lp01', 1.0)], Z2.repump_amp(p, 0.1), 0.0, incoherent=True)]
+    r2 = Z2.Model(fields, p, N, 1, bdir='z', zeeman=0.0, fes=(1,), nodes=(4, 6)).steady_direct()
+    assert abs(r2['P00'] - r1['P0']) < 3e-3 and abs(r2['W00'] / r1['W0'] - 1) < 0.03
+    p = Z.setup(fc, 1.0, 3.0, 0.2, N)
+    st = Z.structure_zeeman_lambda()
+    g = Z.field_matrix('D1', 1, st['excited'], {1: 1.0}) / np.sqrt(Z._norm('D1', 1, 2))
+    gm = np.zeros((len(st['ground']), len(st['excited'])), complex)
+    gm[5:] = g
+    r1 = Z.solve(st, p, B=N, repump=[dict(gm=gm, W=Z2.repump_amp(p, 0.3), detuning=p['D'])])
+    fields = [Z2.field(2, [(Z2.SIGM_Z, 'x', 1.0)], p['Wp'], 0.0), Z2.field(2, [(Z2.SIGP_Z, 'lp01', 1.0)], p['Wc'], 40.0 - 0.2),
+              Z2.field(1, [(Z2.SIGP_Z, 'lp01', 1.0)], Z2.repump_amp(p, 0.3), 0.0, incoherent=True)]
+    m = Z2.Model(fields, p, N, 1, bdir='z', zeeman=40.0, fes=(2,), nodes=(4, 6))
+    r2 = m.steady_direct()
+    assert m.frame_mismatch < 1e-9
+    assert abs(r2['P00'] - r1['P0']) < 5e-3 and abs(r2['W00'] / r1['W0'] - 1) < 0.05
