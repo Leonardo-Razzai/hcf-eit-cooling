@@ -761,7 +761,7 @@ Figure~\ref{fig:map}: master equation, $\nu_r/\omega_{\rm rec}=1$--15, $b_p=1/6$
 \label{fig:species}
 \end{figure}
 
-\paragraph{Real fibre modes and one vector mode for both axes [theory, numerics].} LP$_{11}$ is the group TE$_{01}$, TM$_{01}$, HE$_{21}^{e,o}$; in the air core $E_z=(i/\beta)\nabla\!\cdot\!\bm E_t$, so the node is exact in all components for TE$_{01}$, HE$_{21}$ and an LP$_{11}$ polarised across its lobes, while TM$_{01}$ and LP$_{11}$ polarised along its lobes have an on-axis $E_z$, a quadrature carrier $\varepsilon_z=Au_1/(2ka)=1.40\,\eta_\perp$ (A), $2.90\,\eta_\perp$ (B). Worst case (on the probe transition), converged ME: $W_0$ $-6\%$ (A) and $-31\%$ (B) at $s=1$, $-25\%$/$-68\%$ at $s=3$, $P_0$ unchanged; quantisation along the probe polarisation or the fibre axis keeps $E_z$ off the $\Lambda$. Tube model (Zeisberger \& Schmidt 2017): TE$_{01}$/TM$_{01}$ degenerate at antiresonance to $(kR)^{-3}$, HE$_{21}$--TE$_{01}$ beat length 10.7\,m (A); 0.26--0.5\,m at $0.1\pi$ from antiresonance (A), mm in B (scaling only); losses relative to HE$_{11}$: TE$_{01}$ 1.49, HE$_{21}$ 4.05, TM$_{01}$ 6.6. A linear LP$_{11}$ beats into a $z$-dependent pattern; pure TE$_{01}$ does not. TE$_{01}$ has $E_x\propto-y$, $E_y\propto x$: if the two components drive two $\Lambda$ channels with \emph{separate} final states $g_{c1}\neq g_{c2}$, both axes cool at once (2D eliminated ME, $N=6$, converged at 8): $P_{00}=0.93$--0.96, $W_{00}=0.35$--0.46\,$W_0$, $1.85\times$ alternation at equal $s$ per channel and $\approx1.4\times$ at equal total power. With a shared $g_c$ the coherent parts add to $f_x+f_y$ and only the diagonal mode cools ($P_{00}\approx0.28$), with or without retuning; a circular profile on one transition cools one circular mode. From $|1,1\rangle$ the ideal limits are $W_{00}=W_0/1.5$ (parallel) and $W_0/3$ (alternation); both schemes reach 55--70\% of them. Note \texttt{notes/vector-modes/vector\_modes\_theory.md}.
+\paragraph{Real fibre modes.} The vector structure of LP$_{11}$, the longitudinal field at the node and a single TE$_{01}$ probe for both axes are treated in Sec.~\ref{sec:te01}.
 
 \subsection{Preparation time}
 \label{sec:prep}\hypertarget{d:prep}{}
@@ -823,6 +823,162 @@ An atom in $\ket n$ acquires the phase $2\pi\epsilon_nnT$, with $\epsilon_n=\del
 \paragraph{Optical depth from the atom number.} ${\rm OD}=\sigma N\kappa/A_{\rm eff}$, with $N$ atoms in the fibre, $\kappa$ the overlap of the column with the mode ($\ge0.99$ for a ground-state column) and $A_{\rm eff}\approx0.85a^2$; the column length drops out and sets only the density, $Nd/L$ atoms per site. Total efficiency 0.9 (storage $\times$ retrieval, optimal control, backward retrieval) needs OD $\approx93$, i.e.\ $N\approx1.3\times10^4$ at $a=\SI{3.5}{\micrometre}$ and $2.4\times10^5$ at \SI{15}{\micrometre} on the clock $\Lambda$, half on the stretched $\Lambda$ [model]. Details, storage time and crosstalk: \texttt{notes/quantum-memory/memory\_theory.md}.
 
 \paragraph{Higher-order modes.} An LP$_{11}$ signal on the node has $\text{OD}\approx0.01$: useless. LP$_{0m}$ raises the on-axis intensity by $g=J_1^2(u_{01})/J_1^2(u_{0m})=2.33$, 3.66, 4.99, 6.32 ($m=2$--5) for cold atoms, which also raises bandwidth $\propto g$, but helps efficiency only at low OD, with conversion $\gtrsim0.97$ per pass. A blue-detuned dark trap in a donut mode would reduce scattering and shift sensitivity, by only $\approx5$--$7\times$ beyond a lowered red lattice at \SI{532}{nm}, and lowers $h$ by 1.94 at equal depth.
+
+%=====================================================================
+\section{One vector mode for both radial axes: the TE$_{01}$ scheme}
+\label{sec:te01}\hypertarget{d:te01}{}
+%=====================================================================
+So far the probe was a scalar, linearly polarised LP$_{11}$ field. This section asks what the real vector modes change, and shows that one of them, TE$_{01}$, can cool both radial axes at the same time. Code: \texttt{simulation/studies/vector\_modes.py}; figures: \texttt{simulation/plotting/te01\_plots.py}; note: \texttt{notes/vector-modes/vector\_modes\_theory.md}.
+
+\subsection{The LP$_{11}$ group and the field at the node}
+\label{sec:te01_modes}
+\textbf{Four vector modes [theory].} LP$_{11}$ is the weak-guidance limit of four vector modes: TE$_{01}$, TM$_{01}$ and the pair HE$_{21}^{e,o}$~\cite{snyder1983,ramachandran2013}. All four have the same radial profile $J_1(u_{11}r/a)$ to leading order, but different polarisation patterns (Fig.~\ref{fig:te01_modes}). Near the axis, to first order in $r$,
+\begin{equation}
+  \bm E_t^{\rm TE_{01}}\propto(-y,x),\qquad \bm E_t^{\rm TM_{01}}\propto(x,y),\qquad \bm E_t^{\rm HE_{21}^e}\propto(x,-y),\qquad \bm E_t^{\rm HE_{21}^o}\propto(y,x).
+\end{equation}
+A linearly polarised LP$_{11}$ is a superposition of two of them: polarised along its lobes, $x\hat x=\tfrac12({\rm TM}_{01}+{\rm HE}_{21}^e)$; polarised across its lobes, $y\hat x=\tfrac12({\rm HE}_{21}^o-{\rm TE}_{01})$.
+
+\textbf{Longitudinal field [theory].} In the air core $\nabla\cdot\bm E=0$, so $E_z=(i/\beta)\nabla\cdot\bm E_t$ exactly. TE$_{01}$ (where $E_z\equiv0$) and HE$_{21}$ have $\nabla\cdot\bm E_t=0$ near the axis, and so does LP$_{11}$ polarised across its lobes: their node is exact in all three components. TM$_{01}$, and LP$_{11}$ polarised along its lobes, have an on-axis $E_z$. In the units of the LP$_{01}$ admixture $\epsilon$ of Sec.~\ref{sec:purity},
+\begin{equation}
+  \epsilon_z=\frac{A\,u_{11}}{2ka},\qquad \frac{\epsilon_z}{\etaeff}=\frac{A\,u_{11}}{2G_{11}\,\eta_{\rm sp}}\approx\frac{1}{\eta_{\rm sp}},
+\end{equation}
+with $A=1.82$ the equal-power amplitude ratio. That is $\epsilon_z=0.029=1.40\,\etaeff$ in case A and $0.126=2.90\,\etaeff$ in case B. $E_z$ is in quadrature with $\bm E_t$, so it fills the node rather than shifting it. It is polarised along the fibre axis: with the quantisation axis along the fibre (probe $\sigma$) or along the transverse probe polarisation (probe $\pi$) it drives other transitions, not the probe transition.
+
+\textbf{Worst case [numerics].} With $E_z$ on the probe transition, $\epsilon=i\epsilon_z$, converged master equation, $\Delta=3\Gamma$: $W_0$ falls by 1\%, 6\% and 25\% at $s=0.3$, 1, 3 in case A, and by 7\%, 31\% and 68\% in case B; $P_0$ is unchanged or slightly higher. A real admixture of the same size gives the same within a few per cent. So case A is insensitive, while case B needs the right polarisation geometry or a mode without $E_z$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/vector/modes.pdf}
+\caption{The LP$_{11}$ group near the axis: intensity $J_1^2$ (shading, angular factor for the linear LP$_{11}$) and transverse polarisation (arrows). Filled circle: on-axis $E_z\neq0$; open circle: node in all three field components.}
+\label{fig:te01_modes}
+\end{figure}
+
+\subsection{Why TE$_{01}$ is a real fibre mode}
+\label{sec:te01_real}
+\textbf{Exact eigenmode of a symmetric fibre [theory].} In a circularly symmetric waveguide, fields with no azimuthal dependence separate into TE$_{0m}$ ($E_\phi$, $H_r$, $H_z$) and TM$_{0m}$ ($E_r$, $E_z$, $H_\phi$). TE$_{01}$ is therefore an exact solution of the vector wave equation, not an approximation, and it is non-degenerate. The same holds for the real microstructures, which have an $n$-fold symmetry ($C_{6v}$ for a hexagonal bandgap fibre, $C_{nv}$ for a tube fibre with $n$ tubes): the azimuthal pattern of TE$_{01}$ belongs to a one-dimensional irreducible representation ($A_2$), so it is still an exact, non-degenerate eigenmode, and it cannot mix with TM$_{01}$ ($A_1$) or with the HE$_{21}$ pair ($E_2$ for $n\ge5$) unless the symmetry is broken. TE$_{01}$ is the mode that a radially symmetric, azimuthally polarised input excites.
+
+\textbf{Splitting and loss in a tube fibre [theory].} In the tube model of Ref.~\cite{zeisberger2017}, with wall phase $\phi$ ($\phi=\pi/2$ at antiresonance),
+\begin{equation}
+  {\rm Re}\,n_{\rm eff}-1=-\frac{j^2}{2(kR)^2}-\frac{j^2}{(kR)^3}\frac{\cot\phi}{\sqrt{\varepsilon-1}}\times\begin{cases}1&{\rm TE}_{01}\\ \varepsilon&{\rm TM}_{01}\\ (\varepsilon+1)/2&{\rm HE}_{21}\end{cases},
+\end{equation}
+with $j=3.832$ for all four and $\varepsilon=n_{\rm glass}^2$. At antiresonance the group is degenerate to $(kR)^{-3}$; the next order splits HE$_{21}$ from TE$_{01}$ by $j^2/(kR)^4$, a beat length of 10.7\,m in case A. At $0.1\pi$ from antiresonance the beat lengths are 0.26\,m (TM--TE) and 0.5\,m (HE$_{21}$--TE) in case A; scaled to case B they are millimetres, though case B is a bandgap fibre to which the tube model applies only as a scaling. The losses relative to HE$_{11}$ do not depend on $\phi$: TE$_{01}$ 1.49, HE$_{21}$ 4.05, TM$_{01}$ 6.6. \textbf{TE$_{01}$ is the lowest-loss member of the group.}
+
+\textbf{Bandgap fibres.} In hollow-core bandgap fibres the vector modes of the LP$_{11}$ group are well separated in effective index, which is what allows vector and OAM modes to be transmitted with low crosstalk~\cite{li2016oam}; fibres designed to guide TE$_{01}$ alone have been reported.
+
+\textbf{Robustness.} A non-degenerate mode is protected against weak perturbations (bends, ellipticity, twist) by its splitting: the admixture scales as $(\kappa_{\rm pert}/\Delta\beta)^2$. Near antiresonance in a large-core tube fibre $\Delta\beta$ is small, so TE$_{01}$ purity there needs a straight, unstressed fibre or operation slightly off antiresonance; in a bandgap fibre the larger splitting protects it. By contrast, a linear LP$_{11}$ is always a superposition of two vector modes and changes its pattern along the fibre with the beat length (Sec.~\ref{sec:te01_modes}); TE$_{01}$ does not.
+
+\subsection{Two channels, one mode: the mechanism}
+\label{sec:te01_mech}
+\textbf{Idea [theory].} TE$_{01}$ has $E_x\propto-y$ and $E_y\propto x$: each polarisation component carries the gradient along the other axis. If the two components drive two $\Lambda$ systems, one has the coupling operator $f(x)$ and the other $f(y)$, and both axes are cooled at once, without switching.
+
+\textbf{Two conditions.}
+\begin{enumerate}
+\item \emph{Different excited sublevels.} If both components drive the same transition, they add into one operator $\propto x+iy$. That is a single (circular) motional mode, as for a scalar OAM beam (Sec.~\ref{sec:2d}).
+\item \emph{Different final ground states} $g_{c1}\neq g_{c2}$. EIT cooling is the Raman process $\ket{g_p,n}\to\ket{g_c,n-1}$. If both channels end in the same $g_c$, the coherent parts of the two paths add, the effective Raman coupling is $\propto f(x)+f(y)$, and only the diagonal mode cools. Only the spontaneous jumps stay separate.
+\end{enumerate}
+
+\textbf{Minimal model [numerics].} Eliminated master equation on $(n_x,n_y)$, $N=6$ per axis, with $g_p$ shared, one excited level per channel, channel profiles $f(x)$ and $f(y)$, coupling $f_c(x)f_c(y)$, the dipole emission pattern on both axes, $\Delta=3\Gamma$, saturation $s$ per channel (Fig.~\ref{fig:te01_scheme}a). $W_{00}=P_{00}^{\rm ss}/\int(P_{00}^{\rm ss}-P_{00})\,dt$ from $\ket{1,1}$ (Fig.~\ref{fig:te01_results}):
+
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{case B ($\nu_r/\omega_{\rm rec}=8.4$, $b_p=\frac12$)} & \multicolumn{2}{c}{case A ($\nu_r/\omega_{\rm rec}=2.0$, $b_p=\frac56$)}\\
+ & $P_{00}$ & $W_{00}/W_0$ & $P_{00}$ & $W_{00}/W_0$\\
+\midrule
+LP$_{11}$ orientation switched, $\tau=32/\nu_r$ & 0.931 & 0.22 & 0.925 & 0.19\\
+One transition, profile $(x+iy)/\sqrt2$ & 0.17 & --- & 0.21 & ---\\
+Two $\Lambda$, shared $g_c$ (also with light shift retuned) & 0.15 / 0.27 & --- & 0.13 / 0.29 & ---\\
+\textbf{Two $\Lambda$, separate $g_c$} & \textbf{0.937} & \textbf{0.41} & \textbf{0.931} & \textbf{0.35}\\
+\bottomrule
+\end{tabular}
+\end{center}
+At $s=1$ per channel; at $s=0.5$: $P_{00}=0.960$/0.953 and $W_{00}=0.46$/0.41\,$W_0$ (B/A). At $N=8$ the separate-$g_c$ values change by $\le0.2\%$ ($P_{00}$) and $\le2\%$ ($W_{00}$). The separate-$g_c$ scheme is $1.85\times$ faster than switching at equal $s$ per channel. At equal total probe power each TE$_{01}$ component has half the saturation ($s/2$ against $s$ for one LP$_{11}$); compared on that basis it is still $\approx1.4\times$ faster and slightly colder.
+
+\textbf{Why $W_{00}\approx0.4\,W_0$ and not $W_0$.} From $\ket{1,1}$, two independent channels at rate $W$ give $P_{00}=(1-e^{-Wt})^2$ and $W_{00}=W/1.5$. Switching, with each axis cooled half of the time, gives $W/3$. Both schemes reach 55--70\% of their limit; the rest is the doubled recoil ($h\to2h$, Sec.~\ref{sec:2d}) and, for switching, the transient at each switch. The recoil condition for a cold 2D state, $h<1/2$, is unchanged: photons from both channels heat both axes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/vector/schemes.pdf}
+\caption{TE$_{01}$ scheme. \textbf{a}, minimal model: two $\Lambda$ channels share $g_p$ and end in different coupling states; the $E_y$ component ($\propto x$) cools $x$, the $E_x$ component ($\propto y$) cools $y$. \textbf{b}, geometry with the field along the fibre: probe in TE$_{01}$ with two frequencies, coupling in LP$_{01}$ with $\sigma^+$ polarisation, lattice in LP$_{01}$. \textbf{c}, frequency components: one probe frequency per channel, separated by the Zeeman shift of the two final states plus the difference of the two-photon detunings.}
+\label{fig:te01_scheme}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/vector/results.pdf}
+\caption{Both axes, 2D master equation, $N=6$ per axis, $\Delta=3\Gamma$. \textbf{a}, $P_{00}$; \textbf{b}, $W_{00}$ relative to the one-axis $W_0$ (shown only where $P_{00}\ge0.85$). Shaded: the TE$_{01}$ scheme with separate final states.}
+\label{fig:te01_results}
+\end{figure}
+
+\subsection{Field, polarisations and frequencies}
+\label{sec:te01_real_atom}
+\textbf{Field along the fibre ($\bm B\parallel z$) [theory].} Guided light is then $\sigma^\pm$. The $\sigma^\mp$ parts of TE$_{01}$ are $\propto x\pm iy$, and $x+iy\propto a_L+a_R^\dagger$, so the $\sigma^-$ part removes quanta of one circular mode and the $\sigma^+$ part of the other; together they cover the plane. To keep the final states apart, the coupling must be circular. With $\sigma^+$ coupling: channel 1, $\ket{g_p,m}\xrightarrow{\sigma^+}\ket{e,m+1}\xleftarrow{\sigma^+}\ket{g_c,m}$; channel 2, $\ket{g_p,m}\xrightarrow{\sigma^-}\ket{e,m-1}\xleftarrow{\sigma^+}\ket{g_c,m-2}$. A linear coupling would connect both excited sublevels to $\ket{g_c,m}$. The coupling manifold must contain $m$ and $m-2$, so it needs $F_c\ge1$. A ground level with only two sublevels in total (such as $^{171}$Yb, $F=\frac12$) cannot provide two separate final states.
+
+\textbf{$^{87}$Rb D1 realisation.} With $\sigma^+$ coupling on $F=1$ the only pair two apart is $m=\pm1$. This fixes $g_p=\ket{2,1}$ and $F'=2$ (Fig.~\ref{fig:te01_rb}a). In units of the reduced dipole squared, from \texttt{vector\_rb\_sublevels.dat}:
+
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Channel & probe $d^2$ & coupling $d^2$ & Raman shift & decay of $\ket{e}$ back into $\ket{2,1}$; into $F=1$\\
+\midrule
+1: $\ket{2,1}\xrightarrow{\sigma^+}\ket{2',2}\leftarrow\ket{1,1}$ & 1/6 & 1/2 & $-\mu_BB$ & 1/6; 1/2\\
+2: $\ket{2,1}\xrightarrow{\sigma^-}\ket{2',0}\leftarrow\ket{1,-1}$ & 1/4 & 1/12 & 0 & 1/4; 1/2\\
+\bottomrule
+\end{tabular}
+\end{center}
+The Raman shifts use $g_F=+\frac12$ ($F=2$) and $-\frac12$ ($F=1$); channel 2 is field-insensitive to first order. The probe therefore carries two frequencies, separated by $\mu_BB/h=1.40\,$MHz/G$\,\times B$ plus the difference of the two-photon detunings (Fig.~\ref{fig:te01_scheme}c). With $\mu_BB/h\approx0.1$--0.3\,MHz ($B\approx0.07$--0.2\,G) the wrong pairings are far from the narrow resonances ($\Gamma_n/2\pi=2.4$\,kHz in case A, 10\,kHz in case B at $s=1$). Channel 1 then needs the field stable along the column and in time to $\lesssim0.1\,\Gamma_n$, i.e.\ $\approx0.2$\,mG (A) or 0.7\,mG (B).
+
+\textbf{Transverse field ($\bm B\parallel x$).} $E_x$ ($\propto y$) is then $\pi$ and $E_y$ ($\propto x$) is $\sigma^\pm$, with the coupling linearly polarised along $x$ ($\pi$). For $^{87}$Rb with $g_p=\ket{2,1}$: $\pi$ channel to $\ket{2',1}$ from $\ket{1,1}$ (probe $d^2=1/12$, coupling 1/4, Raman shift $-\mu_BB$); $\sigma^-$ channel to $\ket{2',0}$ from $\ket{1,0}$ (1/4, 1/3, $-\frac12\mu_BB$); the $\sigma^+$ leg to $\ket{2',2}$ has no partner (Fig.~\ref{fig:te01_rb}b). The final states differ, so this geometry works as well. Its legs are better balanced, but the transverse field has to be stable in direction, and the LP$_{01}$ coupling must stay linearly polarised along $x$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/vector/rb.pdf}
+\caption{$^{87}$Rb D1 realisations of the TE$_{01}$ scheme, target state $\ket{2,1}$ (dot). Blue: probe (TE$_{01}$), orange: coupling (LP$_{01}$); solid and dashed: the two channels; dotted: spectator transitions. $d^2$: squared dipole matrix elements in units of the reduced dipole. \textbf{a}, field along the fibre, $\sigma^+$ coupling. \textbf{b}, transverse field, $\pi$ coupling.}
+\label{fig:te01_rb}
+\end{figure}
+
+\subsection{Exciting TE$_{01}$, and what it costs in the setup}
+\label{sec:te01_setup}
+\textbf{Excitation.} Three routes:
+\begin{itemize}
+\item \emph{Free-space vector beam.} An azimuthally polarised doughnut, made from a Gaussian beam by a segmented half-wave plate (``radial/azimuthal polarisation converter''), a liquid-crystal $q$-plate with $q=\frac12$~\cite{marrucci2006} or a spatial light modulator with polarisation optics, and imaged onto the fibre with the size of the TE$_{01}$ field~\cite{ramachandran2013}. Its overlap with TE$_{01}$ is high, and it does not excite TM$_{01}$ or HE$_{21}$ by symmetry when centred.
+\item \emph{Two LP$_{11}$ beams.} TE$_{01}=$ LP$_{11}^{(y\text{-lobes})}\hat x-$LP$_{11}^{(x\text{-lobes})}\hat y$ (up to normalisation): two phase-plate-shaped beams with orthogonal polarisations and a fixed relative phase, combined on a polarising beam splitter.
+\item \emph{All-fibre mode converters} (photonic lanterns, long-period gratings), mature in solid fibres but not yet in hollow-core fibres.
+\end{itemize}
+\textbf{Diagnostics.} Image the output through a rotating polariser: a pure TE$_{01}$ gives two lobes perpendicular to the polariser axis at every angle; HE$_{21}$ and TM$_{01}$ show up as lobes in other orientations. The on-axis intensity measures the LP$_{01}$ admixture.
+
+\textbf{Complications relative to the linear LP$_{11}$ scheme.}
+\begin{itemize}
+\item \emph{A vector-beam converter} in the probe path, and alignment of a doughnut to the fibre axis: an offset excites HE$_{21}$ and TM$_{01}$ and moves the node, as a trap offset does (Sec.~\ref{sec:purity}).
+\item \emph{Purity.} The same LP$_{01}$ specification as before (power fraction $\lesssim10^{-3}$ keeps $\ge90\%$ of $W_0$ in case A); in addition, TM$_{01}$ brings an on-axis $E_z$ (Sec.~\ref{sec:te01_modes}) and HE$_{21}$ skews the two channel operators. Small skew is harmless, because two independent operators still cool both axes.
+\item \emph{Polarisation-sensitive optics.} Dichroic mirrors and beam splitters have different phases for $s$ and $p$ and turn an azimuthal beam into a mixture of TE$_{01}$, TM$_{01}$ and HE$_{21}$. The probe should be converted after the last such element, or the combining optics chosen with low retardance.
+\item \emph{Mode stability in the fibre.} Bends and stress mix TE$_{01}$ with the HE$_{21}$ pair where the splitting is small (large tube fibres near antiresonance). A short, straight fibre section, or a bandgap fibre, helps.
+\item \emph{Two probe frequencies} (an EOM or two AOMs) and a \emph{homogeneous, stable field}: $\lesssim1$\,mG along the column for the field-sensitive channel.
+\item \emph{Gains.} No switching hardware and no switching window ($\tau\Gamma_n\approx5$--15, Sec.~\ref{sec:2d}); the probe is non-degenerate, so its pattern does not rotate along the fibre; and it has no on-axis $E_z$.
+\end{itemize}
+
+\subsection{What to expect in real $^{87}$Rb}
+\label{sec:te01_zeeman}
+The minimal model assumes two ideal, equal, closed $\Lambda$ channels. Real $^{87}$Rb differs in four ways [estimates; not yet simulated].
+\begin{enumerate}
+\item \emph{Unequal channels.} With $\bm B\parallel z$ the coupling strengths differ by $6\times$ ($d^2=1/2$ against 1/12). The light shift and the width of the narrow resonance, both $\propto\Omega_c^2$, then differ by $6\times$, so one coupling intensity cannot put both narrow resonances on the red sideband. The two probe frequencies allow separate two-photon detunings, which recovers part of it. Even so, the slower channel is expected to set the 2D rate, a loss of up to $\sim\sqrt6\approx2.5\times$ for a compromise intensity. The transverse geometry is better balanced (coupling 1/4 against 1/3).
+\item \emph{Spectator sublevels.} Decays fill other sublevels: $\ket{2',2}$ decays to $\ket{2,2}$ (1/3), $\ket{2,1}$ (1/6), $\ket{1,1}$ (1/2); $\ket{2',0}$ to $\ket{2,\pm1}$ (1/4 each) and $F=1$ (1/2). With $\bm B\parallel z$ and $\sigma^+$ coupling:
+  \begin{itemize}
+  \item $\ket{2,2}$ has only the $\sigma^-$ channel, via $\ket{2',1}$ from $\ket{1,0}$. Its Raman shift ($-\mu_BB$) equals that of channel 1, so it is resonant with the first probe frequency.
+  \item $\ket{2,0}$ has only the $\sigma^+$ channel, via $\ket{2',1}$ from $\ket{1,0}$, with Raman shift 0. It is resonant with the second frequency.
+  \item $\ket{2,-1}$ has only a $\sigma^+$ channel, at $+\mu_BB$, which neither frequency addresses.
+  \item $\ket{2,-2}$ has no $\Lambda$ at all.
+  \end{itemize}
+  Each of $\ket{2,2}$, $\ket{2,1}$ and $\ket{2,0}$ therefore cools at least one circular mode. The $\sigma^+$ coupling pumps population towards high $m$, where these states lie. An atom changes sublevel after almost every scattered photon, so over time it samples both circular modes. The result is a stochastic alternation by optical pumping, at the photon rate and without a dark-state transient. The 2D rate is then set by how the population divides among these states.
+\item \emph{Dark states and remixing.} As on one axis (Sec.~\ref{sec:2d} and \texttt{notes/zeeman\_results.md}), sublevels without a coupling partner ($\ket{2,-2}$, and $\ket{2,-1}$ unless a third frequency is used) trap population at the node, so remixing (a weak repumper or a small transverse field) is needed. On one axis this cost about $3\times$ in $W_0$ relative to the closed $\Lambda$.
+\item \emph{Recoil.} Half of all decays return to $F=1$ and are re-excited by the coupling. If every $F=2$ state with a channel counts as a successful end of the cycle, $\kappa\approx2$--2.5; the one-axis Zeeman runs read $\kappa\approx2.7$--4.9. With $\kappa=2$--5 and the two-axis condition $2h<1$:
+  \begin{itemize}
+  \item case A ($\nu_r/\omega_{\rm rec}=1.97$): $2h=0.8$--2.0, so it is \textbf{excluded at $\nu_z=300$\,kHz};
+  \item case B ($\nu_r/\omega_{\rm rec}=8.4$): $2h=0.19$--0.47, allowed, but marginal at the upper end.
+  \end{itemize}
+  Since $h\propto1/\nu_z$ (Sec.~\ref{sec:2d}), a stiffer lattice extends the allowed range.
+\end{enumerate}
+\textbf{Expectation.} In real $^{87}$Rb the TE$_{01}$ scheme should still cool both axes at once in case B. The rate would be several times below the minimal model: the remixing penalty ($\sim3\times$) times the channel imbalance ($\lesssim2.5\times$). Whether it then beats switching, which also pays the Zeeman penalty, is open. In case A recoil rules it out at $\nu_z=300$\,kHz. The transverse-field geometry has better-balanced legs and should be compared. A quantitative answer needs the 2D Zeeman master equation: 8 ground sublevels $\times N^2$ Fock states, with excited states eliminated, which is a cluster-size calculation.
 
 %=====================================================================
 \section{Conclusions}
