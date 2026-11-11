@@ -416,7 +416,7 @@ async function main() {
   ];
   text(s, bullets(sumItems.map(([a, b]) => [a, b]), { space: 16 }).map((r) => ({ ...r, options: { ...r.options, color: r.options.bold ? HEX.lt1 : HEX.accent6 } })),
     MX, 1.5, W - 2 * MX, 3.9, { fontSize: 19 });
-  text(s, "Next: Zeeman structure for the TE₀₁ scheme (¹⁷¹Yb first), mode solver for the real fibres, memory simulations.",
+  text(s, "Next: 2D Zeeman model of the TE₀₁ scheme in ⁸⁷Rb, mode solver for the real fibres, memory simulations.",
     MX, 5.6, W - 2 * MX, 0.8, { fontSize: 16, italic: true, color: C.background1 });
   s.addNotes("Take-home messages. The concept of node cooling comes from ions; what is new is the platform, all beams guided in a hollow-core fibre, and the regime, where recoil is comparable to the trap quantum and changes the nature of the steady state. Next steps are listed at the bottom.");
 

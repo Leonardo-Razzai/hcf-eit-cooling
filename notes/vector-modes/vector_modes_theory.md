@@ -141,5 +141,13 @@ What "distinguishable" requires: a different excited sublevel is **not** enough.
 
 - A mode solver for the real ARF/NANF and bandgap structures: splitting, E_z, and the purity of a launched TE₀₁.
 - Steady P₀₀ at small s and the one-axis floor at weak probe in the two-channel scheme.
-- The real Zeeman structure for the B ∥ z circular scheme (Rb D1: which m-ladders form the two Λs with separate final states, two Raman resonances split by 2g_Fμ_B B, dark states). One-axis Zeeman results (`notes/zeeman_results.md`) suggest a factor ~3 loss, and ¹⁷¹Yb (F = ½, `notes/species_map.md`) is the cleanest candidate.
+- The real Zeeman structure, now worked out at the level of couplings in the background report (Sec. "One vector mode for both radial axes", figures `simulation/results/vector/`, data `vector_rb_sublevels.dat`). Remaining: the 2D Zeeman master equation (cluster).
+  - **⁸⁷Rb D1, B ∥ z, σ⁺ coupling on F = 1:** the only valid target is g_p = |2,1⟩ via F′ = 2.
+    - Channel 1: → |2′,2⟩ ← |1,1⟩, probe d² 1/6, coupling d² 1/2, Raman shift −μ_B B.
+    - Channel 2: → |2′,0⟩ ← |1,−1⟩, probe d² 1/4, coupling d² 1/12, Raman shift 0.
+    - So the probe needs two frequencies, and the coupling strengths are unbalanced by 6×.
+    - Spectators: |2,2⟩ (σ⁻ only, resonant with ω₁), |2,0⟩ (σ⁺ only, resonant with ω₂), |2,−1⟩ (off resonance), |2,−2⟩ (no Λ).
+  - **B ∥ x with π coupling:** also valid, with better-balanced legs (coupling 1/4 and 1/3).
+  - **Expectation:** several times below the minimal model (remixing ~3×, imbalance ≲ 2.5×). With κ = 2–5, case A is excluded for two axes at 300 kHz (2h = 0.8–2) and case B is allowed (2h = 0.19–0.47).
+- **¹⁷¹Yb cannot do the TE₀₁ scheme:** its F = ½ ground state has only two sublevels, so there are no two separate final states. It remains a good species for one-axis cooling (`notes/species_map.md`).
 - Launching TE₀₁: s-waveplate / q-plate, or a photonic lantern. TE₀₁ also offers the azimuthal symmetry needed for a rotating-frame interpretation.

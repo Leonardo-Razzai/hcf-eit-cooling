@@ -20,6 +20,8 @@ along z, and one vector mode for both radial axes.
   shared   'te01' with the coupling of each channel scaled by 1/sqrt 2 (total light shift of g_c
            at the design value)                                    -> results/vector_shared.dat
   twoaxes_n  separate-g_c scheme at N = 8 per axis (convergence)   -> results/vector_twoaxes_n.dat
+  rb_sublevels  87Rb D1 realisation (B along z, sigma+ coupling on F = 1, F' = 2): channels,
+           couplings, Zeeman shifts and branching for every F = 2 sublevel -> results/vector_rb_sublevels.dat
 
 Usage: python vector_modes.py [fields] [carrier] [twoaxes]
 """
@@ -241,7 +243,47 @@ def twoaxes_n():
     save('vector_twoaxes_n.dat', ['nu_wrec', 'bp', 's', 'N', 'P00', 'W00', 'nx', 'ny', 'W0_1D', 'P0_1D'], rows)
 
 
-STUDIES = {'fields': fields, 'carrier': carrier, 'twoaxes': twoaxes, 'shared': shared, 'twoaxes_n': twoaxes_n}
+def rb_sublevels():
+    """87Rb D1, TE01 scheme with B along the fibre: probe on F = 2 (sigma+ and sigma- parts of TE01),
+    excited F' = 2, coupling sigma+ on F = 1 (LP01, circular). For every F = 2 sublevel and each probe
+    component: excited sublevel, coupling partner in F = 1, squared couplings (units of the reduced J
+    dipole squared), two-photon Zeeman shift (g1 m_c - g2 m) in units of mu_B B / h, branching of the
+    excited sublevel back into the same F = 2 sublevel and into F = 1. Analytic.
+                                                                   -> results/vector_rb_sublevels.dat"""
+    from eitsim.atoms import zeeman_coupling as zc
+    line, Fe = 'D1', 2
+    g = {1: -0.5, 2: 0.5}                       # 5S1/2 Lande g_F (nuclear term neglected)
+    rows = []
+
+    def d2(F, m, me):
+        return zc(line, F, m, Fe, me, m - me)**2 if abs(me) <= Fe and abs(m) <= F else 0.0
+
+    def decay(me):
+        tot = {(F, m): d2(F, m, me) for F in (1, 2) for m in range(-F, F + 1)}
+        s = sum(tot.values())
+        return {k: v / s for k, v in tot.items()}
+
+    for m in range(-2, 3):
+        for q, name in ((+1, 'sigma+'), (-1, 'sigma-')):
+            me = m + q
+            if abs(me) > Fe:
+                rows.append([m, q, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
+                log('rb |2,%+d> %s: no excited sublevel' % (m, name))
+                continue
+            mc = me - 1                          # sigma+ coupling from |1, mc>
+            pc = d2(2, m, me)
+            cc = d2(1, mc, me) if abs(mc) <= 1 else 0.0
+            dz = g[1] * mc - g[2] * m if abs(mc) <= 1 else np.nan
+            br = decay(me)
+            bp = br[(2, m)]
+            b1 = sum(v for (F, _), v in br.items() if F == 1)
+            rows.append([m, q, me, mc if abs(mc) <= 1 else np.nan, pc, cc, dz, bp, b1])
+            log('rb |2,%+d> %s -> |2\',%+d>: probe d^2 %.4f, coupling from |1,%+d> d^2 %.4f, Zeeman %+.1f muB B, b_p %.3f, to F=1 %.3f' % (
+                m, name, me, pc, mc, cc, dz if dz == dz else np.nan, bp, b1))
+    save('vector_rb_sublevels.dat', ['m', 'q', 'me', 'mc', 'probe_d2', 'coupl_d2', 'zeeman_muB', 'bp', 'b_F1'], rows)
+
+
+STUDIES = {'fields': fields, 'carrier': carrier, 'twoaxes': twoaxes, 'shared': shared, 'twoaxes_n': twoaxes_n, 'rb_sublevels': rb_sublevels}
 
 if __name__ == '__main__':
     for name in sys.argv[1:]:
