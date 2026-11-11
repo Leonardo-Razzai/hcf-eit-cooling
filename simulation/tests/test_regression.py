@@ -398,3 +398,18 @@ def test_zeeman_dark_state_counting():
         g = Z.field_matrix('D1', 2, [(1, m) for m in (-1, 0, 1)], pol)
         assert np.linalg.matrix_rank(g) <= 3
 
+
+
+def test_vector_mode_fields():
+    sys.path.insert(0, str(SIM / 'studies'))
+    import vector_modes as vm
+    c = E.paper_cases()
+    ratios = [vm.eps_z(c[k]) / (E.gfac(1) * c[k]['x0a']) for k in 'AB']
+    assert abs(ratios[0] - 1.40) < 0.01 and abs(ratios[1] - 2.90) < 0.01
+    kR = 2 * np.pi / c['A']['lam'] * c['A']['a']
+    te, tm = vm.tube_neff(kR, np.pi / 2, 'TE01'), vm.tube_neff(kR, np.pi / 2, 'TM01')
+    assert te[0] == tm[0]                                    # degenerate at antiresonance to (kR)^-3
+    he11 = vm.tube_neff(kR, np.pi / 2, 'HE11')
+    assert abs(te[1] / he11[1] - 1.49) < 0.01               # TE01 loss / HE11 loss
+    d = load('vector_fields.dat')
+    assert np.allclose(d['eps_z'][d['case'] == 0], vm.eps_z(c['A']))
