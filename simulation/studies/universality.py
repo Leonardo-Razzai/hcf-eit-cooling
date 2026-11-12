@@ -10,7 +10,7 @@
               gamma(n) = d ln P / d ln n = 2 n v / D2 - d ln D2 / d ln n,
           to be compared with -1/h on the plateau. --h --DG --s [--N 1000 --B 4 --n0max 640]
           -> results/universality/drift/<tag>.json
-  list    scan lists for the cluster -> simulation/cluster/scans/universality_{fixedh,drift}.txt
+  list    scan lists for the cluster -> simulation/cluster/scans/universality_{fixedh,drift,bigN}.txt
   collect -> results/universality_fixedh.dat, results/universality_drift.dat
 
 Memory (dense banded LU, two ground levels): S ~ 36 N for B = 4, ~ 68 N for B = 8; S^2 x 16 B, twice for drift.
@@ -131,7 +131,13 @@ def write_lists(argv):
         f.write('universality.py drift --h 0.4 --DG 3 --s 1 --N 1000 --B 4 --n0max 640\n')
         f.write('universality.py drift --h 0.5 --DG 8 --s 1 --N 600 --B 4 --n0max 320\n')     # band check: same, B = 4
         f.write('universality.py drift --h 0.5 --DG 8 --s 1 --N 600 --B 8 --n0max 320\n')     # band check: B = 8
-    log('wrote', f1, 'and', f2)
+    f3 = CLUSTER / 'scans' / 'universality_bigN.txt'
+    with open(f3, 'w') as f:
+        f.write('# fixed h at N = 2000: widest fit windows (n ~ 5-500, ~2 decades); ~80 GB matrix, request 180 GB\n')
+        for h in (0.4, 0.7):
+            for DG, s in ((16.0, 0.3), (12.0, 0.2)):
+                f.write('universality.py fixedh --h %g --DG %g --s %g --N 2000 --B 4\n' % (h, DG, s))
+    log('wrote', f1, f2, 'and', f3)
 
 
 def collect(argv):
