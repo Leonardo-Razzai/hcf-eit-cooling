@@ -1,0 +1,8 @@
+# local exponent from drift and diffusion (universality.py list)
+universality.py drift --h 0.3 --DG 8 --s 1 --N 1000 --B 4 --n0max 640
+universality.py drift --h 0.5 --DG 8 --s 1 --N 1000 --B 4 --n0max 640
+universality.py drift --h 0.7 --DG 8 --s 1 --N 1000 --B 4 --n0max 640
+universality.py drift --h 1 --DG 8 --s 1 --N 1000 --B 4 --n0max 640
+universality.py drift --h 0.4 --DG 3 --s 1 --N 1000 --B 4 --n0max 640
+universality.py drift --h 0.5 --DG 8 --s 1 --N 600 --B 4 --n0max 320
+universality.py drift --h 0.5 --DG 8 --s 1 --N 600 --B 8 --n0max 320
