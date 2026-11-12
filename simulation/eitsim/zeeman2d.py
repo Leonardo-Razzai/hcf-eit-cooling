@@ -382,7 +382,7 @@ def repump_amp(p, gamma):
     return np.sqrt(4 * gamma * (p['D']**2 + p['G']**2 / 4) / p['G'])
 
 
-def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=1.0, te01_norm=True):
+def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=1.0, te01_norm=True, rep_pol='lin'):
     """87Rb D1 configurations (fields, B direction, excited levels, stages).
 
     lp11_hf    switched LP11, hyperfine Lambda D1 F'=1, probe pi on F=2 (polarised along B, B transverse
@@ -396,6 +396,9 @@ def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=
                two-photon detunings; optional F=2 repumper (lin, gamma).
     te01_bx    TE01 probe, B transverse (x), coupling pi (x-polarised LP01) on F=1, F'=2, target |2,1>:
                pi channel to |1,1> (shift -Z), sigma- channel to |1,0> (-Z/2).
+    rep_pol (TE01 schemes): polarisation of the F=2 repumper, 'lin' (default: x for B along z, y for B
+    along x), 'sm' / 'sp' (sigma-/sigma+ about the fibre axis, B along z: drains |2,2> / |2,-2>), 'pi'
+    (polarised along B, B along x).
     Saturation s refers to the LP11 power: a TE01 component carries 1/sqrt 2 of the amplitude when
     te01_norm (equal total power); amps scale the two probe frequencies."""
     Wp, Wc = p['Wp'], p['Wc'] * wc
@@ -423,7 +426,8 @@ def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=
              field(2, te, Wp * amps[1], E(1, -1) - E(2, 1) + d2, name='probe w2'),
              field(1, [(SIGP_Z, 'lp01', 1.0)], Wc, 0.0, name='coupling')]
         if gamma:
-            f += [field(2, [(X, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
+            pol = {'lin': X, 'sm': SIGM_Z, 'sp': SIGP_Z}[rep_pol]
+            f += [field(2, [(pol, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
         return dict(fields=f, bdir='z', fes=(2,), zeeman=zeeman, stages=1, target=GROUND.index((2, 1)))
     if name == 'te01_bx':
         E = lambda F, m: G_F[F] * m * zeeman
@@ -431,7 +435,8 @@ def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=
              field(2, te, Wp * amps[1], E(1, 0) - E(2, 1) + d2, name='probe w2 (sigma-)'),
              field(1, [(X, 'lp01', 1.0)], Wc, 0.0, name='coupling')]
         if gamma:
-            f += [field(2, [(Y, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
+            pol = {'lin': Y, 'pi': X}[rep_pol]
+            f += [field(2, [(pol, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
         return dict(fields=f, bdir='x', fes=(2,), zeeman=zeeman, stages=1, target=GROUND.index((2, 1)))
     raise ValueError(name)
 

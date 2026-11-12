@@ -112,7 +112,8 @@ def cost():
 
 # ------------------------------------------------------------------ one run
 def tag_of(a):
-    return '%s_%s_s%g_d%g_%g_g%g_Z%g_N%d_tau%g_wc%g_DG%g' % (a.scheme, a.case, a.s, a.d1, a.d2, a.gamma, a.zeeman, a.N, a.tau, a.wc, a.DG)
+    tag = '%s_%s_s%g_d%g_%g_g%g_Z%g_N%d_tau%g_wc%g_DG%g' % (a.scheme, a.case, a.s, a.d1, a.d2, a.gamma, a.zeeman, a.N, a.tau, a.wc, a.DG)
+    return tag if getattr(a, 'rep_pol', 'lin') == 'lin' else tag + '_rp' + a.rep_pol
 
 
 def run(argv):
@@ -124,6 +125,7 @@ def run(argv):
     ap.add_argument('--d1', type=float, default=0.0, help='two-photon detuning, channel 1 (nu_r)')
     ap.add_argument('--d2', type=float, default=0.0, help='two-photon detuning, channel 2 (nu_r)')
     ap.add_argument('--gamma', type=float, default=0.0, help='repumper rate (nu_r)')
+    ap.add_argument('--rep_pol', default='lin', choices=('lin', 'sm', 'sp', 'pi'), help='F=2 repumper polarisation (TE01)')
     ap.add_argument('--zeeman', type=float, default=40.0, help='mu_B B / hbar in units of nu_r')
     ap.add_argument('--wc', type=float, default=1.0, help='coupling Rabi scale')
     ap.add_argument('--N', type=int, default=6, help='Fock states per axis')
@@ -141,7 +143,7 @@ def run(argv):
     out.parent.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     p = setup(a.case, a.s, a.DG, a.N)
-    m = Z2.build(a.scheme, p, a.N, a.N, tol=a.tol, zeeman=a.zeeman, d1=a.d1, d2=a.d2, gamma=a.gamma, wc=a.wc)
+    m = Z2.build(a.scheme, p, a.N, a.N, tol=a.tol, zeeman=a.zeeman, d1=a.d1, d2=a.d2, gamma=a.gamma, wc=a.wc, rep_pol=a.rep_pol)
     log('run', tag_of(a), 'd', m.d, 'classes', len(m.classes), 'frame mismatch %.1e' % m.frame_mismatch,
         'class spread %.2f' % m.class_spread)
     internal = None
@@ -196,9 +198,25 @@ def main_grid():
     return rows
 
 
+def followup_grid():
+    """Second round (after the main scan): TE01 with a weak, polarisation-selected F=2 repumper that drains
+    the sublevel where optical pumping collects the atoms (|2,2> for B along z, |2,0> for B along x), and
+    N = 8 checks of the best LP11 switching points. Case A."""
+    rows = []
+    for s in (0.5, 1.0):
+        for pol in ('sm', 'lin'):
+            for g in (0.003, 0.01, 0.03):
+                rows.append(dict(scheme='te01_bz', case='A', s=s, d1=0.8, d2=0.0, gamma=g, rep_pol=pol, N=6))
+        for g in (0.003, 0.01, 0.03):
+            rows.append(dict(scheme='te01_bx', case='A', s=s, d1=0.4, d2=0.4, gamma=g, rep_pol='lin', N=6))
+    rows.append(dict(scheme='lp11_hf', case='A', s=0.5, d1=0.9, gamma=0.1, tau=32.0, N=8))
+    rows.append(dict(scheme='lp11_zl', case='A', s=0.5, d1=0.4, gamma=1.0, tau=32.0, N=8))
+    return rows
+
+
 def write_list(argv):
     ap = argparse.ArgumentParser(prog='zeeman2d.py list')
-    ap.add_argument('--grid', default='main', choices=('main', 'test', 'convergence'))
+    ap.add_argument('--grid', default='main', choices=('main', 'test', 'convergence', 'followup'))
     ap.add_argument('--N', type=int, default=6)
     ap.add_argument('--out', default=None)
     a = ap.parse_args(argv)
@@ -206,6 +224,8 @@ def write_list(argv):
         rows = main_grid()
         for r in rows:
             r.setdefault('N', a.N)
+    elif a.grid == 'followup':
+        rows = followup_grid()
     elif a.grid == 'convergence':
         rows = [dict(scheme=s, case=c, s=1.0, d1=0.4, d2=0.4, gamma=0.1 if s.startswith('lp11') else 0.0, N=N)
                 for s in ('te01_bz', 'lp11_hf') for c in ('A',) for N in (6, 8, 10)]
