@@ -59,7 +59,7 @@ Case A is from the converged solver.
   are 1.2–2× higher.
 - **D1 vs D2, stage 2 (all excited hyperfine levels in the ME, Δ = 3Γ, s = 1, two-photon detuning
   re-optimised, both signs of the Raman interference through the other levels):**
-  Case A (branch `universal`), δ_e selected on W₀ (W₀, P₀ at Δ = 3Γ, both signs): D1 F′=2 (paper) W₀ = 2.2×10³ s⁻¹
+  Case A, δ_e selected on W₀ (W₀, P₀ at Δ = 3Γ, both signs): D1 F′=2 (paper) W₀ = 2.2×10³ s⁻¹
   within 1% of three levels, P₀ = 0.953–0.955; D1 F′=1 with probe on F=2: 3.2–3.6×10³ s⁻¹, P₀ = 0.974–0.979 (1.5–1.6×
   the paper rate); D2 F′=2: 2.1–2.2×10³ s⁻¹ (within 3%), P₀ = 0.941–0.955; D2 F′=1 (probe on F=1, b_p = 5/6): needs
   δ_e ≈ −1.3 ν_r, 2.0–4.2×10³ s⁻¹ by interference sign, stops cooling near Δ = 8Γ: unreliable without the Zeeman
@@ -319,12 +319,12 @@ Conventions and gotchas:
   `main`, run `git branch -d <branch>` (the safe form: it refuses unmerged branches), and delete its remote copy
   if it was pushed. Nothing is lost: the merge commit keeps the branch tip as its second parent, so a branch can
   be recreated with `git branch <name> <merge-commit>^2` (find it with `git log --merges --oneline main`). Keep
-  only `main`, `universal` and branches with unmerged work.
+  only `main` and branches with unmerged work.
 - **Paper and talk need explicit approval.** After producing new results, always ask the author
   whether they should go into the paper and/or the presentation; never add them unasked.
-- **Long-lived branch `universal`** (from `main`): reduced, fibre-specific results (universal design
-  map, generalised robustness, Rb case-A imperfections) and the eventual paper/talk rework. Commit
-  there in focused steps; merge into `main` only when the author decides.
+- **No long-lived branches.** The former `universal` branch (universal design map, generalised robustness,
+  Rb case-A imperfections) is fully merged into `main` and deleted. When the paper/talk rework starts, open a
+  dedicated branch for it like any other stage; paper and talk changes still need the author's approval.
 - **One simulation at a time (requested by the author).** Worker processes inside one study are allowed
   (`lines.py`) if they fit in memory. Otherwise never run simulations in parallel: do not
   start a study, check or diagnostic while another is still running (check with
