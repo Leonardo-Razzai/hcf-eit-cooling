@@ -315,6 +315,11 @@ Conventions and gotchas:
   messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
   that should not change are reproduced exactly, new results are committed, and the code guide and
   this file are updated. `main` must always have code, results, paper and tests in agreement.
+- **Delete the stage branch after merging (requested by the author).** Right after a `--no-ff` merge into
+  `main`, run `git branch -d <branch>` (the safe form: it refuses unmerged branches), and delete its remote copy
+  if it was pushed. Nothing is lost: the merge commit keeps the branch tip as its second parent, so a branch can
+  be recreated with `git branch <name> <merge-commit>^2` (find it with `git log --merges --oneline main`). Keep
+  only `main`, `universal` and branches with unmerged work.
 - **Paper and talk need explicit approval.** After producing new results, always ask the author
   whether they should go into the paper and/or the presentation; never add them unasked.
 - **Long-lived branch `universal`** (from `main`): reduced, fibre-specific results (universal design
