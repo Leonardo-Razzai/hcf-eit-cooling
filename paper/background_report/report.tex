@@ -959,7 +959,7 @@ The Raman shifts use $g_F=+\frac12$ ($F=2$) and $-\frac12$ ($F=1$); channel 2 is
 
 \subsection{What to expect in real $^{87}$Rb}
 \label{sec:te01_zeeman}
-The minimal model assumes two ideal, equal, closed $\Lambda$ channels. Real $^{87}$Rb differs in four ways [estimates; not yet simulated].
+The minimal model assumes two ideal, equal, closed $\Lambda$ channels. Real $^{87}$Rb differs in four ways [estimates, written before the 2D Zeeman simulations; results at the end of this section].
 \begin{enumerate}
 \item \emph{Unequal channels.} With $\bm B\parallel z$ the coupling strengths differ by $6\times$ ($d^2=1/2$ against 1/12). The light shift and the width of the narrow resonance, both $\propto\Omega_c^2$, then differ by $6\times$, so one coupling intensity cannot put both narrow resonances on the red sideband. The two probe frequencies allow separate two-photon detunings, which recovers part of it. Even so, the slower channel is expected to set the 2D rate, a loss of up to $\sim\sqrt6\approx2.5\times$ for a compromise intensity. The transverse geometry is better balanced (coupling 1/4 against 1/3).
 \item \emph{Spectator sublevels.} Decays fill other sublevels: $\ket{2',2}$ decays to $\ket{2,2}$ (1/3), $\ket{2,1}$ (1/6), $\ket{1,1}$ (1/2); $\ket{2',0}$ to $\ket{2,\pm1}$ (1/4 each) and $F=1$ (1/2). With $\bm B\parallel z$ and $\sigma^+$ coupling:
@@ -979,6 +979,22 @@ The minimal model assumes two ideal, equal, closed $\Lambda$ channels. Real $^{8
   Since $h\propto1/\nu_z$ (Sec.~\ref{sec:2d}), a stiffer lattice extends the allowed range.
 \end{enumerate}
 \textbf{Expectation.} In real $^{87}$Rb the TE$_{01}$ scheme should still cool both axes at once in case B. The rate would be several times below the minimal model: the remixing penalty ($\sim3\times$) times the channel imbalance ($\lesssim2.5\times$). Whether it then beats switching, which also pays the Zeeman penalty, is open. In case A recoil rules it out at $\nu_z=300$\,kHz. The transverse-field geometry has better-balanced legs and should be compared. A quantitative answer needs the 2D Zeeman master equation: 8 ground sublevels $\times N^2$ Fock states, with excited states eliminated, which is a cluster-size calculation.
+
+\textbf{Result: the 2D Zeeman master equation [numerics].} All 8 ground sublevels $\times(n_x,n_y)$, $N=6$ per axis (two checks at $N=8$), case A, $\Delta=3\Gamma$, field $\mu_BB/\hbar=40\,\nu_r$; 108 runs over saturation, two-photon detunings, repumper and switching time, plus 20 follow-up runs (\texttt{simulation/cluster/}, \texttt{results/zeeman2d/}; Fig.~\ref{fig:z2d}). The expectation above was too optimistic for TE$_{01}$ and right for LP$_{11}$ switching:
+\begin{itemize}
+\item \emph{LP$_{11}$ switched, hyperfine $\Lambda$} (D1 $F'=1$, probe $\pi$ on $F=2$, repumpers): 11 of 25 runs cold ($P_{00}\ge0.85$); best $P_{00}=0.87$ with $W_{00}=336$\,s$^{-1}$ ($s=1$) and $P_{00}=0.91$ with 262\,s$^{-1}$ ($s=0.5$), against 0.925 and 661\,s$^{-1}$ for the closed $\Lambda$: the Zeeman structure costs $\approx2$--$2.5\times$ in rate and little in $P_{00}$, as on one axis.
+\item \emph{LP$_{11}$ switched, Zeeman $\Lambda$ in $F=2$}: best $P_{00}=0.90$, $W_{00}=177$\,s$^{-1}$ ($s=0.5$); clearly worse at $s=1$ ($P_{00}=0.37$--0.82).
+\item \emph{TE$_{01}$}: no cold run in 90 ($P_{00}\le0.25$ with $\bm B\parallel z$, $\le0.13$ with $\bm B\parallel x$). Optical pumping collects the atoms in a sublevel missing one channel: up to 71\% in $\ket{2,2}$ ($\sigma^-$ only) for $\bm B\parallel z$, so both axes stay hot ($\langle n\rangle\approx1.3$--1.6 at $N=6$); 35--40\% in $\ket{2,0}$ for $\bm B\parallel x$, where the $\pi$ channel ($F=2\to F'=2$, $m=0\to0$) is forbidden, so $x$ is partly cooled and $y$ heated. A weak repumper ($\gamma=0.003$--0.03\,$\nu_r$; $\sigma^-$ or linear) does not help: $\sigma^-$ moves the atoms from $\ket{2,2}$ into $\ket{2,-2}$, which has no $\Lambda$, and every repumper adds heating. The 1.85$\times$ advantage of TE$_{01}$ in the minimal model does not survive the real atomic structure.
+\item \emph{Convergence}: from $N=6$ to 8, $P_{00}$ falls by 1\% (hyperfine) and 3\% (Zeeman $\Lambda$) and $W_{00}$ by 7\% and 15\%, while $\langle n\rangle$ roughly doubles (truncated recoil tail); 16 of 128 runs are not fully settled ($|$drift$|\ge10^{-3}$, mostly Zeeman $\Lambda$).
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/zeeman2d/overview.pdf}
+\caption{2D Zeeman master equation, $^{87}$Rb, case A, both radial axes. \textbf{a}, $P_{00}$ against $W_{00}$ for every run (crosses: not fully settled). \textbf{b}, best $W_{00}$ among runs with $P_{00}\ge0.85$. Only LP$_{11}$ switching reaches cold states; TE$_{01}$ (both field directions) does not ($W_{00}$ of hot runs is not meaningful).}
+\label{fig:z2d}
+\end{figure}
+
 
 %=====================================================================
 \section{Conclusions}
