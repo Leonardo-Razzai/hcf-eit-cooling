@@ -33,11 +33,22 @@ from eitsim import zeeman2d as Z2
 
 RUNS = RESULTS / 'zeeman2d' / 'runs'
 CLUSTER = Path(__file__).resolve().parents[1] / 'cluster'
-SCHEMES = ('lp11_hf', 'lp11_zl', 'te01_bz', 'te01_bx')
+SCHEMES = ('lp11_hf', 'lp11_zl', 'te01_bz', 'te01_bx', 'lp11_d2')
+LINE = {'lp11_d2': 'D2'}                   # all other schemes: D1
 
 
-def setup(case, s, DG=3.0, N=6):
-    fc = E.paper_cases()[case]
+def lattice_shift(case, line):
+    """Tensor light shift of the excited levels in the 1064 nm lattice ({(Fe, me): Hz}; none on D1)."""
+    if line != 'D2':
+        return None
+    import scipy.constants as sc
+    from eitsim.atoms import tensor_shift
+    U0 = E.paper_cases(line)[case]['U0'] / sc.h        # lattice depth (ground-state light shift), Hz
+    return {(f, m): tensor_shift('D2', f, m, U0) for f in (0, 1, 2, 3) for m in range(-f, f + 1)}
+
+
+def setup(case, s, DG=3.0, N=6, line='D1'):
+    fc = E.paper_cases(line)[case]
     return Z.setup(fc, s, DG, 0.0, N)
 
 
@@ -120,10 +131,30 @@ def check_d2():
         log('check_d2', 'PASS' if abs(r2['P00'] - r1['P0']) < 5e-3 and abs(r2['W00'] / r1['W0'] - 1) < 0.05 else 'FAIL')
 
 
+def check_d2_scheme():
+    """Scheme lp11_d2 (stage 0 only, N_y = 1) against the 1D D2 solver of studies/d2_zeeman.py at its best point
+    with P0 >= 0.95 (Delta = 2 Gamma, d = 0.15, gamma = 0.1, s = 0.3, N = 6)."""
+    import d2_zeeman as D
+    N, s, DG, d, gamma = 6, 0.3, 2.0, 0.15, 0.1
+    r1 = D.point((0, 'lin', 'pi', DG, d, gamma, 1.0, s, N, N, True, False))
+    p = setup('A', s, DG, N, 'D2')
+    sc_ = Z2.scheme('lp11_d2', p, d1=d, gamma=gamma, exc_shift=lattice_shift('A', 'D2'))
+    fields = [f for f in sc_['fields'] if f['stage'] != 1]
+    m = Z2.Model(fields, p, N, 1, bdir=sc_['bdir'], zeeman=0.0, fes=sc_['fes'], Fe_ref=1, line='D2', nodes=(8, 16),
+                 exc_shift=sc_['exc_shift'])
+    r2 = m.steady_direct()
+    log('check_d2_scheme 1D: P0 %.5f W0 %.5f | 2D scheme (N_y=1): P0 %.5f W0 %.5f (mismatch %.1e)' % (
+        r1[12], r1[14], r2['P00'], r2['W00'], m.frame_mismatch))
+    ok = abs(r2['P00'] - r1[12]) < 5e-3 and abs(r2['W00'] / r1[14] - 1) < 0.05
+    log('check_d2_scheme', 'PASS' if ok else 'FAIL')
+    return ok
+
+
 def smoke():
     for name in SCHEMES:
-        p = setup('A', 1.0, N=2)
-        m = Z2.build(name, p, 2, 2, zeeman=40.0, d1=0.3, d2=0.3, gamma=0.1)
+        line = LINE.get(name, 'D1')
+        p = setup('A', 1.0, N=2, line=line)
+        m = Z2.build(name, p, 2, 2, zeeman=40.0, d1=0.3, d2=0.3, gamma=0.1, exc_shift=lattice_shift('A', line))
         r0 = m.initial(1, 1)
         t, P, r = m.evolve(r0, 2.0, dt=0.1, tau=1.0 if m.stages > 1 else None)
         o = m.observables(r)
@@ -134,8 +165,9 @@ def smoke():
 def cost():
     for name in SCHEMES:
         for N in (4, 6, 8, 10):
-            p = setup('A', 1.0, N=N)
-            m = Z2.build(name, p, N, N, zeeman=40.0, d1=0.3, d2=0.3, gamma=0.1)
+            line = LINE.get(name, 'D1')
+            p = setup('A', 1.0, N=N, line=line)
+            m = Z2.build(name, p, N, N, zeeman=40.0, d1=0.3, d2=0.3, gamma=0.1, exc_shift=lattice_shift('A', line))
             c = m.cost()
             dt = min(0.1, 1.2 / (2 * N))
             steps = 1500 / dt
@@ -175,8 +207,10 @@ def run(argv):
         return
     out.parent.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
-    p = setup(a.case, a.s, a.DG, a.N)
-    m = Z2.build(a.scheme, p, a.N, a.N, tol=a.tol, zeeman=a.zeeman, d1=a.d1, d2=a.d2, gamma=a.gamma, wc=a.wc, rep_pol=a.rep_pol)
+    line = LINE.get(a.scheme, 'D1')
+    p = setup(a.case, a.s, a.DG, a.N, line)
+    m = Z2.build(a.scheme, p, a.N, a.N, tol=a.tol, zeeman=a.zeeman, d1=a.d1, d2=a.d2, gamma=a.gamma, wc=a.wc, rep_pol=a.rep_pol,
+                 exc_shift=lattice_shift(a.case, line))
     log('run', tag_of(a), 'd', m.d, 'classes', len(m.classes), 'frame mismatch %.1e' % m.frame_mismatch,
         'class spread %.2f' % m.class_spread)
     internal = None
@@ -247,9 +281,20 @@ def followup_grid():
     return rows
 
 
+def d2_grid():
+    """D2 line, LP11 switched (lp11_d2), case A, around the one-axis optimum of studies/d2_zeeman.py (Delta = 2 Gamma,
+    d = 0.15, gamma = 0.1, s = 0.3 for P0 >= 0.95; s = 1 faster but P0 ~ 0.93), tau = 32 as lp11_hf; plus Delta = 3
+    Gamma and one N = 8 check."""
+    rows = [dict(scheme='lp11_d2', case='A', s=s, DG=2.0, d1=d, gamma=g, tau=32.0, N=6)
+            for s in (0.3, 1.0) for d in (0.0, 0.15, 0.4) for g in (0.03, 0.1)]
+    rows.append(dict(scheme='lp11_d2', case='A', s=0.3, DG=3.0, d1=0.15, gamma=0.1, tau=32.0, N=6))
+    rows.append(dict(scheme='lp11_d2', case='A', s=0.3, DG=2.0, d1=0.15, gamma=0.1, tau=32.0, N=8))
+    return rows
+
+
 def write_list(argv):
     ap = argparse.ArgumentParser(prog='zeeman2d.py list')
-    ap.add_argument('--grid', default='main', choices=('main', 'test', 'convergence', 'followup'))
+    ap.add_argument('--grid', default='main', choices=('main', 'test', 'convergence', 'followup', 'd2'))
     ap.add_argument('--N', type=int, default=6)
     ap.add_argument('--out', default=None)
     a = ap.parse_args(argv)
@@ -259,6 +304,8 @@ def write_list(argv):
             r.setdefault('N', a.N)
     elif a.grid == 'followup':
         rows = followup_grid()
+    elif a.grid == 'd2':
+        rows = d2_grid()
     elif a.grid == 'convergence':
         rows = [dict(scheme=s, case=c, s=1.0, d1=0.4, d2=0.4, gamma=0.1 if s.startswith('lp11') else 0.0, N=N)
                 for s in ('te01_bz', 'lp11_hf') for c in ('A',) for N in (6, 8, 10)]
@@ -296,4 +343,4 @@ if __name__ == '__main__':
     elif cmd == 'collect':
         collect(rest)
     else:
-        {'check': check, 'check_field': check_field, 'check_d2': check_d2, 'smoke': smoke, 'cost': cost}[cmd]()
+        {'check': check, 'check_field': check_field, 'check_d2': check_d2, 'check_d2_scheme': check_d2_scheme, 'smoke': smoke, 'cost': cost}[cmd]()

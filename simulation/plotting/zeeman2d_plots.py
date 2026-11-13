@@ -23,9 +23,10 @@ from style import MM, WDOUBLE, CA, CB, CG, CL, CO, letter
 
 R = Path(__file__).resolve().parents[1] / 'results'
 style.apply()
-COL = {'lp11_hf': CG, 'lp11_zl': CL, 'te01_bz': CB, 'te01_bx': CA}
+COL = {'lp11_hf': CG, 'lp11_zl': CL, 'te01_bz': CB, 'te01_bx': CA, 'lp11_d2': CO}
 LAB = {'lp11_hf': 'LP$_{11}$ switched, hyperfine $\\Lambda$', 'lp11_zl': 'LP$_{11}$ switched, Zeeman $\\Lambda$',
-       'te01_bz': 'TE$_{01}$, $B\\parallel z$', 'te01_bx': 'TE$_{01}$, $B\\parallel x$'}
+       'te01_bz': 'TE$_{01}$, $B\\parallel z$', 'te01_bx': 'TE$_{01}$, $B\\parallel x$',
+       'lp11_d2': 'LP$_{11}$ switched, D2 $F\'=1$'}
 P_COLD = 0.85
 DRIFT_MAX = 1e-3
 

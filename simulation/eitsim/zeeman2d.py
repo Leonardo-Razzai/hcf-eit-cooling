@@ -386,8 +386,9 @@ def repump_amp(p, gamma):
     return np.sqrt(4 * gamma * (p['D']**2 + p['G']**2 / 4) / p['G'])
 
 
-def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=1.0, te01_norm=True, rep_pol='lin'):
-    """87Rb D1 configurations (fields, B direction, excited levels, stages).
+def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=1.0, te01_norm=True, rep_pol='lin',
+           exc_shift=None):
+    """87Rb configurations (fields, B direction, excited levels, stages); D1 unless stated.
 
     lp11_hf    switched LP11, hyperfine Lambda D1 F'=1, probe pi on F=2 (polarised along B, B transverse
                along x, no field needed: zeeman = 0), coupling linear perpendicular on F=1, repumpers on
@@ -395,6 +396,10 @@ def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=
                notes/zeeman_results.md. Stage 0: lobes along x, stage 1: along y. d1 = two-photon detuning.
     lp11_zl    switched LP11, Zeeman Lambda inside F=2 after Qiu et al. (B along the fibre): probe sigma-
                (circular LP11) |2,2> -> |2',1>, coupling sigma+ (LP01) from |2,0>, F=1 repumper sigma+ (gamma).
+    lp11_d2    switched LP11 on the D2 line, F'=1 with the probe on F=1 (b_p = 5/6): quantisation axis x = lattice
+               polarisation (tensor light shift diagonal, pass exc_shift {(Fe, me): Hz}), probe linear along y
+               (perpendicular), coupling pi (x) on F=2, repumpers with the complementary polarisation (gamma),
+               all four 5P3/2 levels; zero field. Best one-axis point of studies/d2_zeeman.py. p must be D2.
     te01_bz    TE01 probe, B along the fibre, coupling sigma+ on F=1, F'=2, target |2,1>; probe frequency 1
                for |2,1> -> |1,1> (Raman shift -Z), frequency 2 for |2,1> -> |1,-1> (0); d1, d2 their
                two-photon detunings; optional F=2 repumper (lin, gamma).
@@ -442,12 +447,22 @@ def scheme(name, p, zeeman=40.0, d1=0.0, d2=0.0, gamma=0.0, amps=(1.0, 1.0), wc=
             pol = {'lin': Y, 'pi': X}[rep_pol]
             f += [field(2, [(pol, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
         return dict(fields=f, bdir='x', fes=(2,), zeeman=zeeman, stages=1, target=GROUND.index((2, 1)))
+    if name == 'lp11_d2':
+        f = [field(1, [(Y, 'x', 1.0)], Wp, d1, stage=0, name='probe x-lobes'),
+             field(1, [(Y, 'y', 1.0)], Wp, d1, stage=1, name='probe y-lobes'),
+             field(2, [(X, 'lp01', 1.0)], Wc, 0.0, name='coupling')]
+        if gamma:
+            f += [field(1, [(X, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=1'),
+                  field(2, [(Y, 'lp01', 1.0)], repump_amp(p, gamma), 0.0, incoherent=True, name='repump F=2')]
+        return dict(fields=f, bdir='x', fes=(0, 1, 2, 3), Fe_ref=1, line='D2', exc_shift=exc_shift, zeeman=0.0,
+                    stages=2, target=GROUND.index((1, 0)))
     raise ValueError(name)
 
 
 def build(name, p, Nx, Ny, tol=2.0, nodes=(4, 8), **kw):
     sc = scheme(name, p, **kw)
     m = Model(sc['fields'], p, Nx, Ny, bdir=sc['bdir'], zeeman=sc['zeeman'], fes=sc['fes'], tol=tol,
-              nodes=nodes, stages=sc['stages'])
+              nodes=nodes, stages=sc['stages'], Fe_ref=sc.get('Fe_ref'), line=sc.get('line', 'D1'),
+              exc_shift=sc.get('exc_shift'))
     m.target = sc['target']
     return m
