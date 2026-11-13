@@ -87,6 +87,39 @@ def check_field():
     return ok
 
 
+def check_d2():
+    """D2, all four excited levels, with the tensor light shift of the lattice: 2D code (N_y = 1) against the 1D
+    Zeeman solver. D2 F'=1, probe lin on F=1, coupling pi on F=2, repumpers (zero field)."""
+    import scipy.constants as sc
+    from zeeman_scan import POL
+    from eitsim.atoms import tensor_shift
+    fc = E.paper_cases('D2')['A']
+    N, s, DG, d2 = 6, 1.0, 3.0, -0.5
+    U0 = 530e-6 * sc.k / sc.h
+    for shift, gamma in ((False, 0.1), (True, 0.1)):
+        p = Z.setup(fc, s, DG, d2, N)
+        st = Z.structure_lambda('D2', 1, 1, POL['lin'], POL['pi'], fes=[0, 1, 2, 3])
+        exc = {(f, m): (tensor_shift('D2', f, m, U0) if shift else 0.0) for f, m in st['excited']}
+        st['eps'] = st['eps'] + np.array([exc[e] for e in st['excited']])
+        na, nE = len(st['ground']), len(st['excited'])
+        rp = []
+        for F, comp, i0 in ((1, 'pi', 0), (2, 'lin', st['nP'])):
+            g = Z.field_matrix('D2', F, st['excited'], POL[comp]) / np.sqrt(Z._norm('D2', F, 1))
+            gm = np.zeros((na, nE), complex)
+            gm[i0:i0 + g.shape[0]] = g
+            rp.append(dict(gm=gm, W=Z2.repump_amp(p, gamma), detuning=p['D']))
+        r1 = Z.solve(st, p, B=N, repump=rp)
+        lin, pi = (0.0, -1j, 0.0), (0.0, 0.0, 1.0)
+        fields = [Z2.field(1, [(lin, 'x', 1.0)], p['Wp'], d2), Z2.field(2, [(pi, 'lp01', 1.0)], p['Wc'], 0.0),
+                  Z2.field(1, [(pi, 'lp01', 1.0)], Z2.repump_amp(p, gamma), 0.0, incoherent=True),
+                  Z2.field(2, [(lin, 'lp01', 1.0)], Z2.repump_amp(p, gamma), 0.0, incoherent=True)]
+        m = Z2.Model(fields, p, N, 1, bdir='z', zeeman=0.0, fes=(0, 1, 2, 3), Fe_ref=1, line='D2', nodes=(8, 16), exc_shift=exc)
+        r2 = m.steady_direct()
+        log('check_d2 tensor shift %s: 1D P0 %.5f W0 %.5f | 2D (N_y=1) P0 %.5f W0 %.5f (mismatch %.1e)' % (
+            shift, r1['P0'], r1['W0'], r2['P00'], r2['W00'], m.frame_mismatch))
+        log('check_d2', 'PASS' if abs(r2['P00'] - r1['P0']) < 5e-3 and abs(r2['W00'] / r1['W0'] - 1) < 0.05 else 'FAIL')
+
+
 def smoke():
     for name in SCHEMES:
         p = setup('A', 1.0, N=2)
@@ -263,4 +296,4 @@ if __name__ == '__main__':
     elif cmd == 'collect':
         collect(rest)
     else:
-        {'check': check, 'check_field': check_field, 'smoke': smoke, 'cost': cost}[cmd]()
+        {'check': check, 'check_field': check_field, 'check_d2': check_d2, 'smoke': smoke, 'cost': cost}[cmd]()

@@ -80,11 +80,12 @@ def field(F, comps, amp, delta=0.0, stage=None, incoherent=False, name=''):
 
 class Model:
     def __init__(self, fields, p, Nx, Ny, bdir='z', zeeman=0.0, fes=(2,), Fe_ref=None, line='D1', tol=2.0,
-                 nodes=(4, 8), stages=1):
+                 nodes=(4, 8), stages=1, exc_shift=None):
         self.p, self.Nx, self.Ny, self.bdir, self.Z, self.line = p, Nx, Ny, bdir, zeeman, line
         self.fes = tuple(fes)
         self.Fe_ref = Fe_ref if Fe_ref is not None else self.fes[0]
         self.tol, self.stages = tol, stages
+        self.exc_shift = exc_shift or {}          # {(Fe, me): Hz}, e.g. the tensor light shift of the lattice
         self.na = len(GROUND)
         self.M = Nx * Ny
         self.d = self.na * self.M
@@ -181,7 +182,7 @@ class Model:
         active = [fi for fi, f in enumerate(self.fields) if f['stage'] is None or f['stage'] == stage]
         hfs = LINES[self.line]['hfs']
         om = p.get('om', 1.0)
-        off = np.array([2 * np.pi * (hfs[Fe] - hfs[self.Fe_ref]) / om for Fe, _ in self.excited])
+        off = np.array([2 * np.pi * (hfs[Fe] - hfs[self.Fe_ref] + self.exc_shift.get((Fe, me), 0.0)) / om for Fe, me in self.excited])
         cexc = 1.0 / (-(p['D'] - off) - 0.5j * p['G'])
         H = np.kron(np.diag(self.Delta), np.eye(M)).astype(complex)
         H += np.kron(np.eye(na), np.diag(self.nvec_x + self.nvec_y))
@@ -207,11 +208,14 @@ class Model:
             for e, Ae in A.items():
                 Hk = -cexc[e].real * (Ae.conj().T @ Ae)
                 H[np.ix_(colsel, colsel)] += Hk
-            for q in (-1, 0, 1):
-                for F in (1, 2):
+            for q, F, Fg in [(q, F, Fg) for q in (-1, 0, 1) for F in (1, 2) for Fg in self.fes]:
+                if True:
+                    # photons from different excited hyperfine levels differ by >> Gamma: separate decay channels
                     finals = {}
                     for e, Ae in A.items():
                         Fe, me = self.excited[e]
+                        if Fe != Fg:
+                            continue
                         m = me + q
                         if abs(m) > F:
                             continue

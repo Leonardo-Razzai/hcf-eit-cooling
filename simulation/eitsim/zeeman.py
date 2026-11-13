@@ -192,7 +192,8 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=(), labels=False):
                     Cs.append(C)
                     lab.append(st['gq'][ig])
     for rp in repump:
-        cr = 1.0 / (-(rp['detuning']) - 0.5j * p['G'])
+        # each excited level at its own detuning (hyperfine offset off[k]), as for the cooling beams
+        cr = 1.0 / (-(rp['detuning'] - off) - 0.5j * p['G'])
         ARs = []
         for k in range(nE):
             A = np.zeros((N, d), complex)
@@ -200,7 +201,7 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=(), labels=False):
                 if rp['gm'][i, k]:
                     A[:, i * N:(i + 1) * N] = 0.5 * rp['W'] * np.conj(rp['gm'][i, k]) * fcpl
             ARs.append(A)
-            H = H - cr.real * (A.conj().T @ A)
+            H = H - cr[k].real * (A.conj().T @ A)
         for ig, (D, u, wg) in enumerate(st['groups']):
             for uk, wk in zip(u, wg):
                 Dk = (V * np.exp(1j * p['eta_sp'] * uk * w)) @ V.conj().T
@@ -209,7 +210,7 @@ def ops(st, p, b_vec=(0.0, 0.0), repump=(), labels=False):
                     used = False
                     for j in jj:
                         if np.any(D[j]):
-                            C[j * N:(j + 1) * N, :] = np.sqrt(p['G'] * wk) * cr * Dk @ sum(D[j, k] * ARs[k] for k in range(nE) if D[j, k])
+                            C[j * N:(j + 1) * N, :] = np.sqrt(p['G'] * wk) * Dk @ sum(D[j, k] * cr[k] * ARs[k] for k in range(nE) if D[j, k])
                             used = True
                     if used:
                         Cs.append(C)

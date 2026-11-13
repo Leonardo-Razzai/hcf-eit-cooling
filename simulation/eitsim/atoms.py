@@ -9,7 +9,7 @@ Wigner 3j/6j symbols (Steck Eqs. 36-42), not from typed tables.
 from functools import lru_cache
 
 import numpy as np
-from sympy import Rational, sqrt
+from sympy import Rational, S, sqrt
 from sympy.physics.wigner import clebsch_gordan, wigner_6j
 
 I_NUC = Rational(3, 2)
@@ -139,3 +139,28 @@ def excited_manifold(line, Fe, gp):
             continue
         out.append(dict(F=f, eps=hfs[f] - hfs[Fe], cp=cp, cc=cc, bp=branching(line, f, gp)))
     return out
+
+
+# Dynamic polarisabilities at 1064 nm (atomic units): 5S1/2 scalar ~687 (Safronova et al.; the ratio enters only),
+# 5P3/2 tensor +563 measured by Chen, Goncalves & Raithel, PRA 92, 060501 (2015) (scalar -1149, absorbed in the
+# laser detuning since it is uniform near the axis). 5P1/2 (D1) has no tensor part.
+ALPHA_1064 = {'ground': 687.0, 'D2_tensor': 563.0}
+
+
+def tensor_shift(line, Fe, me, U0_hz, alpha_g=ALPHA_1064['ground'], alpha2=ALPHA_1064['D2_tensor']):
+    """Tensor light shift (Hz) of the excited sublevel |F', m_F'> in a lattice of depth U0_hz (ground-state light
+    shift magnitude, Hz), linearly polarised along the quantisation axis (so the shift is diagonal):
+        dE = -(U0/alpha_g) alpha2^(F') (3 m^2 - F'(F'+1)) / (F'(2F'-1)),
+        alpha2^(F) = alpha2^(J) (-1)^(I+J+F) sqrt[F(2F-1)(2F+1)(J+1)(2J+1)(2J+3) / ((F+1)(2F+3)J(2J-1))] {F 2 F; J I J}
+    (Steck, Rb87 D-line data). Zero for J' = 1/2 (D1) and for F' = 0, 1/2. Hyperfine mixing (shift / splitting
+    <~ 0.1 on D2) is neglected."""
+    Je = LINES[line]['Je']
+    F = S(Fe)
+    if Je < 1 or F < 1:
+        return 0.0
+    J, I = Je, I_NUC
+    fac = (-1)**int(I + J + F) * sqrt(F * (2 * F - 1) * (2 * F + 1) * (J + 1) * (2 * J + 1) * (2 * J + 3)
+                                    / ((F + 1) * (2 * F + 3) * J * (2 * J - 1))) * wigner_6j(F, 2, F, J, I, J)
+    a2F = float(alpha2 * fac)
+    return float(-(U0_hz / alpha_g) * a2F * (3 * me**2 - Fe * (Fe + 1)) / (Fe * (2 * Fe - 1)))
+
