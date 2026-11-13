@@ -984,11 +984,18 @@ The minimal model assumes two ideal, equal, closed $\Lambda$ channels. Real $^{8
 
 \textbf{Result: the 2D Zeeman master equation [numerics].} All 8 ground sublevels $\times(n_x,n_y)$, $N=6$ per axis (two checks at $N=8$), case A, $\Delta=3\Gamma$, field $\mu_BB/\hbar=40\,\nu_r$; 108 runs over saturation, two-photon detunings, repumper and switching time, plus 20 follow-up runs (\texttt{simulation/cluster/}, \texttt{results/zeeman2d/}; Fig.~\ref{fig:z2d}). The expectation above was too optimistic for TE$_{01}$ and right for LP$_{11}$ switching:
 \begin{itemize}
-\item \emph{LP$_{11}$ switched, hyperfine $\Lambda$} (D1 $F'=1$, probe $\pi$ on $F=2$, repumpers): 11 of 25 runs cold ($P_{00}\ge0.85$); best $P_{00}=0.87$ with $W_{00}=336$\,s$^{-1}$ ($s=1$) and $P_{00}=0.91$ with 262\,s$^{-1}$ ($s=0.5$), against 0.925 and 661\,s$^{-1}$ for the closed $\Lambda$: the Zeeman structure costs $\approx2$--$2.5\times$ in rate and little in $P_{00}$, as on one axis.
+\item \emph{LP$_{11}$ switched, hyperfine $\Lambda$} (D1 $F'=1$, probe $\pi$ on $F=2$, repumpers): 11 of 25 runs cold ($P_{00}\ge0.85$); best $P_{00}=0.87$ with $W_{00}=336$\,s$^{-1}$ ($s=1$) and $P_{00}=0.91$ with 262\,s$^{-1}$ ($s=0.5$), against 0.925 and 661\,s$^{-1}$ for the closed $\Lambda$: the Zeeman structure costs $\approx2$--$2.5\times$ in rate and little in $P_{00}$, as on one axis. Level scheme and fields in Fig.~\ref{fig:lp11hf}.
 \item \emph{LP$_{11}$ switched, Zeeman $\Lambda$ in $F=2$}: best $P_{00}=0.90$, $W_{00}=177$\,s$^{-1}$ ($s=0.5$); clearly worse at $s=1$ ($P_{00}=0.37$--0.82).
 \item \emph{TE$_{01}$}: no cold run in 90 ($P_{00}\le0.25$ with $\bm B\parallel z$, $\le0.13$ with $\bm B\parallel x$). Optical pumping collects the atoms in a sublevel missing one channel: up to 71\% in $\ket{2,2}$ ($\sigma^-$ only) for $\bm B\parallel z$, so both axes stay hot ($\langle n\rangle\approx1.3$--1.6 at $N=6$); 35--40\% in $\ket{2,0}$ for $\bm B\parallel x$, where the $\pi$ channel ($F=2\to F'=2$, $m=0\to0$) is forbidden, so $x$ is partly cooled and $y$ heated. A weak repumper ($\gamma=0.003$--0.03\,$\nu_r$; $\sigma^-$ or linear) does not help: $\sigma^-$ moves the atoms from $\ket{2,2}$ into $\ket{2,-2}$, which has no $\Lambda$, and every repumper adds heating. The 1.85$\times$ advantage of TE$_{01}$ in the minimal model does not survive the real atomic structure.
 \item \emph{Convergence}: from $N=6$ to 8, $P_{00}$ falls by 1\% (hyperfine) and 3\% (Zeeman $\Lambda$) and $W_{00}$ by 7\% and 15\%, while $\langle n\rangle$ roughly doubles (truncated recoil tail); 16 of 128 runs are not fully settled ($|$drift$|\ge10^{-3}$, mostly Zeeman $\Lambda$).
 \end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{../../simulation/results/vector/lp11_hf.pdf}
+\caption{Best two-axis scheme in $^{87}$Rb: LP$_{11}$ orientation switched, hyperfine $\Lambda$ on D1 $F'=1$. \textbf{a}, level scheme with squared dipole matrix elements $d^2$ (units of the reduced dipole). Probe (blue): LP$_{11}$ polarised along the quantisation axis $\hat x$, $\pi$ transitions $\ket{2,m}\to\ket{1',m}$; $\ket{2,\pm2}$ have no $\pi$ partner in $F'=1$ and are dark to the probe. Coupling (orange): LP$_{01}$ polarised along $\hat y$, i.e.\ $\sigma^+$ (solid) and $\sigma^-$ (dashed) on $F=1$, which leaves one coupling-dark combination of $\ket{1,\pm1}$. Weak repumpers with the complementary polarisation (dotted; $\sigma^\pm$ on $F=2$, $\pi$ on $F=1$, rate $\gamma$ per sublevel) remix both dark states. Each excited sublevel decays back to $F=2$ with $b_p=5/6$. No bias field. Best run: $s=1$, two-photon detuning $0.9\,\nu_r$, $\gamma=0.1\,\nu_r$, stage length $\tau=32/\nu_r$: $P_{00}=0.87$, $W_{00}=336$\,s$^{-1}$. \textbf{b}, the probe alternates between LP$_{11}$ with lobes along $x$ (cools $x$) and along $y$ (cools $y$), with the polarisation along $\hat x$ in both stages.}
+\label{fig:lp11hf}
+\end{figure}
 
 \begin{figure}[t]
 \centering
