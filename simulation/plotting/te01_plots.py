@@ -6,6 +6,8 @@
                 field along the fibre, and the frequency components
   rb.pdf        87Rb D1 realisations: B along z (sigma+ coupling on F = 1, F' = 2) and B along x
                 (pi coupling); squared couplings from eitsim.atoms; spectator sublevels
+  lp11_hf.pdf   best LP11-switched scheme of the 2D Zeeman runs: 87Rb D1 F'=1 level scheme with couplings, repumpers
+                and the LP11 orientation switching
   results.pdf   2D master equation: P00 and W00 / W0 for the four schemes (vector_twoaxes.dat,
                 vector_shared.dat)
 Usage: python te01_plots.py
@@ -267,7 +269,69 @@ def results():
     plt.close(fig)
 
 
+# ------------------------------------------------------------------ best LP11-switched scheme
+def lp11hf():
+    """Best LP11-switched scheme of the 2D Zeeman runs (lp11_hf): 87Rb D1 F'=1, probe pi on F=2 (LP11, polarised
+    along the quantisation axis x, orientation switched), coupling linear perpendicular (sigma+ and sigma-) on
+    F=1 (LP01, y), weak repumpers on both legs with the complementary polarisation; no bias field."""
+    fig = plt.figure(figsize=(WDOUBLE, 72 * MM))
+    gs = fig.add_gridspec(1, 2, width_ratios=[2.3, 1.0], wspace=0.05)
+    a = fig.add_subplot(gs[0, 0])
+    ye, y1, y2, xs1, xs2 = 2.6, 0.0, 0.45, -3.6, 2.6
+    for me in (-1, 0, 1):
+        level(a, me, ye, lab=('%+d' % me) if me else '0', dy=0.08, fs=5)
+    for m in (-1, 0, 1):
+        level(a, xs1 + m, y1, lab=('%+d' % m) if m else '0', fs=5)
+    for m in range(-2, 3):
+        level(a, xs2 + m, y2, lab=('%+d' % m) if m else '0', fs=5, c=CG if abs(m) == 2 else 'k')
+    a.text(-1.5, ye, r"$5P_{1/2}\,F'=1$", ha='right', va='center', fontsize=6)
+    a.text(xs1, y1 - 0.42, r'$5S_{1/2}\,F=1$ ($g_c$)', ha='center', fontsize=6)
+    a.text(xs2, y2 - 0.42, r'$5S_{1/2}\,F=2$ ($g_p$)', ha='center', fontsize=6)
+    # probe pi: |2,m> -> |1',m>
+    for m in (-1, 0, 1):
+        arrow(a, (xs2 + m, y2), (m + 0.06 * m, ye), CA, lw=1.2)
+    a.text(4.0, 1.75, r'probe $\pi$' + '\n' + r'(LP$_{11}$, $\hat x$)' + '\n' + r'$d^2$ = %s, %s, %s' % (frac(d2(2, -1, 1, -1)), frac(d2(2, 0, 1, 0)), frac(d2(2, 1, 1, 1))) + '\n' + r'for $m=-1,0,+1$',
+           color=CA, fontsize=5.5, ha='left', va='center')
+    # coupling sigma+ (solid) and sigma- (dashed): |1,m> -> |1',m+-1>
+    for m, me in ((-1, 0), (0, 1)):
+        arrow(a, (xs1 + m, y1), (me - 0.05, ye), CB, lw=1.0)
+    for m, me in ((1, 0), (0, -1)):
+        arrow(a, (xs1 + m, y1), (me + 0.05, ye), CB, ls='--', lw=1.0)
+    a.text(-6.3, 1.75, r'coupling' + '\n' + r'$\sigma^+$ (solid), $\sigma^-$ (dashed)' + '\n' + r'(LP$_{01}$, $\hat y$)' + '\n' + r'$d^2$ = %s each' % frac(d2(1, 0, 1, 1)),
+           color=CB, fontsize=5.5, ha='left', va='center')
+    # repumpers (dotted): F=2 sigma+- from |2,+-2>, F=1 pi from |1,+-1>
+    for m in (-2, 2):
+        arrow(a, (xs2 + m, y2), (np.sign(m) * 1.0 + 0.12 * np.sign(m), ye), CG, ls=':', lw=0.7, alpha=0.8)
+    for m in (-1, 1):
+        arrow(a, (xs1 + m, y1), (m - 0.12 * m, ye), CG, ls=':', lw=0.7, alpha=0.8)
+    for m in (-2, 2):
+        a.text(xs2 + m, y2 + 0.08, 'dark', fontsize=4.5, color=CG, ha='center', va='bottom')
+    a.set_xlim(-6.4, 6.4)
+    a.set_ylim(-0.75, 3.0)
+    a.set_axis_off()
+    a.text(-6.4, 3.0, 'a', fontsize=8, fontweight='bold', va='top')
+    # b: switching of the LP11 orientation
+    n = 121
+    X, Y = np.meshgrid(np.linspace(-1.05, 1.05, n), np.linspace(-1.05, 1.05, n))
+    Rr, Ph = np.hypot(X, Y), np.arctan2(Y, X)
+    sub = gs[0, 1].subgridspec(2, 1, hspace=0.35)
+    for k, (w, ttl) in enumerate(((np.cos, r'stage 1 ($\tau$): lobes along $x$, cools $x$'), (np.sin, r'stage 2 ($\tau$): lobes along $y$, cools $y$'))):
+        b = fig.add_subplot(sub[k, 0])
+        b.imshow(np.where(Rr <= 1, (jv(1, U1 * Rr) * w(Ph))**2, np.nan), extent=(-1.05, 1.05, -1.05, 1.05), origin='lower', cmap='Blues')
+        for xx, yy in ((-0.55, 0.0), (0.55, 0.0)) if k == 0 else ((0.0, -0.55), (0.0, 0.55)):
+            b.annotate('', xy=(xx + 0.22, yy), xytext=(xx - 0.22, yy), arrowprops=dict(arrowstyle='<|-|>', lw=0.6, color='k', mutation_scale=5))
+        b.add_patch(Circle((0, 0), 1, fill=False, lw=0.6, ec=CG))
+        b.plot(0, 0, 'o', ms=3, mfc=CO, mec='k', mew=0.5)
+        b.set_title(ttl, fontsize=5.5, pad=2)
+        b.set_axis_off()
+        b.set_aspect('equal')
+        if k == 0:
+            b.text(-0.32, 1.22, 'b', transform=b.transAxes, fontsize=8, fontweight='bold', va='top')
+    fig.savefig(OUT / 'lp11_hf.pdf', bbox_inches='tight')
+    plt.close(fig)
+
+
 if __name__ == '__main__':
-    for f in (modes, schemes, rb, results):
+    for f in (modes, schemes, rb, results, lp11hf):
         f()
         print('ok', f.__name__)
