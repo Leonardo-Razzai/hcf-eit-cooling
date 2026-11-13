@@ -32,3 +32,6 @@ presentation/node_modules/
 
 # cluster job logs
 logs/
+
+# private drafts (not tracked)
+notes/hcf-collaboration/
