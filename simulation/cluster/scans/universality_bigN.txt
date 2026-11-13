@@ -1,0 +1,5 @@
+# fixed h at N = 2000: widest fit windows (n ~ 5-500, ~2 decades); ~80 GB matrix, request 180 GB
+universality.py fixedh --h 0.4 --DG 16 --s 0.3 --N 2000 --B 4
+universality.py fixedh --h 0.4 --DG 12 --s 0.2 --N 2000 --B 4
+universality.py fixedh --h 0.7 --DG 16 --s 0.3 --N 2000 --B 4
+universality.py fixedh --h 0.7 --DG 12 --s 0.2 --N 2000 --B 4

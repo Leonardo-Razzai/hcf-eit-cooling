@@ -60,7 +60,7 @@ Case A is from the converged solver.
   are 1.2–2× higher.
 - **D1 vs D2, stage 2 (all excited hyperfine levels in the ME, Δ = 3Γ, s = 1, two-photon detuning
   re-optimised, both signs of the Raman interference through the other levels):**
-  Case A (branch `universal`), δ_e selected on W₀ (W₀, P₀ at Δ = 3Γ, both signs): D1 F′=2 (paper) W₀ = 2.2×10³ s⁻¹
+  Case A, δ_e selected on W₀ (W₀, P₀ at Δ = 3Γ, both signs): D1 F′=2 (paper) W₀ = 2.2×10³ s⁻¹
   within 1% of three levels, P₀ = 0.953–0.955; D1 F′=1 with probe on F=2: 3.2–3.6×10³ s⁻¹, P₀ = 0.974–0.979 (1.5–1.6×
   the paper rate); D2 F′=2: 2.1–2.2×10³ s⁻¹ (within 3%), P₀ = 0.941–0.955; D2 F′=1 (probe on F=1, b_p = 5/6): needs
   δ_e ≈ −1.3 ν_r, 2.0–4.2×10³ s⁻¹ by interference sign, stops cooling near Δ = 8Γ: unreliable without the Zeeman
@@ -167,6 +167,7 @@ Study scripts (run from `simulation/studies/`):
   time evolution, D1/D2 checks, W against W0); `plotting/convergence_plots.py` plots it.
 - `universal.py [thermal|map|mapband]` → `universal_thermal*.dat` (⟨n⟩, P₀ from thermal states, ~1.5 h), `universal_map.dat` (plane (b_p, ν_r/ω_rec), ~1 h,
   4 workers), `universal_mapband.dat`; `hscan` → `universal_hscan*.dat` (h = 0.1–1.2 by two routes, Δ = 8Γ, N = 400, ~25 min, 2 workers: tail exponent collapses on 1/h); plots by `plotting/universal_plots.py` in `results/universal/`. Older subcommands (steady, drift, capture, robust) still use N = 20.
+- `universality.py [fixedh|drift|list|collect]` (cluster) → `results/universality/` + `universality_{fixedh,drift}.dat`: at fixed h (0.4, 0.7) with Δ = 3–12Γ, s = 0.1–3 (N = 800) the tail exponent = 1/h within 1–5 % where the fit window spans > 1 decade (up to 1.6); local exponent γ(n) from Fock-state drift/diffusion (N = 1000): γh collapses across h = 0.3–1 but is structured at s = 1 (dip at 0.3–0.45 n_c); band B = 4 vs 8 converged. `universality_bigN.txt`: N = 2000 runs, fit window n = 5–500 (2 decades), exponent = 1/h within 1–2 %; locally flat over the middle decade, steeper at small n (resolved-regime crossover, explains the 3–4 % excess at s = 0.1), ~5 % shallower above 0.3 n_c. Plots `plotting/universality_plots.py`; sbatch `run_chunked.sbatch`, `analyse_universality.sbatch`.
 - `species.py [points|sims]` → `species_points.txt` (literature ions/tweezers and Li–Cs, ¹⁷¹Yb, ⁸⁷Sr in the fibre on (ν_r/ω_rec, b_p)), `species_sims.dat` (Yb 556 nm narrow line and K, ME, ~10 min); plot `plotting/species_plots.py` → `results/universal/species.pdf`; note `notes/species_map.md`.
 - `vector_modes.py [fields|carrier|twoaxes|shared|twoaxes_n|rb_sublevels]` → `vector_*.dat`: on-axis E_z of linear LP₁₁/TM₀₁ (ε_z = 1.40 η⊥ in A, 2.90 η⊥ in B; zero for TE₀₁, HE₂₁ and LP₁₁ polarised across its lobes); TE/TM/HE₂₁ splitting and loss in the Zeisberger–Schmidt tube model; 1D ME with E_z on the probe transition (W₀ −6 % A, −31 % B at s = 1; P₀ unchanged); 2D two-channel ME (TE₀₁ components on two Λs): both axes at once, P₀₀ 0.93–0.96, W₀₀ = 0.35–0.46 W₀ (1.85× alternation) only with separate g_c per channel; shared g_c cools only x + y. `rb_sublevels` → `vector_rb_sublevels.dat` (⁸⁷Rb D1 realisation: target |2,1⟩ via F′=2, two probe frequencies, 6× coupling imbalance); figures `plotting/te01_plots.py` → `results/vector/` (report Sec. TE₀₁). ¹⁷¹Yb (F=½) cannot do the TE₀₁ scheme. Note `notes/vector-modes/vector_modes_theory.md`.
 - `zeeman2d.py [check|check_field|smoke|cost|run|list|collect]` → 2D Zeeman master equation for ⁸⁷Rb (`eitsim/zeeman2d.py`): `lp11_hf`, `lp11_zl` (LP₁₁ switched), `te01_bz`, `te01_bx`. **Cluster only** (N = 6: ~1 h per run, N = 8: ~6 h): scan lists in `simulation/cluster/scans/`, sbatch scripts and instructions in `simulation/cluster/` (README.md); results → `results/zeeman2d/runs/*.json`, `collect` → `results/zeeman2d.dat`. Submit with `simulation/cluster/submit_scan.sh` (array + dependent `analyse.sbatch`: collect, `plotting/zeeman2d_plots.py` → `results/zeeman2d/summary.txt` + figures). From here: `simulation/cluster/remote.sh status|summary|fetch` (needs an open ssh ControlMaster to `ophfe1`; the bastion asks for a password; if `ssh -o BatchMode=yes ophfe1 true` fails, ask the author to log in once). `check`/`check_field` (reduction to the 1D Zeeman solver) and `smoke` are cheap.
@@ -316,11 +317,16 @@ Conventions and gotchas:
   messages. Merge into `main` with `git merge --no-ff` only when: all tests pass, stored results
   that should not change are reproduced exactly, new results are committed, and the code guide and
   this file are updated. `main` must always have code, results, paper and tests in agreement.
+- **Delete the stage branch after merging (requested by the author).** Right after a `--no-ff` merge into
+  `main`, run `git branch -d <branch>` (the safe form: it refuses unmerged branches), and delete its remote copy
+  if it was pushed. Nothing is lost: the merge commit keeps the branch tip as its second parent, so a branch can
+  be recreated with `git branch <name> <merge-commit>^2` (find it with `git log --merges --oneline main`). Keep
+  only `main` and branches with unmerged work.
 - **Paper and talk need explicit approval.** After producing new results, always ask the author
   whether they should go into the paper and/or the presentation; never add them unasked.
-- **Long-lived branch `universal`** (from `main`): reduced, fibre-specific results (universal design
-  map, generalised robustness, Rb case-A imperfections) and the eventual paper/talk rework. Commit
-  there in focused steps; merge into `main` only when the author decides.
+- **No long-lived branches.** The former `universal` branch (universal design map, generalised robustness,
+  Rb case-A imperfections) is fully merged into `main` and deleted. When the paper/talk rework starts, open a
+  dedicated branch for it like any other stage; paper and talk changes still need the author's approval.
 - **One simulation at a time (requested by the author).** Worker processes inside one study are allowed
   (`lines.py`) if they fit in memory. Otherwise never run simulations in parallel: do not
   start a study, check or diagnostic while another is still running (check with
