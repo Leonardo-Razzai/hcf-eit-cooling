@@ -1,0 +1,33 @@
+2D Zeeman runs: 128 files
+flagged (|drift| >= 1e-03 or frame mismatch): 16
+   lp11_hf_A_s0.5_d0.3_0_g0.03_Z40_N6_tau32_wc1_DG3  drift 1.2e-03  mismatch 1.9e-13
+   lp11_hf_A_s0.5_d0.3_0_g0.1_Z40_N6_tau16_wc1_DG3  drift 1.0e-03  mismatch 1.9e-13
+   lp11_hf_A_s0.5_d0.3_0_g0.1_Z40_N6_tau32_wc1_DG3  drift 2.4e-03  mismatch 1.9e-13
+   lp11_zl_A_s0.5_d-0.4_0_g0.3_Z40_N6_tau32_wc1_DG3  drift 5.0e-03  mismatch 3.8e-13
+   lp11_zl_A_s0.5_d-0.4_0_g1_Z40_N6_tau32_wc1_DG3  drift 5.1e-03  mismatch 3.8e-13
+   lp11_zl_A_s0.5_d0.4_0_g0.3_Z40_N6_tau32_wc1_DG3  drift 1.7e-03  mismatch 4.1e-13
+   lp11_zl_A_s0.5_d0.4_0_g1_Z40_N8_tau32_wc1_DG3  drift 2.3e-03  mismatch 4.1e-13
+   lp11_zl_A_s0.5_d0_0_g0.3_Z40_N6_tau32_wc1_DG3  drift 7.8e-03  mismatch 7.8e-14
+   lp11_zl_A_s0.5_d0_0_g1_Z40_N6_tau32_wc1_DG3  drift 7.6e-03  mismatch 7.8e-14
+   lp11_zl_A_s1_d-0.4_0_g0.3_Z40_N6_tau32_wc1_DG3  drift 3.0e-03  mismatch 3.8e-13
+   lp11_zl_A_s1_d-0.4_0_g1_Z40_N6_tau32_wc1_DG3  drift 3.0e-03  mismatch 3.8e-13
+   lp11_zl_A_s1_d0_0_g0.3_Z40_N6_tau32_wc1_DG3  drift 2.6e-03  mismatch 7.8e-14
+   lp11_zl_A_s1_d0_0_g1_Z40_N6_tau32_wc1_DG3  drift 2.3e-03  mismatch 7.8e-14
+   te01_bz_A_s0.5_d0.4_0_g0_Z40_N6_tau32_wc1_DG3  drift 1.1e-03  mismatch 4.4e-13
+   te01_bz_A_s0.5_d0.8_0.4_g0_Z40_N6_tau32_wc1_DG3  drift 1.1e-03  mismatch 4.4e-13
+   te01_bz_A_s0.5_d0.8_0_g0_Z40_N6_tau32_wc1_DG3  drift 1.3e-03  mismatch 8.1e-13
+
+Best run per scheme (P00 >= 0.85, unflagged), main resolution:
+scheme    case     s    d1    d2  gamma    P00   W00/nu W00 (1/s)   N
+lp11_hf      A  1.00  0.90  0.00   0.10  0.872   0.0075       336   6
+lp11_zl      A  0.50  0.40  0.00   1.00  0.903   0.0039       177   6
+te01_bz      A   no cold run; highest P00 0.248 (te01_bz_A_s0.5_d0.8_0_g0_Z40_N6_tau32_wc1_DG3)
+te01_bx      A   no cold run; highest P00 0.130 (te01_bx_A_s0.5_d0_0.4_g0_Z40_N6_tau32_wc1_DG3)
+
+Closed-Lambda two-axis reference (minimal model, case A, b_p = 5/6, s = 1, N = 6):
+   switched LP11      P00 0.925  W00 0.0147 nu_r  (661 s^-1)
+   TE01 separate g_c  P00 0.931  W00 0.0271 nu_r  (1215 s^-1)
+
+Convergence in N (same parameters):
+   lp11_hf A s 0.5 d 0.9/0 gamma 0.1: N 6: P00 0.9077 W00 0.0058; N 8: P00 0.8997 W00 0.0054
+   lp11_zl A s 0.5 d 0.4/0 gamma 1: N 6: P00 0.9028 W00 0.0039; N 8: P00 0.8719 W00 0.0034
