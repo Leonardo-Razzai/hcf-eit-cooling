@@ -137,6 +137,26 @@ What "distinguishable" requires: a different excited sublevel is **not** enough.
 - Case B loses 31 % at s = 1 and 68 % at s = 3: there the polarisation geometry matters (Section 1 rules), or TE₀₁/HE₂₁ should be used.
 - P₀ is not degraded, consistent with the purity study (P₀ unchanged up to ε ≈ 3 η⊥).
 
+## Results of the 2D Zeeman master equation (cluster, case A)
+
+128 runs (`eitsim/zeeman2d.py`, `studies/zeeman2d.py`; data and figures in `simulation/results/zeeman2d/`). N = 6 per axis, two checks at N = 8; Δ = 3Γ; μ_B B/ħ = 40 ν_r.
+
+| Scheme | Cold runs (P₀₀ ≥ 0.85) | Best P₀₀ | W₀₀ |
+|---|---|---|---|
+| LP₁₁ switched, hyperfine Λ (D1 F′=1, π probe, repumpers) | 11 of 25 | 0.87 at s = 1 / 0.91 at s = 0.5 | 336 / 262 s⁻¹ |
+| LP₁₁ switched, Zeeman Λ in F=2 | 3 of 13 | 0.90 (s = 0.5) | 177 s⁻¹ |
+| TE₀₁, B ∥ z | 0 of 48 | 0.25 | — |
+| TE₀₁, B ∥ x | 0 of 42 | 0.13 | — |
+| Closed Λ (minimal model), LP₁₁ switched / TE₀₁ | — | 0.925 / 0.93 | 661 / 1215 s⁻¹ |
+
+- **TE₀₁ fails in ⁸⁷Rb.** Optical pumping collects the atoms in a sublevel missing one channel:
+  - B ∥ z: up to 71 % in |2,2⟩ (σ⁻ only); both axes hot.
+  - B ∥ x: 35–40 % in |2,0⟩, where the π channel is forbidden; y is heated.
+  - A weak repumper (γ = 0.003–0.03 ν_r, σ⁻ or linear) makes it worse: σ⁻ moves atoms into |2,−2⟩ (no Λ), and every repumper heats.
+- **LP₁₁ switching works.** The Zeeman structure costs about 2–2.5× in rate and little in P₀₀.
+- **Convergence:** from N = 6 to 8, P₀₀ drops 1–3 %, W₀₀ 7–15 %, and ⟨n⟩ about doubles. 16 of 128 runs are not fully settled.
+- **Design rule:** a vector mode cools both axes only if optical pumping keeps the atoms in a sublevel that has both channels. ⁸⁷Rb D1 with guided σ or π coupling does not.
+
 ## Open
 
 - A mode solver for the real ARF/NANF and bandgap structures: splitting, E_z, and the purity of a launched TE₀₁.

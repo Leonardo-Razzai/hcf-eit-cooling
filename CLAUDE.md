@@ -37,6 +37,7 @@ Case A is from the converged solver.
 | Cooling from 10 µK | P₀ = 97.5% after 150 ms (staged Δ = Γ → 3Γ); ⟨n⟩ = 1.45, carried by a 0.4% hot tail | ⟨n⟩ = 0.04 in 2.4 ms |
 | Time to P₀ ≥ 0.9 vs k_BT_r/U₀ = 10⁻³–10⁻¹ (s = 1) | 2.6–255 ms, ≈ 2.5 s × k_BT_r/U₀ | 0–7.7 ms, ≈ 80 ms × k_BT_r/U₀ |
 | Saturated phonon removal (GRM, s = 1) | 1.9 ms⁻¹ | 12 ms⁻¹ |
+| Both axes, real ⁸⁷Rb (2D Zeeman ME, LP₁₁ switched, hyperfine Λ, N = 6; preliminary in N) | P₀₀ = 0.87–0.91, W₀₀ = 260–340 s⁻¹ | — |
 
 - **Simple model:**
   - It is valid at weak probe only if it counts κ = 1/b_p ≈ 2 photons per cycle.
@@ -267,7 +268,7 @@ Conventions and gotchas:
 
 ## Open items / next steps
 
-- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. The effective 2D chain (`two_axes_zeeman.py`) passes the closed-Λ benchmark but fails the P(n) test for Zeeman schemes: do not quote its Zeeman P₀₀. **The full 2D Zeeman ME is written (`eitsim/zeeman2d.py`, validated against the 1D solver) but not run: the author runs it on the cluster (`simulation/cluster/README.md`, scan lists `zeeman2d_{test,main,convergence}.txt`, case A only: 108 + 6 runs). Do not run the scans locally.**
+- **Zeeman structure (one axis, `notes/zeeman_results.md`, `eitsim/zeeman.py`, `studies/zeeman_scan.py`).** Dark states at every n force remixing; best W₀ about 3× below the closed Λ. The effective 2D chain (`two_axes_zeeman.py`) passes the closed-Λ benchmark but fails the P(n) test for Zeeman schemes: do not quote its Zeeman P₀₀. **The full 2D Zeeman ME (`eitsim/zeeman2d.py`, validated against the 1D solver) has been run on the cluster (case A, 108 + 20 runs; `results/zeeman2d/`, report Sec. TE₀₁): LP₁₁ switching with the hyperfine Λ gives P₀₀ = 0.87–0.91, W₀₀ = 260–340 s⁻¹ (closed Λ: 0.925, 661 s⁻¹); TE₀₁ fails in ⁸⁷Rb (P₀₀ ≤ 0.25; pile-up in |2,2⟩ or |2,0⟩, a repumper makes it worse). N = 6 → 8: P₀₀ −1–3 %, W₀₀ −7–15 %. Do not run cluster scans locally.**
 - **Prior work:** carrier-free EIT at a node is Xing & Mehta, PR Applied 24, 014034 (2025), and the heavy-tail law is Dechant et al. (2015, 2016). Do not present either as new; see `notes/paper_draft_ideas.md`.
 - **Both radial axes (theory and chain done; `notes/anomalous-cooling/two_axes_theory.md`).** One probe cools one motional mode; recoil heats both axes, so a cold state needs h < 1/2. h = 0.188 ζ/b_p with ζ = k_L a ω_rec/ν_z: the limits on a scale with ν_z. Numbers in the key-results table are for ONE axis.
 - **Case-A convergence fix (done).** The case-A
